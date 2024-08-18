@@ -25,13 +25,11 @@ router.post("/register", async (req, res) => {
       minSymbols: 1,
     })
   ) {
-    return res
-      .status(400)
-      .json({
-        err: `Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.`,
-      });
+    return res.status(400).json({
+      err: `Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.`,
+    });
   }
-
+  //email validation
   if (!validator.isEmail(email)) {
     return res.status(400).json({ err: "Invalid Email format" });
   }
