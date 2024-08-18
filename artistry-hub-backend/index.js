@@ -1,37 +1,38 @@
 const express = require("express");
 const passport = require("passport");
-const { ExtractJwt, JwtStrategy } = require("passport-jwt");
+const ExtractJwt = require("passport-jwt").ExtractJwt;
+const JwtStrategy = require("passport-jwt").Strategy;
 const mongoose = require("mongoose");
+const authRoutes = require("./routes/auth");
+
+//for env
 require("dotenv").config();
- 
+
 const app = express();
+app.use(express.json());
 
 //to connect to mongodb
 mongoose
   .connect(
     "mongodb+srv://kamalsankarm:" +
       process.env.MONGO_PASSWORD +
-      "@artistry-hub.tec71.mongodb.net/?retryWrites=true&w=majority&appName=Artistry-Hub",
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
+      "@artistry-hub.tec71.mongodb.net/?retryWrites=true&w=majority&appName=Artistry-Hub"
   )
   .then((x) => {
-    console.log("Connect to mongo!");
+    console.log("Connected to mongo!");
   })
   .catch((err) => {
     console.log("Error occured while connecting to mongo");
     console.log(err);
   });
 
-//passport-jwt setup
+//passport-jwt setup decoding
 let opts = {};
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-opts.secret = "thisisasecretKey";
+opts.secretOrKey = "thisisasecretKey";
 passport.use(
   new JwtStrategy(opts, function (jwt_payload, done) {
-    User.findOne({ _id: jwt_payload.identifier }, function (err, done) {
+    User.findOne({ _id: jwt_payload.identifier }, function (err, user) {
       if (err) {
         done(err, false);
       }
@@ -54,7 +55,10 @@ app.get("/hello", (req, res) => {
   res.send("hello World, This is a new route");
 });
 
+//using if the auth.js
+app.use("/auth", authRoutes);
+
 //the app losening to the port
 app.listen(8000, () => {
-  console.log("Sercer is running");
+  console.log("Server is running on 8000");
 });
