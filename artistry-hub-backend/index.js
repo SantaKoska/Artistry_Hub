@@ -2,7 +2,8 @@ const express = require("express");
 const passport = require("passport");
 const { ExtractJwt, JwtStrategy } = require("passport-jwt");
 const mongoose = require("mongoose");
-
+require("dotenv").config();
+ 
 const app = express();
 
 //to connect to mongodb
