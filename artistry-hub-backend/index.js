@@ -31,19 +31,22 @@ let opts = {};
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = "thisisasecretKey";
 passport.use(
-  new JwtStrategy(opts, function (jwt_payload, done) {
-    User.findOne({ _id: jwt_payload.identifier }, function (err, user) {
+  new JwtStrategy(opts, async function (jwt_payload, done) {
+    try {
+      const user = await User.findOne({ _id: jwt_payload.identifier })
+        if (user) {
+          done(null, user);
+        } else {
+          done(null, false);
+        }
+    }catch(err) {
       if (err) {
         done(err, false);
       }
-      if (user) {
-        done(null, user);
-      } else {
-        done(null, false);
-      }
-    });
+    }
   })
 );
+
 
 //default route
 app.get("/", (req, res) => {
