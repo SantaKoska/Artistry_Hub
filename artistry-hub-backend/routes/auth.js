@@ -1,5 +1,9 @@
 const express = require("express");
 const User = require("../models/UserModel");
+const Artist = require("../models/ArtistModels");
+const ServiceProvider = require("../models/ServiceProviderModels");
+const Institutions = require("../models/InstituationModels");
+const ViewerStudent = require("../models/Viewer-StudentModel");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
 const { getToken } = require("../utils/helper");
@@ -10,7 +14,8 @@ router.post("/register", async (req, res) => {
   //This is the function that handle the register user logic
 
   //Get the details from the req.body
-  const { firstName, lastName, email, password, userType } = req.body;
+  const { firstName, lastName, email, password, userType, additionalData } =
+    req.body;
   if (!firstName || !email || !password || !userType) {
     return res.status(400).json({ err: "Invalid request body" });
   }
@@ -54,10 +59,38 @@ router.post("/register", async (req, res) => {
   };
   const newUser = await User.create(newUserDetails);
 
+  //we gonna check which usertype the user choose and accordingly add data regarding to that corresponfing model
+  try {
+    switch (userType) {
+      case "Artist":
+        await Artist.create({ userId: newUser._id, ...additionalData });
+        break;
+      case "Viewer/Student":
+        await ViewerStudent.create({ userId: newUser._id, ...additionalData });
+        break;
+      case "Institution":
+        await Institutions.create({ userId: newUser._id, ...additionalData });
+        break;
+      case "Service Provider":
+        await ServiceProvider.create({
+          userId: newUser._id,
+          ...additionalData
+        });
+        break;
+      default:
+        throw new Error("Invalid user type");
+    }
+  } catch (err) {
+    if (err) {
+      await User.findByIdAndDelete(newUser._id);
+      res.status(400).json({ err: "Failed to create user details" });
+    }
+  }
   //i can use the newuser to create a JWT and return the token to the user
   const token = await getToken(email, newUser);
   const userToReturn = { ...newUser.toJSON(), token };
   delete userToReturn.password;
+
   return res.status(200).json(userToReturn);
 });
 
