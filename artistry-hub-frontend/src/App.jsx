@@ -1,4 +1,5 @@
 import Login from './login';
+import Register from './Register';
 import { Route } from 'react-router-dom'; 
 
 //bg image 
@@ -17,7 +18,7 @@ function App() {
       {/* Routes */}
       <Routes>
         <Route path='login' element={ <Login/>}/>
-        {/* <Route to='Register' element={ <Register/>}/> */}
+        <Route path='register' element={ <Register/>}/>
       </Routes>
     </div>
   );
