@@ -1,5 +1,5 @@
 import Login from './login';
-import Register from './Register';
+import Register from './register';
 import { Route } from 'react-router-dom'; 
 
 //bg image 

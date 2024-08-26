@@ -6,7 +6,20 @@ const artistSchema = new mongoose.Schema({
     ref: "UserModel",
     required: true,
   },
-  KnownArtForm: {
+  KnownFormsofArt: {
+    type: String,
+    enum: [
+      "Paintind",
+      "Sculpture",
+      "Architecture",
+      "Literature",
+      "Cinema",
+      "Theater",
+      "Music",
+    ],
+    required: true,
+  },
+  Specialisation: {
     type: [String],
     required: true,
     set: (artform) => {

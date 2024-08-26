@@ -14,9 +14,8 @@ router.post("/register", async (req, res) => {
   //This is the function that handle the register user logic
 
   //Get the details from the req.body
-  const { firstName, lastName, email, password, userType, additionalData } =
-    req.body;
-  if (!firstName || !email || !password || !userType) {
+  const { userName, email, password, userType, additionalData } = req.body;
+  if (!userName || !email || !password || !userType) {
     return res.status(400).json({ err: "Invalid request body" });
   }
 
@@ -51,8 +50,7 @@ router.post("/register", async (req, res) => {
   //this gonna encrypt the password given by the user that gonna store in the db
   const hashedPassword = await bcrypt.hash(password, 10);
   const newUserDetails = {
-    firstName,
-    lastName,
+    userName,
     email,
     password: hashedPassword,
     userType,
@@ -74,7 +72,7 @@ router.post("/register", async (req, res) => {
       case "Service Provider":
         await ServiceProvider.create({
           userId: newUser._id,
-          ...additionalData
+          ...additionalData,
         });
         break;
       default:

@@ -15,6 +15,28 @@ const InstitutionSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  location: {
+    address: {
+      type: String,
+      trim: true,
+    },
+    city: {
+      type: String,
+      trim: true,
+    },
+    state: {
+      type: String,
+      trim: true,
+    },
+    country: {
+      type: String,
+      trim: true,
+    },
+    postalCode: {
+      type: String,
+      trim: true,
+    },
+  },
 });
 
 const Institution = mongoose.model("Institution", InstitutionSchema);

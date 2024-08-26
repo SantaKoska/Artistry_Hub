@@ -26,9 +26,9 @@ const Login = () => {
                 <div className="flex justify-between items-center">
                     <Link className="text-yellow-400">Forgot Password?</Link>
                 </div>
-                <button className="w-full mb-4 text-[18px] font-semibold mt-6 rounded-full bg-white text-black hover:bg-emerald-900 hover:text-white py-2 transition-colors duration-700" type="submit">Login</button>
+                <button className="w-full mb-4 text-[18px] font-semibold mt-6 rounded-full bg-white text-black hover:bg-emerald-900 hover:text-white py-2 transition-colors duration-400" type="submit">Login</button>
                 <div>
-                    <span>New Here? <Link className="text-yellow-400" to='/Register'>Create an Account</Link></span>
+                    <span>New Here? <Link className="text-yellow-400" to='/register'>Create an Account</Link></span>
                 </div>
                 </form>
             </div>

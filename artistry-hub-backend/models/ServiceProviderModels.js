@@ -18,8 +18,33 @@ const ServiceProviderSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  location: {
+    address: {
+      type: String,
+      trim: true,
+    },
+    city: {
+      type: String,
+      trim: true,
+    },
+    state: {
+      type: String,
+      trim: true,
+    },
+    country: {
+      type: String,
+      trim: true,
+    },
+    postalCode: {
+      type: String,
+      trim: true,
+    },
+  },
 });
 
-const ServiceProvider = mongoose.model("ServiceProvider", ServiceProviderSchema);
+const ServiceProvider = mongoose.model(
+  "ServiceProvider",
+  ServiceProviderSchema
+);
 
 module.exports = ServiceProvider;
