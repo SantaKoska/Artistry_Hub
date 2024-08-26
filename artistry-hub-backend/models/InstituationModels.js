@@ -20,7 +20,7 @@ const InstitutionSchema = new mongoose.Schema({
       type: String,
       trim: true,
     },
-    city: {
+    district: {
       type: String,
       trim: true,
     },

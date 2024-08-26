@@ -6,15 +6,15 @@ const viewerstudentschema = new mongoose.Schema({
     ref: "UserModel",
     required: true,
   },
-  KnownFormsofArt: {
+  artForm: {
     type: String,
     enum: [
-      "Paintind",
+      "Painting",
       "Sculpture",
       "Architecture",
       "Literature",
       "Cinema",
-      "Theater",
+      "Theatre",
       "Music",
     ],
     required: true,

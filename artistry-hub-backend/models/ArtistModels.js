@@ -6,7 +6,7 @@ const artistSchema = new mongoose.Schema({
     ref: "UserModel",
     required: true,
   },
-  KnownFormsofArt: {
+  artForm: {
     type: String,
     enum: [
       "Paintind",
@@ -19,7 +19,7 @@ const artistSchema = new mongoose.Schema({
     ],
     required: true,
   },
-  Specialisation: {
+  specialisation: {
     type: [String],
     required: true,
     set: (artform) => {
