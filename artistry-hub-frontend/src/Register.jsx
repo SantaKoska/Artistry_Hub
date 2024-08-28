@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BiUser } from "react-icons/bi";
 import { AiOutlineUnlock } from "react-icons/ai";
+import validator from "validator";
 
 const Register = () => {
   const [role, setRole] = useState("");
@@ -10,7 +11,6 @@ const Register = () => {
     userName: "",
     email: "",
     password: "",
-    role: "",
     artForm: "",
     specialisation: "",
     expertise: "",
@@ -34,6 +34,7 @@ const Register = () => {
     specialisation: "",
     ownerName: "",
     universityAffiliation: "",
+    expertise: "",
   });
 
   //getting data using pincode
@@ -66,17 +67,31 @@ const Register = () => {
   };
 
   //function for validation
-  const validateUsername = (userName) => /^[a-zA-Z\s]+$/.test(userName);
-  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateUsername = (userName) =>
+    validator.isAlpha(userName.replace(/\s/g, ""));
+
+  const validateEmail = (email) => validator.isEmail(email);
+
   const validatePassword = (password) =>
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@!*#$%&?]{8,}$/.test(
-      password
-    );
+    validator.isStrongPassword(password, {
+      minLength: 8,
+      minLowercase: 1,
+      minUppercase: 1,
+      minNumbers: 1,
+      minSymbols: 1,
+    });
+
   const validateSpecialisation = (specialisation) =>
-    /^[a-zA-Z\s]+$/.test(specialisation);
-  const validateOwnerName = (ownerName) => /^[a-zA-Z\s]+$/.test(ownerName);
-  const validateuniversityAffliation = (universityAffiliation) =>
-    /^[a-zA-Z\s]+$/.test(universityAffiliation);
+    validator.isAlpha(specialisation.replace(/\s/g, ""));
+
+  const validateOwnerName = (ownerName) =>
+    validator.isAlpha(ownerName.replace(/\s/g, ""));
+
+  const validateUniversityAffiliation = (universityAffiliation) =>
+    validator.isAlpha(universityAffiliation.replace(/\s/g, ""));
+
+  const validateExpertise = (expertise) =>
+    validator.isAlpha(expertise.replace(/\s/g, ""));
 
   //erro mesg creating and handling changes
   const handleInputChange = (e) => {
@@ -116,6 +131,10 @@ const Register = () => {
         errorMsg = validateuniversityAffliation(value)
           ? ""
           : "university Affiliation should only contain letters and spaces";
+      case "expertise":
+        errorMsg = validationexpertise(value)
+          ? ""
+          : "expertise should only contain letters and spaces";
       default:
         break;
     }
@@ -160,6 +179,54 @@ const Register = () => {
   };
 
   //taking required field according to the role of the user
+  const requiredFields = (role) => {
+    switch (role) {
+      case "Artist":
+        return ["artForm", "specialisation"];
+      case "Viewer/Student":
+        return ["artForm"];
+      case "Institution":
+        return [
+          "universityAffiliation",
+          "registrationID",
+          "location.postalCode",
+          "location.district",
+          "location.state",
+          "location.country",
+        ];
+      case "Service Provider":
+        return [
+          "ownerName",
+          "expertise",
+          "location.address",
+          "location.postalCode",
+          "location.district",
+          "location.state",
+          "location.country",
+        ];
+      default:
+        return [];
+    }
+  };
+
+  //checking if the all firlds are filled and if error is not there
+  const formvalidate = () => {
+    const requiredFieldsArray = [
+      "userName",
+      "email",
+      "password",
+      "role",
+      ...requiredFields(formData.role),
+    ];
+
+    return (
+      requiredFieldsArray.every((field) =>
+        field.includes("location")
+          ? formData.location[field.split(".")[1]]?.trim() !== ""
+          : formData[field]?.trim() !== "" && role?.trim() !== ""
+      ) && Object.values(errors).every((error) => error === "")
+    );
+  };
 
   return (
     <div className=" bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 relative">
@@ -380,7 +447,9 @@ const Register = () => {
                 <input
                   type="text"
                   name="ownerName"
-                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+                  className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
+                    errors.ownerName ? "border-red-500" : "border-emerald-900"
+                  } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
                   placeholder=" "
                   value={formData.ownerName}
                   onChange={handleInputChange}
@@ -391,13 +460,18 @@ const Register = () => {
                 >
                   Owner Name
                 </label>
+                {errors.ownerName && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.ownerName}
+                  </p>
+                )}
               </div>
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
                   name="expertise"
                   className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
-                    errors.ownerName ? "border-red-500" : "border-emerald-900"
+                    errors.expertise ? "border-red-500" : "border-emerald-900"
                   } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
                   placeholder=" "
                   value={formData.expertise}
@@ -409,9 +483,9 @@ const Register = () => {
                 >
                   Expertise
                 </label>
-                {errors.ownerName && (
+                {errors.expertise && (
                   <p className="text-red-500 text-sm mt-1">
-                    {errors.ownerName}
+                    {errors.expertise}
                   </p>
                 )}
               </div>
@@ -610,8 +684,13 @@ const Register = () => {
           )}
 
           <button
-            className="w-full mb-4 text-[18px] font-semibold mt-6 rounded-full bg-white text-black hover:bg-emerald-900 hover:text-white py-2 transition-colors duration-400"
             type="submit"
+            className={`w-full mb-4 text-[18px] font-semibold mt-6 rounded-full py-2 transition-colors duration-400 ${
+              formvalidate()
+                ? "bg-white text-black hover:bg-emerald-900 hover:text-white"
+                : "bg-white text-black opacity-50 cursor-not-allowed"
+            }`}
+            disabled={!formvalidate()}
           >
             Register
           </button>
