@@ -10,6 +10,7 @@ const Register = () => {
     userName: "",
     email: "",
     password: "",
+    role: "",
     artForm: "",
     specialisation: "",
     expertise: "",
@@ -25,7 +26,17 @@ const Register = () => {
     registrationID: "",
   });
 
-  //getting data usin pincode
+  const [errors, setErrors] = useState({
+    userName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    specialisation: "",
+    ownerName: "",
+    universityAffiliation: "",
+  });
+
+  //getting data using pincode
   const fetchLocationData = async (postalCode) => {
     try {
       const response = await axios.get(
@@ -54,9 +65,63 @@ const Register = () => {
     }
   };
 
+  //function for validation
+  const validateUsername = (userName) => /^[a-zA-Z\s]+$/.test(userName);
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validatePassword = (password) =>
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@!*#$%&?]{8,}$/.test(
+      password
+    );
+  const validateSpecialisation = (specialisation) =>
+    /^[a-zA-Z\s]+$/.test(specialisation);
+  const validateOwnerName = (ownerName) => /^[a-zA-Z\s]+$/.test(ownerName);
+  const validateuniversityAffliation = (universityAffiliation) =>
+    /^[a-zA-Z\s]+$/.test(universityAffiliation);
+
+  //erro mesg creating and handling changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    let errorMsg = "";
+
+    switch (name) {
+      case "userName":
+        errorMsg = validateUsername(value)
+          ? ""
+          : "Username should only contain letters and spaces.";
+        break;
+      case "email":
+        errorMsg = validateEmail(value) ? "" : "Invalid email address.";
+        break;
+      case "password":
+        errorMsg = validatePassword(value)
+          ? ""
+          : `Password must have at least 8 characters, 
+             including one uppercase letter, one lowercase letter, 
+             one number, and one special character.`;
+        break;
+      case "confirmPassword":
+        errorMsg = value === formData.password ? "" : "Passwords do not match.";
+        break;
+      case "specialisation":
+        errorMsg = validateSpecialisation(value)
+          ? ""
+          : "Specialisation should only contain letters and spaces.";
+        break;
+      case "ownerName":
+        errorMsg = validateOwnerName(value)
+          ? ""
+          : "Owner name should only contain letters and spaces.";
+        break;
+      case "universityAffiliation":
+        errorMsg = validateuniversityAffliation(value)
+          ? ""
+          : "university Affiliation should only contain letters and spaces";
+      default:
+        break;
+    }
+
     setFormData({ ...formData, [name]: value });
+    setErrors({ ...errors, [name]: errorMsg });
   };
 
   // location input changes
@@ -91,7 +156,10 @@ const Register = () => {
         postalCode: "",
       },
     });
+    setErrors({ ...errors, specialisation: "", ownerName: "" });
   };
+
+  //taking required field according to the role of the user
 
   return (
     <div className=" bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 relative">
@@ -106,7 +174,9 @@ const Register = () => {
             <input
               type="text"
               name="userName"
-              className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+              className={`block w-96 py-2.4 px-0 text-base text-white font-semibold  border-0 border-b-2 ${
+                errors.userName ? "border-red-500" : "border-emerald-900"
+              } bg-transparent appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
               placeholder=" "
               value={formData.userName}
               onChange={handleInputChange}
@@ -118,13 +188,18 @@ const Register = () => {
               User Name
             </label>
             <BiUser className="absolute top-0 right-4 peer-focus:text-yellow-500" />
+            {errors.userName && (
+              <p className="text-red-500 text-sm mt-1">{errors.userName}</p>
+            )}
           </div>
 
           <div className="relative my-4 mb-8">
             <input
               type="email"
               name="email"
-              className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+              className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
+                errors.email ? "border-red-500" : "border-emerald-900"
+              } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
               placeholder=" "
               value={formData.email}
               onChange={handleInputChange}
@@ -136,13 +211,18 @@ const Register = () => {
               Your Email
             </label>
             <BiUser className="absolute top-0 right-4 peer-focus:text-yellow-500" />
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+            )}
           </div>
 
           <div className="relative my-4 mt-8">
             <input
               type="password"
               name="password"
-              className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+              className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
+                errors.password ? "border-red-500" : "border-emerald-900"
+              } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
               placeholder=" "
               value={formData.password}
               onChange={handleInputChange}
@@ -154,13 +234,20 @@ const Register = () => {
               Your Password
             </label>
             <AiOutlineUnlock className="absolute top-0 right-4 peer-focus:text-yellow-500" />
+            {errors.password && (
+              <p className="text-red-500 text-sm mt-1 whitespace-pre-line">
+                {errors.password}
+              </p>
+            )}
           </div>
 
           <div className="relative my-4 mt-8">
             <input
               type="password"
               name="confirmPassword"
-              className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+              className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
+                errors.confirmPassword ? "border-red-500" : "border-emerald-900"
+              } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
               placeholder=" "
               value={formData.confirmPassword}
               onChange={handleInputChange}
@@ -172,6 +259,11 @@ const Register = () => {
               Confirm Your Password
             </label>
             <AiOutlineUnlock className="absolute top-0 right-4 peer-focus:text-yellow-500" />
+            {errors.confirmPassword && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.confirmPassword}
+              </p>
+            )}
           </div>
 
           {/* roles choice code  */}
@@ -228,7 +320,11 @@ const Register = () => {
                 <input
                   type="text"
                   name="specialisation"
-                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+                  className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
+                    errors.specialisation
+                      ? "border-red-500"
+                      : "border-emerald-900"
+                  } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
                   placeholder=" "
                   value={formData.specialisation}
                   onChange={handleInputChange}
@@ -239,6 +335,11 @@ const Register = () => {
                 >
                   What is your specialisation these artform?
                 </label>
+                {errors.specialisation && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.specialisation}
+                  </p>
+                )}
               </div>
             </>
           )}
@@ -295,7 +396,9 @@ const Register = () => {
                 <input
                   type="text"
                   name="expertise"
-                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+                  className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
+                    errors.ownerName ? "border-red-500" : "border-emerald-900"
+                  } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
                   placeholder=" "
                   value={formData.expertise}
                   onChange={handleInputChange}
@@ -306,6 +409,11 @@ const Register = () => {
                 >
                   Expertise
                 </label>
+                {errors.ownerName && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.ownerName}
+                  </p>
+                )}
               </div>
               <div className="relative my-4 mt-8">
                 <input
@@ -397,7 +505,11 @@ const Register = () => {
                 <input
                   type="text"
                   name="universityAffiliation"
-                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+                  className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
+                    errors.universityAffiliation
+                      ? "border-red-500"
+                      : "border-emerald-900"
+                  } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
                   placeholder=" "
                   value={formData.universityAffiliation}
                   onChange={handleInputChange}
@@ -408,6 +520,11 @@ const Register = () => {
                 >
                   University Affiliation (Optional)
                 </label>
+                {errors.universityAffiliation && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.universityAffiliation}
+                  </p>
+                )}
               </div>
               <div className="relative my-4 mt-8">
                 <input
