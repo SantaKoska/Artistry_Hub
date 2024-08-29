@@ -6,24 +6,26 @@ import { AiOutlineUnlock } from "react-icons/ai";
 import validator from "validator";
 
 const Register = () => {
-  const [role, setRole] = useState("");
   const [formData, setFormData] = useState({
     userName: "",
     email: "",
     password: "",
-    artForm: "",
-    specialisation: "",
-    expertise: "",
-    ownerName: "",
-    location: {
-      address: "",
-      district: "",
-      state: "",
-      country: "",
-      postalCode: "",
+    role: "",
+    additionalData: {
+      artForm: "",
+      specialisation: "",
+      expertise: "",
+      ownerName: "",
+      location: {
+        address: "",
+        district: "",
+        state: "",
+        country: "",
+        postalCode: "",
+      },
+      universityAffiliation: "",
+      registrationID: "",
     },
-    universityAffiliation: "",
-    registrationID: "",
   });
 
   const [errors, setErrors] = useState({
@@ -37,7 +39,7 @@ const Register = () => {
     expertise: "",
   });
 
-  //getting data using pincode
+  // Function to fetch location data based on postal code
   const fetchLocationData = async (postalCode) => {
     try {
       const response = await axios.get(
@@ -49,13 +51,16 @@ const Register = () => {
         response.data[0].Status === "Success"
       ) {
         const place = response.data[0].PostOffice[0];
-        setFormData((formData) => ({
-          ...formData,
-          location: {
-            ...formData.location,
-            district: place.District,
-            state: place.State,
-            country: "India",
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          additionalData: {
+            ...prevFormData.additionalData,
+            location: {
+              ...prevFormData.additionalData.location,
+              district: place.District,
+              state: place.State,
+              country: "India",
+            },
           },
         }));
       } else {
@@ -66,7 +71,7 @@ const Register = () => {
     }
   };
 
-  //function for validation
+  // Validation functions
   const validateUsername = (userName) =>
     validator.isAlpha(userName.replace(/\s/g, ""));
 
@@ -93,9 +98,48 @@ const Register = () => {
   const validateExpertise = (expertise) =>
     validator.isAlpha(expertise.replace(/\s/g, ""));
 
-  //erro mesg creating and handling changes
-  const handleInputChange = (e) => {
+  // Handle input changes
+  const handleInputChange = async (e) => {
     const { name, value } = e.target;
+
+    // check if the input field is related to location
+    if (name.startsWith("additionalData.location.")) {
+      const locationField = name.replace("additionalData.location.", "");
+
+      // update location fields in formData
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        additionalData: {
+          ...prevFormData.additionalData,
+          location: {
+            ...prevFormData.additionalData.location,
+            [locationField]: value,
+          },
+        },
+      }));
+
+      // If the postal code is being changed, fetch the corresponding location data
+      if (locationField === "postalCode" && value.length === 6) {
+        await fetchLocationData(value);
+      }
+    } else if (name.startsWith("additionalData.")) {
+      // handle other additionalData fields
+      const fieldName = name.replace("additionalData.", "");
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        additionalData: {
+          ...prevFormData.additionalData,
+          [fieldName]: value,
+        },
+      }));
+    } else {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: value,
+      }));
+    }
+
+    // Perform validation if necessary
     let errorMsg = "";
 
     switch (name) {
@@ -110,9 +154,9 @@ const Register = () => {
       case "password":
         errorMsg = validatePassword(value)
           ? ""
-          : `Password must have at least 8 characters, 
-             including one uppercase letter, one lowercase letter, 
-             one number, and one special character.`;
+          : `Password must have at least 8 characters,
+           including one uppercase letter, one lowercase letter,
+           one number, and one special character.`;
         break;
       case "confirmPassword":
         errorMsg = value === formData.password ? "" : "Passwords do not match.";
@@ -128,88 +172,87 @@ const Register = () => {
           : "Owner name should only contain letters and spaces.";
         break;
       case "universityAffiliation":
-        errorMsg = validateuniversityAffliation(value)
+        errorMsg = validateUniversityAffiliation(value)
           ? ""
-          : "university Affiliation should only contain letters and spaces";
+          : "University Affiliation should only contain letters and spaces.";
+        break;
       case "expertise":
-        errorMsg = validationexpertise(value)
+        errorMsg = validateExpertise(value)
           ? ""
-          : "expertise should only contain letters and spaces";
+          : "Expertise should only contain letters and spaces.";
+        break;
       default:
         break;
     }
 
-    setFormData({ ...formData, [name]: value });
-    setErrors({ ...errors, [name]: errorMsg });
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: errorMsg,
+    }));
   };
 
-  // location input changes
-  const handleLocationChange = (e) => {
-    const { name, value } = e.target;
+  // Handle role change
+  const handleRoleChange = (e) => {
+    const selectedRole = e.target.value;
     setFormData((prevFormData) => ({
       ...prevFormData,
-      location: { ...prevFormData.location, [name]: value },
-    }));
-
-    if (name === "postalCode" && value.length === 6) {
-      fetchLocationData(value);
-    }
-  };
-
-  // for handling the role changes
-  const handleRoleChange = (e) => {
-    setRole(e.target.value);
-    setFormData({
-      ...formData,
-      artForm: "",
-      specialisation: "",
-      expertise: "",
-      ownerName: "",
-      universityAffiliation: "",
-      registrationID: "",
-      location: {
-        address: "",
-        district: "",
-        state: "",
-        country: "",
-        postalCode: "",
+      role: selectedRole,
+      additionalData: {
+        ...prevFormData.additionalData,
+        artForm: "",
+        specialisation: "",
+        expertise: "",
+        ownerName: "",
+        universityAffiliation: "",
+        registrationID: "",
+        location: {
+          address: "",
+          district: "",
+          state: "",
+          country: "",
+          postalCode: "",
+        },
       },
-    });
-    setErrors({ ...errors, specialisation: "", ownerName: "" });
+    }));
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      specialisation: "",
+      ownerName: "",
+    }));
   };
 
-  //taking required field according to the role of the user
+  // Determine required fields based on role
   const requiredFields = (role) => {
     switch (role) {
       case "Artist":
-        return ["artForm", "specialisation"];
+        return ["additionalData.artForm", "additionalData.specialisation"];
       case "Viewer/Student":
-        return ["artForm"];
+        return ["additionalData.artForm"];
       case "Institution":
         return [
-          "universityAffiliation",
-          "registrationID",
-          "location.postalCode",
-          "location.district",
-          "location.state",
-          "location.country",
+          "additionalData.universityAffiliation",
+          "additionalData.registrationID",
+          "additionalData.location.postalCode",
+          "additionalData.location.district",
+          "additionalData.location.state",
+          "additionalData.location.country",
         ];
       case "Service Provider":
         return [
-          "ownerName",
-          "expertise",
-          "location.address",
-          "location.postalCode",
-          "location.district",
-          "location.state",
-          "location.country",
+          "additionalData.ownerName",
+          "additionalData.expertise",
+          "additionalData.location.address",
+          "additionalData.location.postalCode",
+          "additionalData.location.district",
+          "additionalData.location.state",
+          "additionalData.location.country",
         ];
       default:
         return [];
     }
   };
 
-  //checking if the all firlds are filled and if error is not there
+  // Validate form
   const formvalidate = () => {
     const requiredFieldsArray = [
       "userName",
@@ -221,9 +264,10 @@ const Register = () => {
 
     return (
       requiredFieldsArray.every((field) =>
-        field.includes("location")
-          ? formData.location[field.split(".")[1]]?.trim() !== ""
-          : formData[field]?.trim() !== "" && role?.trim() !== ""
+        field.includes("additionalData")
+          ? formData.additionalData.location[field.split(".")[1]]?.trim() !==
+              "" && formData.additionalData[field.split(".")[1]]?.trim() !== ""
+          : formData[field]?.trim() !== "" && formData.role?.trim() !== ""
       ) && Object.values(errors).every((error) => error === "")
     );
   };
@@ -338,7 +382,7 @@ const Register = () => {
           <div className="relative my-4 mt-8">
             <select
               className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
-              value={role}
+              value={formData.role}
               onChange={handleRoleChange}
             >
               <option value="" disabled>
@@ -356,13 +400,13 @@ const Register = () => {
 
           {/* if the role is a Artist */}
 
-          {role === "Artist" && (
+          {formData.role === "Artist" && (
             <>
               <div className="relative my-4 mt-8">
                 <select
-                  name="artForm"
+                  name="additionalData.artForm"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
-                  value={formData.artForm}
+                  value={formData.additionalData.artForm}
                   onChange={handleInputChange}
                 >
                   <option value="" disabled>
@@ -377,7 +421,7 @@ const Register = () => {
                   <option value="Music">Music</option>
                 </select>
                 <label
-                  htmlFor="artForm"
+                  htmlFor="additionalData.artForm"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   Known Art Form
@@ -386,18 +430,18 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="specialisation"
+                  name="additionalData.specialisation"
                   className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
                     errors.specialisation
                       ? "border-red-500"
                       : "border-emerald-900"
                   } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
                   placeholder=" "
-                  value={formData.specialisation}
+                  value={formData.additionalData.specialisation}
                   onChange={handleInputChange}
                 />
                 <label
-                  htmlFor="specialisation"
+                  htmlFor="additionalData.specialisation"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   What is your specialisation these artform?
@@ -412,12 +456,12 @@ const Register = () => {
           )}
 
           {/* if viewer/students is selected */}
-          {role === "Viewer/Student" && (
+          {formData.role === "Viewer/Student" && (
             <div className="relative my-4 mt-8">
               <select
-                name="artForm"
+                name="additionalData.artForm"
                 className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
-                value={formData.artForm}
+                value={formData.additionalData.artForm}
                 onChange={handleInputChange}
               >
                 <option value="" disabled>
@@ -432,7 +476,7 @@ const Register = () => {
                 <option value="Music">Music</option>
               </select>
               <label
-                htmlFor="artForm"
+                htmlFor="additionalData.artForm"
                 className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
               >
                 Favourite Art Form
@@ -441,21 +485,21 @@ const Register = () => {
           )}
 
           {/* if service provider is selected */}
-          {role === "Service Provider" && (
+          {formData.role === "Service Provider" && (
             <>
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="ownerName"
+                  name="additionalData.ownerName"
                   className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
                     errors.ownerName ? "border-red-500" : "border-emerald-900"
                   } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
                   placeholder=" "
-                  value={formData.ownerName}
+                  value={formData.additionalData.ownerName}
                   onChange={handleInputChange}
                 />
                 <label
-                  htmlFor="ownerName"
+                  htmlFor="additionalData.ownerName"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   Owner Name
@@ -469,16 +513,16 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="expertise"
+                  name="additionalData.expertise"
                   className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
                     errors.expertise ? "border-red-500" : "border-emerald-900"
                   } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
                   placeholder=" "
-                  value={formData.expertise}
+                  value={formData.additionalData.expertise}
                   onChange={handleInputChange}
                 />
                 <label
-                  htmlFor="expertise"
+                  htmlFor="additionalData.expertise"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   Expertise
@@ -492,14 +536,14 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="address"
+                  name="additionalData.address"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
-                  value={formData.location.address}
-                  onChange={handleLocationChange}
+                  value={formData.additionalData.location.address}
+                  onChange={handleInputChange}
                 />
                 <label
-                  htmlFor="address"
+                  htmlFor="additionalData.address"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   Address
@@ -508,14 +552,14 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="postalCode"
+                  name="additionalData.location.postalCode"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
-                  value={formData.location.postalCode}
-                  onChange={handleLocationChange}
+                  value={formData.additionalData.location.postalCode}
+                  onChange={handleInputChange}
                 />
                 <label
-                  htmlFor="postalCode"
+                  htmlFor="additionalData.location.postalCode"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   PinCode
@@ -524,14 +568,14 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="district"
+                  name="additionalData.district"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
-                  value={formData.location.district}
+                  value={formData.additionalData.location.district}
                   readOnly
                 />
                 <label
-                  htmlFor="district"
+                  htmlFor="additionalData.district"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   District
@@ -540,14 +584,14 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="state"
+                  name="additionalData.state"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
-                  value={formData.location.state}
+                  value={formData.additionalData.location.state}
                   readOnly
                 />
                 <label
-                  htmlFor="state"
+                  htmlFor="additionalData.state"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   State
@@ -556,14 +600,14 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="country"
+                  name="additionalData.country"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
-                  value={formData.location.country}
+                  value={formData.additionalData.location.country}
                   readOnly
                 />
                 <label
-                  htmlFor="country"
+                  htmlFor="additionalData.country"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   Country
@@ -573,23 +617,23 @@ const Register = () => {
           )}
 
           {/* if selected Institution */}
-          {role === "Institution" && (
+          {formData.role === "Institution" && (
             <>
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="universityAffiliation"
+                  name="additionalData.universityAffiliation"
                   className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
                     errors.universityAffiliation
                       ? "border-red-500"
                       : "border-emerald-900"
                   } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
                   placeholder=" "
-                  value={formData.universityAffiliation}
+                  value={formData.additionalData.universityAffiliation}
                   onChange={handleInputChange}
                 />
                 <label
-                  htmlFor="universityAffiliation"
+                  htmlFor="additionalData.universityAffiliation"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   University Affiliation (Optional)
@@ -603,14 +647,14 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="registrationID"
+                  name="additionalData.registrationID"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
-                  value={formData.registrationID}
+                  value={formData.additionalData.registrationID}
                   onChange={handleInputChange}
                 />
                 <label
-                  htmlFor="registrationID"
+                  htmlFor="additionalData.registrationID"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   Registration ID
@@ -619,14 +663,14 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="postalCode"
+                  name="additionalData.postalCode"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
-                  value={formData.location.postalCode}
-                  onChange={handleLocationChange}
+                  value={formData.additionalData.location.postalCode}
+                  onChange={handleInputChange}
                 />
                 <label
-                  htmlFor="postalcode"
+                  htmlFor="additionalData.postalcode"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   PinCode
@@ -635,14 +679,14 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="district"
+                  name="additionalData.district"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
-                  value={formData.location.district}
-                  onChange={handleLocationChange}
+                  value={formData.additionalData.location.district}
+                  onChange={handleInputChange}
                 />
                 <label
-                  htmlFor="district"
+                  htmlFor="additionalData.district"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   district
@@ -651,14 +695,14 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="state"
+                  name="additionalData.state"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
-                  value={formData.location.state}
-                  onChange={handleLocationChange}
+                  value={formData.additionalData.location.state}
+                  onChange={handleInputChange}
                 />
                 <label
-                  htmlFor="state"
+                  htmlFor="additionalData.state"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   State
@@ -667,14 +711,14 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="country"
+                  name="additionalData.country"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
-                  value={formData.location.country}
-                  onChange={handleLocationChange}
+                  value={formData.additionalData.location.country}
+                  onChange={handleInputChange}
                 />
                 <label
-                  htmlFor="country"
+                  htmlFor="additionalData.country"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   Country

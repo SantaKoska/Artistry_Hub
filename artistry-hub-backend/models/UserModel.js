@@ -19,7 +19,7 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    userType: {
+    role: {
       type: String,
       enum: ["Artist", "Viewer/Student", "Institution", "Service Provider"],
       required: true,

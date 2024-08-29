@@ -11,9 +11,9 @@ function App() {
     <>
       <div
         className="text-white flex justify-center items-center bg-cover bg-center h-screen"
-        style={{
-          backgroundImage: `url(${backgroundImage})`,
-        }}
+        // style={{
+        //   backgroundImage: `url(${backgroundImage})`,
+        // }}
       >
         {/* Routes */}
         <Routes>

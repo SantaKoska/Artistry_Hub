@@ -14,8 +14,8 @@ router.post("/register", async (req, res) => {
   //This is the function that handle the register user logic
 
   //Get the details from the req.body
-  const { userName, email, password, userType, additionalData } = req.body;
-  if (!userName || !email || !password || !userType) {
+  const { userName, email, password, role, additionalData } = req.body;
+  if (!userName || !email || !password || !role) {
     return res.status(400).json({ err: "Invalid request body" });
   }
 
@@ -53,13 +53,13 @@ router.post("/register", async (req, res) => {
     userName,
     email,
     password: hashedPassword,
-    userType,
+    role,
   };
   const newUser = await User.create(newUserDetails);
 
-  //we gonna check which usertype the user choose and accordingly add data regarding to that corresponfing model
+  //we gonna check which role the user choose and accordingly add data regarding to that corresponfing model
   try {
-    switch (userType) {
+    switch (role) {
       case "Artist":
         await Artist.create({ userId: newUser._id, ...additionalData });
         break;
