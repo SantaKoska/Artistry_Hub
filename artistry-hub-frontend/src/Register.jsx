@@ -1,11 +1,13 @@
 import axios from "axios";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { BiUser } from "react-icons/bi";
 import { AiOutlineUnlock } from "react-icons/ai";
 import validator from "validator";
+import registerUser from "./api";
 
 const Register = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     userName: "",
     email: "",
@@ -102,93 +104,108 @@ const Register = () => {
   const handleInputChange = async (e) => {
     const { name, value } = e.target;
 
-    // check if the input field is related to location
-    if (name.startsWith("additionalData.location.")) {
-      const locationField = name.replace("additionalData.location.", "");
-
-      // update location fields in formData
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        additionalData: {
-          ...prevFormData.additionalData,
-          location: {
-            ...prevFormData.additionalData.location,
-            [locationField]: value,
-          },
-        },
-      }));
-
-      // If the postal code is being changed, fetch the corresponding location data
-      if (locationField === "postalCode" && value.length === 6) {
-        await fetchLocationData(value);
-      }
-    } else if (name.startsWith("additionalData.")) {
-      // handle other additionalData fields
+    //for correctly altering the error beacuse of the adding of the
+    //additionalData so that location and additional data firlds errror can be handled
+    if (name.startsWith("additionalData.")) {
       const fieldName = name.replace("additionalData.", "");
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        additionalData: {
-          ...prevFormData.additionalData,
-          [fieldName]: value,
-        },
+
+      if (fieldName.startsWith("location.")) {
+        const locationField = fieldName.replace("location.", "");
+
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          additionalData: {
+            ...prevFormData.additionalData,
+            location: {
+              ...prevFormData.additionalData.location,
+              [locationField]: value,
+            },
+          },
+        }));
+
+        //checking the location pincode field id=s filled and if it reaches
+        //the condition the api calling and assigning function will  be activated
+        if (locationField === "postalCode" && value.length === 6) {
+          await fetchLocationData(value);
+        }
+      } else {
+        // if the data is not part of the location then the formData will update
+        // the data as a part of additional data field
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          additionalData: {
+            ...prevFormData.additionalData,
+            [fieldName]: value,
+          },
+        }));
+      }
+
+      let errorMsg = "";
+      switch (fieldName) {
+        case "specialisation":
+          errorMsg = validateSpecialisation(value)
+            ? ""
+            : "Specialisation should only contain letters and spaces.";
+          break;
+        case "ownerName":
+          errorMsg = validateOwnerName(value)
+            ? ""
+            : "Owner name should only contain letters and spaces.";
+          break;
+        case "universityAffiliation":
+          errorMsg = validateUniversityAffiliation(value)
+            ? ""
+            : "University Affiliation should only contain letters and spaces.";
+          break;
+        case "expertise":
+          errorMsg = validateExpertise(value)
+            ? ""
+            : "Expertise should only contain letters and spaces.";
+          break;
+        default:
+          break;
+      }
+
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [`additionalData.${fieldName}`]: errorMsg,
       }));
     } else {
       setFormData((prevFormData) => ({
         ...prevFormData,
         [name]: value,
       }));
-    }
-
-    // Perform validation if necessary
-    let errorMsg = "";
-
-    switch (name) {
-      case "userName":
-        errorMsg = validateUsername(value)
-          ? ""
-          : "Username should only contain letters and spaces.";
-        break;
-      case "email":
-        errorMsg = validateEmail(value) ? "" : "Invalid email address.";
-        break;
-      case "password":
-        errorMsg = validatePassword(value)
-          ? ""
-          : `Password must have at least 8 characters,
+      // Perform validation if necessary
+      let errorMsg = "";
+      switch (name) {
+        case "userName":
+          errorMsg = validateUsername(value)
+            ? ""
+            : "Username should only contain letters and spaces.";
+          break;
+        case "email":
+          errorMsg = validateEmail(value) ? "" : "Invalid email address.";
+          break;
+        case "password":
+          errorMsg = validatePassword(value)
+            ? ""
+            : `Password must have at least 8 characters,
            including one uppercase letter, one lowercase letter,
            one number, and one special character.`;
-        break;
-      case "confirmPassword":
-        errorMsg = value === formData.password ? "" : "Passwords do not match.";
-        break;
-      case "specialisation":
-        errorMsg = validateSpecialisation(value)
-          ? ""
-          : "Specialisation should only contain letters and spaces.";
-        break;
-      case "ownerName":
-        errorMsg = validateOwnerName(value)
-          ? ""
-          : "Owner name should only contain letters and spaces.";
-        break;
-      case "universityAffiliation":
-        errorMsg = validateUniversityAffiliation(value)
-          ? ""
-          : "University Affiliation should only contain letters and spaces.";
-        break;
-      case "expertise":
-        errorMsg = validateExpertise(value)
-          ? ""
-          : "Expertise should only contain letters and spaces.";
-        break;
-      default:
-        break;
-    }
+          break;
+        case "confirmPassword":
+          errorMsg =
+            value === formData.password ? "" : "Passwords do not match.";
+          break;
+        default:
+          break;
+      }
 
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: errorMsg,
-    }));
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [name]: errorMsg,
+      }));
+    }
   };
 
   // Handle role change
@@ -272,6 +289,15 @@ const Register = () => {
     );
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await registerUser(formData, navigate);
+    } catch (err) {
+      setErrors(err.message);
+    }
+  };
+
   return (
     <div className=" bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 relative">
       <div>
@@ -280,7 +306,7 @@ const Register = () => {
         </h1>
 
         {/* form starting username , password , confirm password and email */}
-        <form action="">
+        <form onSubmit={handleSubmit}>
           <div className="relative my-4 mb-8">
             <input
               type="text"
@@ -432,7 +458,7 @@ const Register = () => {
                   type="text"
                   name="additionalData.specialisation"
                   className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
-                    errors.specialisation
+                    errors["additionalData.specialisation"]
                       ? "border-red-500"
                       : "border-emerald-900"
                   } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
@@ -444,11 +470,11 @@ const Register = () => {
                   htmlFor="additionalData.specialisation"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
-                  What is your specialisation these artform?
+                  Specialisation
                 </label>
-                {errors.specialisation && (
+                {errors["additionalData.specialisation"] && (
                   <p className="text-red-500 text-sm mt-1">
-                    {errors.specialisation}
+                    {errors["additionalData.specialisation"]}
                   </p>
                 )}
               </div>
@@ -492,7 +518,9 @@ const Register = () => {
                   type="text"
                   name="additionalData.ownerName"
                   className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
-                    errors.ownerName ? "border-red-500" : "border-emerald-900"
+                    errors["additionalData.ownerName"]
+                      ? "border-red-500"
+                      : "border-emerald-900"
                   } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
                   placeholder=" "
                   value={formData.additionalData.ownerName}
@@ -504,9 +532,9 @@ const Register = () => {
                 >
                   Owner Name
                 </label>
-                {errors.ownerName && (
+                {errors["additionalData.ownerName"] && (
                   <p className="text-red-500 text-sm mt-1">
-                    {errors.ownerName}
+                    {errors["additionalData.ownerName"]}
                   </p>
                 )}
               </div>
@@ -515,7 +543,9 @@ const Register = () => {
                   type="text"
                   name="additionalData.expertise"
                   className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
-                    errors.expertise ? "border-red-500" : "border-emerald-900"
+                    errors["additionalData.expertise"]
+                      ? "border-red-500"
+                      : "border-emerald-900"
                   } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
                   placeholder=" "
                   value={formData.additionalData.expertise}
@@ -527,23 +557,23 @@ const Register = () => {
                 >
                   Expertise
                 </label>
-                {errors.expertise && (
+                {errors["additionalData.expertise"] && (
                   <p className="text-red-500 text-sm mt-1">
-                    {errors.expertise}
+                    {errors["additionalData.expertise"]}
                   </p>
                 )}
               </div>
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="additionalData.address"
+                  name="additionalData.location.address"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
                   value={formData.additionalData.location.address}
                   onChange={handleInputChange}
                 />
                 <label
-                  htmlFor="additionalData.address"
+                  htmlFor="additionalData.location.address"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   Address
@@ -624,7 +654,7 @@ const Register = () => {
                   type="text"
                   name="additionalData.universityAffiliation"
                   className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
-                    errors.universityAffiliation
+                    errors["additionalData.universityAffiliation"]
                       ? "border-red-500"
                       : "border-emerald-900"
                   } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
@@ -638,9 +668,9 @@ const Register = () => {
                 >
                   University Affiliation (Optional)
                 </label>
-                {errors.universityAffiliation && (
+                {errors["additionalData.universityAffiliation"] && (
                   <p className="text-red-500 text-sm mt-1">
-                    {errors.universityAffiliation}
+                    {errors["additionalData.universityAffiliation"]}
                   </p>
                 )}
               </div>

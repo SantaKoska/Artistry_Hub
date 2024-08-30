@@ -11,15 +11,14 @@ const { getToken } = require("../utils/helper");
 const router = express.Router();
 
 router.post("/register", async (req, res) => {
-  //This is the function that handle the register user logic
-
-  //Get the details from the req.body
+  // Get the details from the req.body
   const { userName, email, password, role, additionalData } = req.body;
+
   if (!userName || !email || !password || !role) {
     return res.status(400).json({ err: "Invalid request body" });
   }
 
-  //password and email validation
+  // Password and email validation
   if (
     !validator.isStrongPassword(password, {
       minLength: 8,
@@ -33,21 +32,21 @@ router.post("/register", async (req, res) => {
       err: `Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.`,
     });
   }
-  //email validation
+
+  // Email validation
   if (!validator.isEmail(email)) {
     return res.status(400).json({ err: "Invalid Email format" });
   }
 
-  //We will check if a user with that email already exists
+  // Check if a user with that email already exists
   const existingUser = await User.findOne({ email: email });
   if (existingUser) {
     return res
       .status(402)
-      .json({ err: "A user with the same email id already exicts" });
+      .json({ err: "A user with the same email id already exists" });
   }
 
-  //if this is a correct user we will create a user
-  //this gonna encrypt the password given by the user that gonna store in the db
+  // Encrypt the password
   const hashedPassword = await bcrypt.hash(password, 10);
   const newUserDetails = {
     userName,
@@ -55,10 +54,13 @@ router.post("/register", async (req, res) => {
     password: hashedPassword,
     role,
   };
-  const newUser = await User.create(newUserDetails);
 
-  //we gonna check which role the user choose and accordingly add data regarding to that corresponfing model
+  let newUser;
+
   try {
+    newUser = await User.create(newUserDetails);
+
+    // Add user details based on role
     switch (role) {
       case "Artist":
         await Artist.create({ userId: newUser._id, ...additionalData });
@@ -76,15 +78,18 @@ router.post("/register", async (req, res) => {
         });
         break;
       default:
-        throw new Error("Invalid user type");
+        throw new Error("Invalid role");
     }
   } catch (err) {
-    if (err) {
+    // this line of code is used for debugging porpose
+    console.error("Error creating user details:", err);
+    if (newUser) {
       await User.findByIdAndDelete(newUser._id);
-      res.status(400).json({ err: "Failed to create user details" });
     }
+    return res.status(400).json({ err: "Failed to create user details" });
   }
-  //i can use the newuser to create a JWT and return the token to the user
+
+  // Generate a token and return the user details
   const token = await getToken(email, newUser);
   const userToReturn = { ...newUser.toJSON(), token };
   delete userToReturn.password;

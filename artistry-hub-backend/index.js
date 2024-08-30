@@ -5,11 +5,20 @@ const JwtStrategy = require("passport-jwt").Strategy;
 const mongoose = require("mongoose");
 const authRoutes = require("./routes/auth");
 const User = require("./models/UserModel");
+const cors = require("cors");
 
 //for env
 require("dotenv").config();
 
 const app = express();
+
+//for CORS
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  })
+);
+
 app.use(express.json());
 
 //to connect to mongodb
@@ -34,20 +43,19 @@ opts.secretOrKey = "thisisasecretKey";
 passport.use(
   new JwtStrategy(opts, async function (jwt_payload, done) {
     try {
-      const user = await User.findOne({ _id: jwt_payload.identifier })
-        if (user) {
-          done(null, user);
-        } else {
-          done(null, false);
-        }
-    }catch(err) {
+      const user = await User.findOne({ _id: jwt_payload.identifier });
+      if (user) {
+        done(null, user);
+      } else {
+        done(null, false);
+      }
+    } catch (err) {
       if (err) {
         done(err, false);
       }
     }
   })
 );
-
 
 //default route
 app.get("/", (req, res) => {
