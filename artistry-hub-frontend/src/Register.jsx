@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { BiUser } from "react-icons/bi";
 import { AiOutlineUnlock } from "react-icons/ai";
@@ -16,6 +16,8 @@ const Register = () => {
     additionalData: {
       artForm: "",
       specialisation: "",
+      universityAffiliation: "",
+      registrationID: "",
       expertise: "",
       ownerName: "",
       location: {
@@ -25,8 +27,6 @@ const Register = () => {
         country: "",
         postalCode: "",
       },
-      universityAffiliation: "",
-      registrationID: "",
     },
   });
 
@@ -238,59 +238,20 @@ const Register = () => {
     }));
   };
 
-  // Determine required fields based on role
-  const requiredFields = (role) => {
-    switch (role) {
-      case "Artist":
-        return ["additionalData.artForm", "additionalData.specialisation"];
-      case "Viewer/Student":
-        return ["additionalData.artForm"];
-      case "Institution":
-        return [
-          "additionalData.universityAffiliation",
-          "additionalData.registrationID",
-          "additionalData.location.postalCode",
-          "additionalData.location.district",
-          "additionalData.location.state",
-          "additionalData.location.country",
-        ];
-      case "Service Provider":
-        return [
-          "additionalData.ownerName",
-          "additionalData.expertise",
-          "additionalData.location.address",
-          "additionalData.location.postalCode",
-          "additionalData.location.district",
-          "additionalData.location.state",
-          "additionalData.location.country",
-        ];
-      default:
-        return [];
-    }
-  };
-
-  // Validate form
-  const formvalidate = () => {
-    const requiredFieldsArray = [
-      "userName",
-      "email",
-      "password",
-      "role",
-      ...requiredFields(formData.role),
-    ];
-
-    return (
-      requiredFieldsArray.every((field) =>
-        field.includes("additionalData")
-          ? formData.additionalData.location[field.split(".")[1]]?.trim() !==
-              "" && formData.additionalData[field.split(".")[1]]?.trim() !== ""
-          : formData[field]?.trim() !== "" && formData.role?.trim() !== ""
-      ) && Object.values(errors).every((error) => error === "")
+  // Determine required fields
+  useEffect(() => {
+    const requiredFieldsFilled = requiredFields.every(
+      (field) => formData[field].trim() !== ""
     );
-  };
+    const noErrors = Object.values(errors).every((error) => error === "");
+
+    setIsFormValid(requiredFieldsFilled && noErrors);
+  }, [formData, errors]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // for debugging we gona use the below line
+    // console.log("form data on submit", formData);
     try {
       await registerUser(formData, navigate);
     } catch (err) {
@@ -315,8 +276,9 @@ const Register = () => {
                 errors.userName ? "border-red-500" : "border-emerald-900"
               } bg-transparent appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
               placeholder=" "
-              value={formData.userName}
+              value={formData.userName || ""}
               onChange={handleInputChange}
+              required
             />
             <label
               htmlFor="userName"
@@ -338,8 +300,9 @@ const Register = () => {
                 errors.email ? "border-red-500" : "border-emerald-900"
               } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
               placeholder=" "
-              value={formData.email}
+              value={formData.email || ""}
               onChange={handleInputChange}
+              required
             />
             <label
               htmlFor="email"
@@ -361,8 +324,9 @@ const Register = () => {
                 errors.password ? "border-red-500" : "border-emerald-900"
               } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
               placeholder=" "
-              value={formData.password}
+              value={formData.password || ""}
               onChange={handleInputChange}
+              required
             />
             <label
               htmlFor="password"
@@ -386,8 +350,9 @@ const Register = () => {
                 errors.confirmPassword ? "border-red-500" : "border-emerald-900"
               } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
               placeholder=" "
-              value={formData.confirmPassword}
+              value={formData.confirmPassword || ""}
               onChange={handleInputChange}
+              required
             />
             <label
               htmlFor="confirmPassword"
@@ -408,8 +373,9 @@ const Register = () => {
           <div className="relative my-4 mt-8">
             <select
               className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
-              value={formData.role}
+              value={formData.role || ""}
               onChange={handleRoleChange}
+              required
             >
               <option value="" disabled>
                 Select your role
@@ -432,8 +398,9 @@ const Register = () => {
                 <select
                   name="additionalData.artForm"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
-                  value={formData.additionalData.artForm}
+                  value={formData.additionalData.artForm || ""}
                   onChange={handleInputChange}
+                  required
                 >
                   <option value="" disabled>
                     Select your artform
@@ -463,8 +430,9 @@ const Register = () => {
                       : "border-emerald-900"
                   } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
                   placeholder=" "
-                  value={formData.additionalData.specialisation}
+                  value={formData.additionalData.specialisation || ""}
                   onChange={handleInputChange}
+                  required
                 />
                 <label
                   htmlFor="additionalData.specialisation"
@@ -487,8 +455,9 @@ const Register = () => {
               <select
                 name="additionalData.artForm"
                 className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
-                value={formData.additionalData.artForm}
+                value={formData.additionalData.artForm || ""}
                 onChange={handleInputChange}
+                required
               >
                 <option value="" disabled>
                   Select your artform
@@ -523,8 +492,9 @@ const Register = () => {
                       : "border-emerald-900"
                   } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
                   placeholder=" "
-                  value={formData.additionalData.ownerName}
+                  value={formData.additionalData.ownerName || ""}
                   onChange={handleInputChange}
+                  required
                 />
                 <label
                   htmlFor="additionalData.ownerName"
@@ -548,8 +518,9 @@ const Register = () => {
                       : "border-emerald-900"
                   } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
                   placeholder=" "
-                  value={formData.additionalData.expertise}
+                  value={formData.additionalData.expertise || ""}
                   onChange={handleInputChange}
+                  required
                 />
                 <label
                   htmlFor="additionalData.expertise"
@@ -569,8 +540,9 @@ const Register = () => {
                   name="additionalData.location.address"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
-                  value={formData.additionalData.location.address}
+                  value={formData.additionalData.location.address || ""}
                   onChange={handleInputChange}
+                  required
                 />
                 <label
                   htmlFor="additionalData.location.address"
@@ -585,8 +557,9 @@ const Register = () => {
                   name="additionalData.location.postalCode"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
-                  value={formData.additionalData.location.postalCode}
+                  value={formData.additionalData.location.postalCode || ""}
                   onChange={handleInputChange}
+                  required
                 />
                 <label
                   htmlFor="additionalData.location.postalCode"
@@ -598,14 +571,14 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="additionalData.district"
+                  name="additionalData.location.district"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
-                  value={formData.additionalData.location.district}
+                  value={formData.additionalData.location.district || ""}
                   readOnly
                 />
                 <label
-                  htmlFor="additionalData.district"
+                  htmlFor="additionalData.location.district"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   District
@@ -614,14 +587,14 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="additionalData.state"
+                  name="additionalData.location.state"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
-                  value={formData.additionalData.location.state}
+                  value={formData.additionalData.location.state || ""}
                   readOnly
                 />
                 <label
-                  htmlFor="additionalData.state"
+                  htmlFor="additionalData.location.state"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   State
@@ -630,14 +603,14 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="additionalData.country"
+                  name="additionalData.location.country"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
-                  value={formData.additionalData.location.country}
+                  value={formData.additionalData.location.country || ""}
                   readOnly
                 />
                 <label
-                  htmlFor="additionalData.country"
+                  htmlFor="additionalData.location.country"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   Country
@@ -659,7 +632,7 @@ const Register = () => {
                       : "border-emerald-900"
                   } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
                   placeholder=" "
-                  value={formData.additionalData.universityAffiliation}
+                  value={formData.additionalData.universityAffiliation || ""}
                   onChange={handleInputChange}
                 />
                 <label
@@ -680,8 +653,9 @@ const Register = () => {
                   name="additionalData.registrationID"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
-                  value={formData.additionalData.registrationID}
+                  value={formData.additionalData.registrationID || ""}
                   onChange={handleInputChange}
+                  required
                 />
                 <label
                   htmlFor="additionalData.registrationID"
@@ -693,14 +667,15 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="additionalData.postalCode"
+                  name="additionalData.location.postalCode"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
-                  value={formData.additionalData.location.postalCode}
+                  value={formData.additionalData.location.postalCode || ""}
                   onChange={handleInputChange}
+                  required
                 />
                 <label
-                  htmlFor="additionalData.postalcode"
+                  htmlFor="additionalData.location.postalcode"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   PinCode
@@ -709,14 +684,15 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="additionalData.district"
+                  name="additionalData.location.district"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
-                  value={formData.additionalData.location.district}
+                  value={formData.additionalData.location.district || ""}
                   onChange={handleInputChange}
+                  readOnly
                 />
                 <label
-                  htmlFor="additionalData.district"
+                  htmlFor="additionalData.location.district"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   district
@@ -725,14 +701,15 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="additionalData.state"
+                  name="additionalData.location.state"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
-                  value={formData.additionalData.location.state}
+                  value={formData.additionalData.location.state || ""}
                   onChange={handleInputChange}
+                  readOnly
                 />
                 <label
-                  htmlFor="additionalData.state"
+                  htmlFor="additionalData.location.state"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   State
@@ -741,14 +718,15 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="additionalData.country"
+                  name="additionalData.location.country"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   placeholder=" "
-                  value={formData.additionalData.location.country}
+                  value={formData.additionalData.location.country || ""}
                   onChange={handleInputChange}
+                  readOnly
                 />
                 <label
-                  htmlFor="additionalData.country"
+                  htmlFor="additionalData.location.country"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
                   Country
@@ -760,11 +738,11 @@ const Register = () => {
           <button
             type="submit"
             className={`w-full mb-4 text-[18px] font-semibold mt-6 rounded-full py-2 transition-colors duration-400 ${
-              formvalidate()
+              IsFormValid()
                 ? "bg-white text-black hover:bg-emerald-900 hover:text-white"
                 : "bg-white text-black opacity-50 cursor-not-allowed"
             }`}
-            disabled={!formvalidate()}
+            disabled={!isFormValid}
           >
             Register
           </button>

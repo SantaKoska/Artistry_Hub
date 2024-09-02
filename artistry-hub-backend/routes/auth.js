@@ -42,7 +42,7 @@ router.post("/register", async (req, res) => {
   const existingUser = await User.findOne({ email: email });
   if (existingUser) {
     return res
-      .status(402)
+      .status(400)
       .json({ err: "A user with the same email id already exists" });
   }
 
@@ -114,7 +114,7 @@ router.post("/login", async (req, res) => {
   //can't verify directly encryption
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
-    return res.status(401).json({ err: "Invalid username or password" });
+    return res.status(400).json({ err: "Invalid username or password" });
   }
 
   //generate token fro this user
