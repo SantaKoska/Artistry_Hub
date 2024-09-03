@@ -6,7 +6,7 @@ const InstitutionSchema = new mongoose.Schema({
     ref: "UserModel",
     required: true,
   },
-  universityAffiliation: {
+  registeredUnder: {
     type: String,
     trim: true,
   },

@@ -1,10 +1,10 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { BiUser } from "react-icons/bi";
 import { AiOutlineUnlock } from "react-icons/ai";
 import validator from "validator";
-import registerUser from "./api";
+import registerUser from "./api/registerapi";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ const Register = () => {
     additionalData: {
       artForm: "",
       specialisation: "",
-      universityAffiliation: "",
+      registeredUnder: "",
       registrationID: "",
       expertise: "",
       ownerName: "",
@@ -37,7 +37,7 @@ const Register = () => {
     confirmPassword: "",
     specialisation: "",
     ownerName: "",
-    universityAffiliation: "",
+    registeredUnder: "",
     expertise: "",
   });
 
@@ -94,8 +94,8 @@ const Register = () => {
   const validateOwnerName = (ownerName) =>
     validator.isAlpha(ownerName.replace(/\s/g, ""));
 
-  const validateUniversityAffiliation = (universityAffiliation) =>
-    validator.isAlpha(universityAffiliation.replace(/\s/g, ""));
+  const validateregisteredUnder = (registeredUnder) =>
+    validator.isAlpha(registeredUnder.replace(/\s/g, ""));
 
   const validateExpertise = (expertise) =>
     validator.isAlpha(expertise.replace(/\s/g, ""));
@@ -152,8 +152,8 @@ const Register = () => {
             ? ""
             : "Owner name should only contain letters and spaces.";
           break;
-        case "universityAffiliation":
-          errorMsg = validateUniversityAffiliation(value)
+        case "registeredUnder":
+          errorMsg = validateregisteredUnder(value)
             ? ""
             : "University Affiliation should only contain letters and spaces.";
           break;
@@ -220,7 +220,7 @@ const Register = () => {
         specialisation: "",
         expertise: "",
         ownerName: "",
-        universityAffiliation: "",
+        registeredUnder: "",
         registrationID: "",
         location: {
           address: "",
@@ -238,20 +238,69 @@ const Register = () => {
     }));
   };
 
-  // Determine required fields
-  useEffect(() => {
-    const requiredFieldsFilled = requiredFields.every(
-      (field) => formData[field].trim() !== ""
-    );
-    const noErrors = Object.values(errors).every((error) => error === "");
+  // Determine required fields based on role
+  const requiredFields = (role) => {
+    switch (role) {
+      case "Artist":
+        return ["additionalData.artForm", "additionalData.specialisation"];
+      case "Viewer/Student":
+        return ["additionalData.artForm"];
+      case "Institution":
+        return [
+          "additionalData.registeredUnder",
+          "additionalData.registrationID",
+          "additionalData.location.postalCode",
+          "additionalData.location.district",
+          "additionalData.location.state",
+          "additionalData.location.country",
+        ];
+      case "Service Provider":
+        return [
+          "additionalData.ownerName",
+          "additionalData.expertise",
+          "additionalData.location.address",
+          "additionalData.location.postalCode",
+          "additionalData.location.district",
+          "additionalData.location.state",
+          "additionalData.location.country",
+        ];
+      default:
+        return [];
+    }
+  };
 
-    setIsFormValid(requiredFieldsFilled && noErrors);
-  }, [formData, errors]);
+  // Validate form
+  const formvalidate = () => {
+    const requiredFieldsArray = [
+      "userName",
+      "email",
+      "password",
+      "role",
+      ...requiredFields(formData.role),
+    ];
+
+    return (
+      requiredFieldsArray.every((field) => {
+        if (field.includes("additionalData")) {
+          const keys = field.split(".");
+          let value = formData;
+
+          keys.forEach((key) => {
+            value = value?.[key];
+          });
+
+          return String(value)?.trim() !== "";
+        } else {
+          return String(formData[field])?.trim() !== "";
+        }
+      }) && Object.values(errors).every((error) => error === "")
+    );
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     // for debugging we gona use the below line
-    // console.log("form data on submit", formData);
+    //console.log("form data on submit", formData);
     try {
       await registerUser(formData, navigate);
     } catch (err) {
@@ -278,7 +327,6 @@ const Register = () => {
               placeholder=" "
               value={formData.userName || ""}
               onChange={handleInputChange}
-              required
             />
             <label
               htmlFor="userName"
@@ -302,7 +350,6 @@ const Register = () => {
               placeholder=" "
               value={formData.email || ""}
               onChange={handleInputChange}
-              required
             />
             <label
               htmlFor="email"
@@ -326,7 +373,6 @@ const Register = () => {
               placeholder=" "
               value={formData.password || ""}
               onChange={handleInputChange}
-              required
             />
             <label
               htmlFor="password"
@@ -352,7 +398,6 @@ const Register = () => {
               placeholder=" "
               value={formData.confirmPassword || ""}
               onChange={handleInputChange}
-              required
             />
             <label
               htmlFor="confirmPassword"
@@ -375,7 +420,6 @@ const Register = () => {
               className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
               value={formData.role || ""}
               onChange={handleRoleChange}
-              required
             >
               <option value="" disabled>
                 Select your role
@@ -400,7 +444,6 @@ const Register = () => {
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   value={formData.additionalData.artForm || ""}
                   onChange={handleInputChange}
-                  required
                 >
                   <option value="" disabled>
                     Select your artform
@@ -432,7 +475,6 @@ const Register = () => {
                   placeholder=" "
                   value={formData.additionalData.specialisation || ""}
                   onChange={handleInputChange}
-                  required
                 />
                 <label
                   htmlFor="additionalData.specialisation"
@@ -457,7 +499,6 @@ const Register = () => {
                 className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                 value={formData.additionalData.artForm || ""}
                 onChange={handleInputChange}
-                required
               >
                 <option value="" disabled>
                   Select your artform
@@ -484,7 +525,6 @@ const Register = () => {
             <>
               <div className="relative my-4 mt-8">
                 <input
-                  type="text"
                   name="additionalData.ownerName"
                   className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
                     errors["additionalData.ownerName"]
@@ -494,7 +534,6 @@ const Register = () => {
                   placeholder=" "
                   value={formData.additionalData.ownerName || ""}
                   onChange={handleInputChange}
-                  required
                 />
                 <label
                   htmlFor="additionalData.ownerName"
@@ -509,19 +548,23 @@ const Register = () => {
                 )}
               </div>
               <div className="relative my-4 mt-8">
-                <input
-                  type="text"
+                <select
                   name="additionalData.expertise"
-                  className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
-                    errors["additionalData.expertise"]
-                      ? "border-red-500"
-                      : "border-emerald-900"
-                  } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
-                  placeholder=" "
+                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   value={formData.additionalData.expertise || ""}
                   onChange={handleInputChange}
-                  required
-                />
+                >
+                  <option value="" disabled>
+                    Select your artform
+                  </option>
+                  <option value="Painting">Painting</option>
+                  <option value="Sculpturet">Sculpture</option>
+                  <option value="Architecture">Architecture</option>
+                  <option value="Literature">Literature</option>
+                  <option value="Cinema">Cinema</option>
+                  <option value="Theater">Theater</option>
+                  <option value="Music">Music</option>
+                </select>
                 <label
                   htmlFor="additionalData.expertise"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
@@ -542,7 +585,6 @@ const Register = () => {
                   placeholder=" "
                   value={formData.additionalData.location.address || ""}
                   onChange={handleInputChange}
-                  required
                 />
                 <label
                   htmlFor="additionalData.location.address"
@@ -559,7 +601,6 @@ const Register = () => {
                   placeholder=" "
                   value={formData.additionalData.location.postalCode || ""}
                   onChange={handleInputChange}
-                  required
                 />
                 <label
                   htmlFor="additionalData.location.postalCode"
@@ -625,25 +666,25 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <input
                   type="text"
-                  name="additionalData.universityAffiliation"
+                  name="additionalData.registeredUnder"
                   className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
-                    errors["additionalData.universityAffiliation"]
+                    errors["additionalData.registeredUnder"]
                       ? "border-red-500"
                       : "border-emerald-900"
                   } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
                   placeholder=" "
-                  value={formData.additionalData.universityAffiliation || ""}
+                  value={formData.additionalData.registeredUnder || ""}
                   onChange={handleInputChange}
                 />
                 <label
-                  htmlFor="additionalData.universityAffiliation"
+                  htmlFor="additionalData.registeredUnder"
                   className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
                 >
-                  University Affiliation (Optional)
+                  Registered Under (Organization)
                 </label>
-                {errors["additionalData.universityAffiliation"] && (
+                {errors["additionalData.registeredUnder"] && (
                   <p className="text-red-500 text-sm mt-1">
-                    {errors["additionalData.universityAffiliation"]}
+                    {errors["additionalData.registeredUnder"]}
                   </p>
                 )}
               </div>
@@ -655,7 +696,6 @@ const Register = () => {
                   placeholder=" "
                   value={formData.additionalData.registrationID || ""}
                   onChange={handleInputChange}
-                  required
                 />
                 <label
                   htmlFor="additionalData.registrationID"
@@ -672,7 +712,6 @@ const Register = () => {
                   placeholder=" "
                   value={formData.additionalData.location.postalCode || ""}
                   onChange={handleInputChange}
-                  required
                 />
                 <label
                   htmlFor="additionalData.location.postalcode"
@@ -738,11 +777,11 @@ const Register = () => {
           <button
             type="submit"
             className={`w-full mb-4 text-[18px] font-semibold mt-6 rounded-full py-2 transition-colors duration-400 ${
-              IsFormValid()
+              formvalidate()
                 ? "bg-white text-black hover:bg-emerald-900 hover:text-white"
                 : "bg-white text-black opacity-50 cursor-not-allowed"
             }`}
-            disabled={!isFormValid}
+            disabled={!formvalidate()}
           >
             Register
           </button>
