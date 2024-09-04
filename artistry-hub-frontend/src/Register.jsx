@@ -1,18 +1,24 @@
 import axios from "axios";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BiUser } from "react-icons/bi";
+import { BiUser, BiCheck } from "react-icons/bi";
 import { AiOutlineUnlock } from "react-icons/ai";
 import validator from "validator";
 import registerUser from "./api/registerapi";
+import { sendOtp, verifyOtp } from "./api/otpsendver";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Register = () => {
+  const [otpVerified, setotpVerified] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     userName: "",
     email: "",
     password: "",
     role: "",
+    otp: "",
     additionalData: {
       artForm: "",
       specialisation: "",
@@ -39,6 +45,7 @@ const Register = () => {
     ownerName: "",
     registeredUnder: "",
     expertise: "",
+    otp: "",
   });
 
   // Function to fetch location data based on postal code
@@ -100,6 +107,19 @@ const Register = () => {
   const validateExpertise = (expertise) =>
     validator.isAlpha(expertise.replace(/\s/g, ""));
 
+  //to handle send otp
+  const handleSendOtp = () => {
+    sendOtp(formData.email, setOtpSent);
+  };
+
+  //to verify the otp
+  const handleVerifyOtp = () => {
+    verifyOtp(formData.email, formData.otp, setotpVerified, setErrors);
+  };
+
+  //
+  //
+  //
   // Handle input changes
   const handleInputChange = async (e) => {
     const { name, value } = e.target;
@@ -301,6 +321,15 @@ const Register = () => {
     e.preventDefault();
     // for debugging we gona use the below line
     //console.log("form data on submit", formData);
+
+    console.log(otpVerified);
+    if (!otpVerified) {
+      toast.error("Please verify your OTP before submitting", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+      return;
+    }
     try {
       await registerUser(formData, navigate);
     } catch (err) {
@@ -350,6 +379,7 @@ const Register = () => {
               placeholder=" "
               value={formData.email || ""}
               onChange={handleInputChange}
+              disabled={otpVerified}
             />
             <label
               htmlFor="email"
@@ -358,10 +388,48 @@ const Register = () => {
               Your Email
             </label>
             <BiUser className="absolute top-0 right-4 peer-focus:text-yellow-500" />
+            <button
+              type="button"
+              className={`px-2 py-2 my-4 ${
+                otpVerified ? "bg-green-500" : "bg-yellow-500"
+              } text-white font-semibold rounded-md focus:outline-none`}
+              onClick={
+                // to handel the functionality of the button that is according to the status of the otp
+                // if otp is send then verify if not send then send id it is verified then do nothing
+                otpVerified ? null : otpSent ? handleVerifyOtp : handleSendOtp
+              }
+              disabled={!formData.email || otpVerified}
+            >
+              {otpVerified ? <BiCheck /> : otpSent ? "Verify OTP" : "Send OTP"}
+            </button>
             {errors.email && (
               <p className="text-red-500 text-sm mt-1">{errors.email}</p>
             )}
           </div>
+
+          {otpSent && !otpVerified && (
+            <div className="relative my-4 mb-8">
+              <input
+                type="text"
+                name="otp"
+                className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
+                  errors.otp ? "border-red-500" : "border-emerald-900"
+                } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
+                placeholder=""
+                value={formData.otp || ""}
+                onChange={handleInputChange}
+              />
+              <label
+                htmlFor="otp"
+                className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
+              >
+                Enter OTP
+              </label>
+              {errors.otp && (
+                <p className="text-red-500 text-sm mt-1">{errors.otp}</p>
+              )}
+            </div>
+          )}
 
           <div className="relative my-4 mt-8">
             <input

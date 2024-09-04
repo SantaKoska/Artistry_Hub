@@ -7,6 +7,8 @@ const ViewerStudent = require("../models/Viewer-StudentModel");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
 const { getToken } = require("../utils/helper");
+const OTPModel = require("../models/OTPModels");
+const { generateOTP, transporter } = require("../utils/mailer");
 
 const router = express.Router();
 
@@ -128,6 +130,80 @@ router.post("/login", async (req, res) => {
   delete userToReturn.password;
 
   return res.status(200).json(userToReturn);
+});
+//
+//
+//
+//
+//
+//for generating otp and sending it
+
+router.post("/sendotp", async (req, res) => {
+  const { email } = req.body;
+
+  await OTPModel.deleteMany({ email });
+
+  //generateotp
+  const otp = generateOTP();
+
+  //saving otp
+  const otpEntry = new OTPModel({
+    email,
+    otp,
+    createdAt: Date.now(),
+    //otp is vali for 10 min
+    expiresAt: Date.now() + 10 * 60 * 1000,
+  });
+
+  await otpEntry.save();
+
+  //sending mail
+  const mailOptions = {
+    from: "kamalsankarm2025@mca.ajce.in",
+    to: email,
+    subject: "Your OTP Code",
+    text: `Your OTP code is ${otp}. It is valid for 10 min`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    return res
+      .status(200)
+      .json({ message: "OTP sent to your provided email." });
+  } catch (error) {
+    console.error("Error sending otp:", error);
+    return res.status(500).json({ err: "Failed to send OTP" });
+  }
+});
+
+//verify otp
+router.post("/verifyotp", async (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return res.status(400).json({ err: "Email and OTP are required" });
+  }
+
+  try {
+    const otpEntry = await OTPModel.findOne({ email, otp });
+
+    if (otpEntry) {
+      if (otpEntry.expiresAt > Date.now()) {
+        await OTPModel.deleteOne({ email, otp });
+        return res
+          .status(200)
+          .json({ message: "OTP is verified successfully" });
+      } else {
+        await OTPModel.deleteOne({ email, otp });
+        return res.status(400).json({ err: "OTP has expired" });
+      }
+    } else {
+      return res.status(400).json({ err: "Invalid OTP" });
+    }
+  } catch (error) {
+    console.error("Error verifying OTP:", error);
+    return res.status(500).json({ err: "Internal server error" });
+  }
 });
 
 module.exports = router;
