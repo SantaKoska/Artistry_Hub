@@ -1,64 +1,67 @@
-import { Link, useNavigate } from "react-router-dom";
-import { BiUser } from "react-icons/bi";
-import { AiOutlineUnlock } from "react-icons/ai";
-import Logo from "./assets/LOGO.png";
 import { useState } from "react";
-import loginUser from "./api/loginapi";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { AiOutlineUnlock } from "react-icons/ai";
+import validator from "validator";
 
-const Login = () => {
+const ResetPassword = () => {
+  const { token } = useParams();
   const navigate = useNavigate();
-  const [credentials, setCredentials] = useState({ email: "", password: "" });
-  const changeHandle = async (e) => {
-    const { name, value } = e.target;
-    setCredentials((prevFormData) => ({
-      ...prevFormData,
-      [name]: value,
-    }));
-  };
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleLoginSubmit = async (e) => {
+  const validatePassword = (password) =>
+    validator.isStrongPassword(password, {
+      minLength: 8,
+      minLowercase: 1,
+      minUppercase: 1,
+      minNumbers: 1,
+      minSymbols: 1,
+    });
+
+  const handleResetPassword = async (e) => {
     e.preventDefault();
+
+    //
+    //validation
+    if (!validatePassword(newPassword)) {
+      toast.error(
+        "Password must contain at least 8 characters, including 1 uppercase, 1 lowercase, 1 number, and 1 symbol"
+      );
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
     try {
-      await loginUser(credentials, navigate);
+      await axios.post(`http://localhost:8000/auth/reset-password/${token}`, {
+        newPassword: newPassword,
+      });
+      toast.success("Password has been reset!");
+      navigate("/login");
     } catch (err) {
-      console.error(err.message);
+      toast.error(err.response?.data?.message || "Error resetting password");
     }
   };
+
   return (
     <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 relative">
-      <div className="flex justify-center mb-10 mx-20">
-        {/* sapce for logo  */}
-        <img src={Logo} alt="logo" className="w-62 h-auto" />
-      </div>
       <div>
         <h1 className="text-4xl font-semibold text-whitefont-bold text-center mb-6">
-          Login
+          Reset Password
         </h1>
-        <form onSubmit={handleLoginSubmit}>
+        <form onSubmit={handleResetPassword}>
           <div className="relative my-4 mb-8">
-            <input
-              type="email"
-              name="email"
-              className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none dark:focus:border-yellow-500 focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
-              placeholder=" "
-              onChange={changeHandle}
-              required
-            />
-            <label
-              htmlFor="email"
-              className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0]  peer-focus:text-yellow-400 peer-focus:dark:text-yellow-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
-            >
-              Your Email
-            </label>
-            <BiUser className="absolute top-0 right-4 peer-focus:dark:text-yellow-500" />
-          </div>
-          <div className="relative my-4 mt-8">
             <input
               type="password"
               name="password"
               className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none dark:focus:border-yellow-500 focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
-              placeholder=" "
-              onChange={changeHandle}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
               required
             />
             <label
@@ -69,29 +72,33 @@ const Login = () => {
             </label>
             <AiOutlineUnlock className="absolute top-0 right-4 peer-focus:dark:text-yellow-500" />
           </div>
-          <div className="flex justify-between items-center">
-            <Link className="text-yellow-400" to="/login/forgotpassword">
-              Forgot Password?
-            </Link>
+          <div className="relative my-4 mb-8">
+            <input
+              type="password"
+              name="confirmpassword"
+              className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none dark:focus:border-yellow-500 focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+            <label
+              htmlFor="password"
+              className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0]  peer-focus:text-yellow-400 peer-focus:dark:text-yellow-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
+            >
+              Confirm Password
+            </label>
+            <AiOutlineUnlock className="absolute top-0 right-4 peer-focus:dark:text-yellow-500" />
           </div>
           <button
             className="w-full mb-4 text-[18px] font-semibold mt-6 rounded-full bg-white text-black hover:bg-emerald-900 hover:text-white py-2 transition-colors duration-400"
             type="submit"
           >
-            Login
+            Reset Password
           </button>
-          <div>
-            <span>
-              New Here?{" "}
-              <Link className="text-yellow-400" to="/register">
-                Create an Account
-              </Link>
-            </span>
-          </div>
         </form>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default ResetPassword;

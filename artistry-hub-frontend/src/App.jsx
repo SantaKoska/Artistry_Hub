@@ -1,6 +1,8 @@
 import Login from "./login";
 import Register from "./Register";
 import Home from "./home";
+import ResetPassword from "./FP/resetPassword";
+import ForgotPassword from "./FP/forgotpassword";
 import { Route, Navigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -24,6 +26,7 @@ function App() {
         <Routes>
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
+          <Route path="login/forgotpassword" element={<ForgotPassword />} />
           <Route
             path="home"
             element={
@@ -32,6 +35,7 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route path="reset-password/:token" element={<ResetPassword />} />
           <Route path="/" element={<Navigate replace to="/login" />} />
         </Routes>
       </div>

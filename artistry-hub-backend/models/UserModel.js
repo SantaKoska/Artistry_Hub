@@ -24,6 +24,14 @@ const UserSchema = new mongoose.Schema(
       enum: ["Artist", "Viewer/Student", "Institution", "Service Provider"],
       required: true,
     },
+    resetToken: {
+      type: String,
+      required: false,
+    },
+    resetTokenExpiry: {
+      type: Date,
+      required: false,
+    },
   },
   { timestamps: true }
 );

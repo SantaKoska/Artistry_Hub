@@ -9,6 +9,7 @@ const validator = require("validator");
 const { getToken } = require("../utils/helper");
 const OTPModel = require("../models/OTPModels");
 const { generateOTP, transporter } = require("../utils/mailer");
+const crypto = require("crypto");
 
 const router = express.Router();
 
@@ -159,7 +160,7 @@ router.post("/sendotp", async (req, res) => {
 
   //sending mail
   const mailOptions = {
-    from: "kamalsankarm2025@mca.ajce.in",
+    from: process.env.Email_address,
     to: email,
     subject: "Your OTP Code",
     text: `Your OTP code is ${otp}. It is valid for 10 min`,
@@ -206,4 +207,73 @@ router.post("/verifyotp", async (req, res) => {
   }
 });
 
+//
+//
+//forgotpassword process
+router.post("/forgot-password", async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(400).json({ message: "Useer not found" });
+  }
+
+  // reset token which will expire
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  const resetTokenExpiry = Date.now() + 3600000;
+
+  //storing token in user module
+  user.resetToken = resetToken;
+  user.resetTokenExpiry = resetTokenExpiry;
+  await user.save();
+
+  // link and message to send
+  const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
+  const message = `Click the link below to reset your password:\n\n${resetLink}`;
+
+  const mailOptions = {
+    from: process.env.Email_address,
+    to: email,
+    subject: "Password Reset link for Artistry Hub",
+    text: message,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      return res.status(500).json({ message: "Error sending email" });
+    }
+    res.status(200).json({ message: "Reset link sent to your email" });
+  });
+});
+
+//
+//
+//handling the link to reset
+router.post("/reset-password/:token", async (req, res) => {
+  //
+  //for undeerstandun the error we used this console line below
+  // console.log("Token:", req.params.token);
+  // console.log("Request Body:", req.body);
+
+  const { token } = req.params;
+  const { newPassword } = req.body;
+
+  //finding the user by token
+  const user = await User.findOne({
+    resetToken: token,
+    resetTokenExpiry: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return res.status(400).json({ message: "Invalid or expired token" });
+  }
+  const HPassword = await bcrypt.hash(newPassword, 10);
+
+  user.password = HPassword;
+  user.resetToken = undefined;
+  user.resetTokenExpiry = undefined;
+  await user.save();
+
+  res.status(200).json({ message: "Password has been reset" });
+});
 module.exports = router;
