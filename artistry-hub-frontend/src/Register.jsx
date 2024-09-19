@@ -2,7 +2,11 @@ import axios from "axios";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BiUser, BiCheck } from "react-icons/bi";
-import { AiOutlineUnlock } from "react-icons/ai";
+import {
+  AiOutlineUnlock,
+  AiOutlineEye,
+  AiOutlineEyeInvisible,
+} from "react-icons/ai";
 import validator from "validator";
 import registerUser from "./api/registerapi";
 import { sendOtp, verifyOtp } from "./api/otpsendver";
@@ -12,6 +16,8 @@ import "react-toastify/dist/ReactToastify.css";
 const Register = () => {
   const [otpVerified, setotpVerified] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     userName: "",
@@ -47,6 +53,19 @@ const Register = () => {
     expertise: "",
     otp: "",
   });
+
+  //
+  //
+  //for showing the password and confo=irm password based on pressing the by=utton
+  const togglePasswordVisibility = () => {
+    setShowPassword((prevShowPassword) => !prevShowPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(
+      (prevShowConfirmPassword) => !prevShowConfirmPassword
+    );
+  };
 
   // Function to fetch location data based on postal code
   const fetchLocationData = async (postalCode) => {
@@ -331,9 +350,17 @@ const Register = () => {
       return;
     }
     try {
+      setErrors({});
+
       await registerUser(formData, navigate);
     } catch (err) {
-      setErrors(err.message);
+      const backendError = err.response?.data?.err || "An error occurred";
+
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        userName: backendError.includes("username") ? backendError : "",
+        email: backendError.includes("email") ? backendError : "",
+      }));
     }
   };
 
@@ -433,7 +460,7 @@ const Register = () => {
 
           <div className="relative my-4 mt-8">
             <input
-              type="password"
+              type={showPassword ? "text" : "password"} // Toggles input type
               name="password"
               className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
                 errors.password ? "border-red-500" : "border-emerald-900"
@@ -448,7 +475,13 @@ const Register = () => {
             >
               Your Password
             </label>
-            <AiOutlineUnlock className="absolute top-0 right-4 peer-focus:text-yellow-500" />
+            <AiOutlineUnlock className="absolute top-0 right-12 peer-focus:text-yellow-500" />
+            <span
+              className="absolute top-0 right-4 cursor-pointer"
+              onClick={togglePasswordVisibility}
+            >
+              {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+            </span>
             {errors.password && (
               <p className="text-red-500 text-sm mt-1 whitespace-pre-line">
                 {errors.password}
@@ -458,7 +491,7 @@ const Register = () => {
 
           <div className="relative my-4 mt-8">
             <input
-              type="password"
+              type={showConfirmPassword ? "text" : "password"} // Toggles input type
               name="confirmPassword"
               className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
                 errors.confirmPassword ? "border-red-500" : "border-emerald-900"
@@ -473,7 +506,17 @@ const Register = () => {
             >
               Confirm Your Password
             </label>
-            <AiOutlineUnlock className="absolute top-0 right-4 peer-focus:text-yellow-500" />
+            <AiOutlineUnlock className="absolute top-0 right-12 peer-focus:text-yellow-500" />
+            <span
+              className="absolute top-0 right-4 cursor-pointer"
+              onClick={toggleConfirmPasswordVisibility}
+            >
+              {showConfirmPassword ? (
+                <AiOutlineEyeInvisible />
+              ) : (
+                <AiOutlineEye />
+              )}
+            </span>
             {errors.confirmPassword && (
               <p className="text-red-500 text-sm mt-1">
                 {errors.confirmPassword}

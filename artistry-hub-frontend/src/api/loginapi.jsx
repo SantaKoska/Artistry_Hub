@@ -14,6 +14,7 @@ const loginUser = async (credentials, navigate) => {
     const { role, token } = response.data;
 
     localStorage.setItem("token", token);
+    localStorage.setItem("role", role);
 
     toast.success("Login is Successful", {
       position: "top-center",
@@ -22,7 +23,7 @@ const loginUser = async (credentials, navigate) => {
 
     switch (role) {
       case "Artist":
-        navigate("/home");
+        navigate("/artist-Home");
         break;
 
       case "Viewer/Student":

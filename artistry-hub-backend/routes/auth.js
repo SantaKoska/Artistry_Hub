@@ -42,11 +42,18 @@ router.post("/register", async (req, res) => {
   }
 
   // Check if a user with that email already exists
-  const existingUser = await User.findOne({ email: email });
+  const existingUser = await User.findOne({
+    $or: [{ email: email }, { userName: userName }],
+  });
+
   if (existingUser) {
-    return res
-      .status(400)
-      .json({ err: "A user with the same email id already exists" });
+    if (existingUser.email === email) {
+      return res
+        .status(400)
+        .json({ err: "A user with the same email already exists" });
+    } else if (existingUser.userName === userName) {
+      return res.status(400).json({ err: "The username is already taken" });
+    }
   }
 
   // Encrypt the password

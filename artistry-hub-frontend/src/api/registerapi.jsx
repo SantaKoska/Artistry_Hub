@@ -104,7 +104,7 @@ const registerUser = async (userData, navigate) => {
       dataToSend
     );
 
-    console.log("Registration successful, response:", response);
+    // console.log("Registration successful, response:", response);
 
     toast.success("Registration is successful", {
       position: "top-center",
@@ -113,12 +113,15 @@ const registerUser = async (userData, navigate) => {
 
     navigate("/login");
   } catch (error) {
-    console.error("Error registering user:", error);
-
-    toast.error("Registration failed. Please try again.", {
-      position: "top-center",
-      autoClose: 3000,
-    });
+    toast.error(
+      `Error Registering in: ${
+        error.response?.data?.err || "An error occurred"
+      }`,
+      {
+        position: "top-center",
+        autoClose: 3000,
+      }
+    );
     throw error;
   }
 };
