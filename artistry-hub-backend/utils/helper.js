@@ -2,8 +2,10 @@ const jwt = require("jsonwebtoken");
 
 exports = {};
 
-exports.getToken = (email, user) => {
-  const token = jwt.sign({ identifier: user._id }, process.env.jwt_sckey);
+exports.getToken = (user) => {
+  const token = jwt.sign({ identifier: user._id }, process.env.jwt_sckey, {
+    expiresIn: "4h",
+  });
 
   return token;
 };

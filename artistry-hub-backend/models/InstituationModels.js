@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const InstitutionSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "UserModel",
+    ref: "User",
     required: true,
   },
   registeredUnder: {

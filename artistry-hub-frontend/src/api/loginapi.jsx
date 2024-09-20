@@ -14,6 +14,7 @@ const loginUser = async (credentials, navigate) => {
     const { role, token } = response.data;
 
     localStorage.setItem("token", token);
+    // console.log("token:", token);
     localStorage.setItem("role", role);
 
     toast.success("Login is Successful", {

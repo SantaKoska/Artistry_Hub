@@ -4,8 +4,10 @@ const ExtractJwt = require("passport-jwt").ExtractJwt;
 const JwtStrategy = require("passport-jwt").Strategy;
 const mongoose = require("mongoose");
 const authRoutes = require("./routes/auth");
+const artistRoutes = require("./routes/artist");
 const User = require("./models/UserModel");
 const cors = require("cors");
+const path = require("path");
 
 //for env
 require("dotenv").config();
@@ -57,6 +59,9 @@ passport.use(
   })
 );
 
+app.use(passport.initialize());
+
+app.use("/dp", express.static(path.join(__dirname, "dp")));
 //default route
 app.get("/", (req, res) => {
   res.send("I am Working");
@@ -69,6 +74,8 @@ app.get("/hello", (req, res) => {
 
 //using if the auth.js
 app.use("/auth", authRoutes);
+
+app.use("/artist", artistRoutes);
 
 //the app losening to the port
 app.listen(8000, () => {

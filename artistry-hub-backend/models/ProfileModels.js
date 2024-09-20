@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Follower = require("./FollowerModels");
 
 const profileSchema = new mongoose.Schema(
   {
@@ -10,7 +11,7 @@ const profileSchema = new mongoose.Schema(
     },
     profilePicture: {
       type: String,
-      default: "/images/default-profile.png",
+      default: "/dp/default-profile.png",
     },
     description: {
       type: String,
@@ -27,10 +28,6 @@ const profileSchema = new mongoose.Schema(
           ref: "Post",
           required: true,
         },
-        preview: {
-          type: String,
-          required: true,
-        },
       },
     ],
   },
@@ -42,6 +39,12 @@ profileSchema.pre("save", function (next) {
   this.numberOfPosts = this.posts.length;
   next();
 });
+
+//for counting the followers numberreq.accepts(profileSchema.methods.getNumberOfFollowers = async function () {
+profileSchema.methods.getNumberOfFollowers = async function () {
+  const count = await Follower.countDocuments({ followingId: this._id });
+  return count;
+};
 
 const Profile = mongoose.model("Profile", profileSchema);
 
