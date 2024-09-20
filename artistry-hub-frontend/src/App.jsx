@@ -1,5 +1,5 @@
 import Login from "./login";
-import Register from "./Register";
+import Register from "./register";
 import ResetPassword from "./FP/resetPassword";
 import ForgotPassword from "./FP/forgotpassword";
 import { Route, Navigate } from "react-router-dom";
@@ -12,6 +12,7 @@ import ArtistBase from "./Artist/artistBase";
 import backgroundImage from "./assets/Van-Gogh-Starry-Night.svg";
 import { Routes } from "react-router-dom";
 import ArtistHome from "./Artist/artistHome";
+import CreatePost from "./Artist/createPost";
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
           >
             <Route index element={<ArtistHome />} />
             <Route path="artistprofile" element={<ArtistProfile />} />
+            <Route path="createpost" element={<CreatePost />} />
           </Route>
           <Route path="reset-password/:token" element={<ResetPassword />} />
           <Route path="/" element={<Navigate replace to="/login" />} />

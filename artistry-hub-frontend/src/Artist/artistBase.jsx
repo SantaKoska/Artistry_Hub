@@ -50,7 +50,7 @@ const ArtistBase = () => {
             </div>
 
             <div className=" hover:text-yellow-400 transition-colors duration-400">
-              <Link to="/create-post" aria-label="Create Post">
+              <Link to="/artist-Home/createpost" aria-label="Create Post">
                 <FaPlus size={24} />
               </Link>
             </div>
