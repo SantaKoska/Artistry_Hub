@@ -110,7 +110,6 @@ const CreatePost = () => {
           <div className="mb-4">
             <video controls className="w-full h-auto rounded-md">
               <source src={previewUrl} type="video/mp4" />
-              Your browser does not support the video tag.
             </video>
           </div>
         )}
@@ -119,7 +118,6 @@ const CreatePost = () => {
           <div className="mb-4">
             <audio controls className="w-full">
               <source src={previewUrl} type="audio/mpeg" />
-              Your browser does not support the audio element.
             </audio>
           </div>
         )}

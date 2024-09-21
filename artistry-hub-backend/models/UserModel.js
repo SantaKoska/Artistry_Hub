@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
-
-//Schema for User
+const Follower = require("./FollowerModels");
 
 const UserSchema = new mongoose.Schema(
   {
@@ -33,11 +32,43 @@ const UserSchema = new mongoose.Schema(
       type: Date,
       required: false,
     },
+    profilePicture: {
+      type: String,
+      default: "/dp/default-profile.png",
+    },
+    description: {
+      type: String,
+      default: "",
+    },
+    posts: [
+      {
+        postId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Post",
+          required: true,
+        },
+      },
+    ],
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
-//model
+// virtual for counting the number of posts
+UserSchema.virtual("numberOfPosts").get(function () {
+  return this.posts.length;
+});
+
+// method for counting the number of followers
+UserSchema.methods.getNumberOfFollowers = async function () {
+  const count = await Follower.countDocuments({ followingId: this._id });
+  return count;
+};
+
+// Model
 const User = mongoose.model("User", UserSchema);
 
 module.exports = User;

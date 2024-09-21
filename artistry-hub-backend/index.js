@@ -29,7 +29,7 @@ mongoose
   .connect(
     "mongodb+srv://kamalsankarm:" +
       process.env.MONGO_PASSWORD +
-      "@artistry-hub.tec71.mongodb.net/?retryWrites=true&w=majority&appName=Artistry-Hub"
+      "@artistry-hub.tec71.mongodb.net/ArtistryHub?retryWrites=true&w=majority&appName=Artistry-Hub"
   )
   .then((x) => {
     console.log("Connected to mongo!");

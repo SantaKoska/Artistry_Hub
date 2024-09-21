@@ -10,7 +10,6 @@ const { getToken } = require("../utils/helper");
 const OTPModel = require("../models/OTPModels");
 const { generateOTP, transporter } = require("../utils/mailer");
 const crypto = require("crypto");
-const Profile = require("../models/ProfileModels");
 
 const router = express.Router();
 
@@ -91,12 +90,6 @@ router.post("/register", async (req, res) => {
       default:
         throw new Error("Invalid role");
     }
-    await Profile.create({
-      userId: newUser._id,
-      profilePicture: "/dp/default-profile.png",
-      description: "",
-      posts: [],
-    });
   } catch (err) {
     // this line of code is used for debugging porpose
     console.error("Error creating user details:", err);
