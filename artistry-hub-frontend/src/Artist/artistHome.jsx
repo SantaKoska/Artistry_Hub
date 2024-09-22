@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaHeart } from "react-icons/fa";
+import { Link } from "react-router-dom"; // Import Link for navigation
 
 const ArtistHome = () => {
   const [posts, setPosts] = useState([]);
@@ -19,9 +20,7 @@ const ArtistHome = () => {
           }
         );
 
-        // update likedPosts based on whether the user has liked the post
         const { posts, userId } = response.data;
-        // console.log(userId);
         const likedPostIds = new Set(
           posts
             .map((post) => (post.likedBy.includes(userId) ? post._id : null))
@@ -39,7 +38,6 @@ const ArtistHome = () => {
 
   const handleLike = async (postId) => {
     try {
-      // Send request to toggle like/unlike
       await axios.post(
         `http://localhost:8000/posts/${postId}/toggle-like`,
         {},
@@ -63,7 +61,6 @@ const ArtistHome = () => {
 
       setPosts(posts);
 
-      // Update liked posts state after toggle
       const likedPostIds = new Set(
         posts
           .map((post) => (post.likedBy.includes(userId) ? post._id : null))
@@ -76,73 +73,79 @@ const ArtistHome = () => {
   };
 
   return (
-    <div className="container mx-auto py-6">
-      {posts.length > 0 ? (
-        posts.map((post) => (
-          <div
-            key={post._id}
-            className="bg-white shadow-md rounded-lg p-4 mb-6"
-          >
-            {/* Profile Info */}
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center text-black">
-                <img
-                  src={`http://localhost:8000${post.user.profilePicture}`}
-                  alt={post.user.userName}
-                  className="w-12 h-12 rounded-full"
-                />
-                <div className="ml-4">
-                  <p className="font-bold text-lg">{post.user.userName}</p>
-                  <p className="text-sm text-gray-500">
-                    {new Date(post.timestamp).toLocaleString()}
-                  </p>
+    <div className="container mx-auto w-full max-w-screen-2xl pt-28 pb-20">
+      <div className="mt-96 pt-40">
+        {posts.length > 0 ? (
+          posts.map((post) => (
+            <div
+              key={post._id}
+              className="bg-blue-100 border border-yellow-500 rounded-lg shadow-lg mx-4 sm:mx-6 md:mx-8 lg:mx-10 xl:mx-12 p-6 mb-8 w-full max-w-3xl"
+            >
+              {/* Profile Info */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <img
+                    src={`http://localhost:8000${post.user.profilePicture}`}
+                    alt={post.user.userName}
+                    className="w-12 h-12 rounded-full"
+                  />
+                  <div className="ml-4">
+                    <Link to={`/artist-Home/profile/${post.user.userName}`}>
+                      <p className="font-bold text-lg text-emerald-900 hover:underline">
+                        {post.user.userName}
+                      </p>
+                    </Link>
+                    <p className="text-sm text-gray-600">
+                      {new Date(post.timestamp).toLocaleString()}
+                    </p>
+                  </div>
                 </div>
               </div>
+              {/* Post Content */}
+              <p className="mb-4 text-black text-base">{post.content}</p>
+              {post.mediaUrl && post.mediaType === "image" && (
+                <img
+                  src={`http://localhost:8000${post.mediaUrl}`}
+                  alt="Post media"
+                  className="w-full h-64 object-cover rounded-md mb-4"
+                />
+              )}
+              {post.mediaUrl && post.mediaType === "video" && (
+                <video
+                  controls
+                  src={`http://localhost:8000${post.mediaUrl}`}
+                  className="w-full h-64 object-cover rounded-md mb-4"
+                />
+              )}
+              {post.mediaUrl && post.mediaType === "audio" && (
+                <audio
+                  controls
+                  src={`http://localhost:8000${post.mediaUrl}`}
+                  className="w-full mb-4"
+                />
+              )}
+              {/* Like Button */}
+              <div className="flex items-center">
+                <button
+                  className={`${
+                    likedPosts.has(post._id)
+                      ? "text-yellow-500"
+                      : "text-gray-500"
+                  } transition-colors duration-300`}
+                  onClick={() => handleLike(post._id)}
+                >
+                  <FaHeart size={24} />
+                </button>
+                <span className="ml-2 text-black text-sm">
+                  Likes: {post.likes}
+                </span>
+              </div>
             </div>
-
-            {/* Post Content */}
-            <p className="mb-2 text-black">{post.content}</p>
-
-            {/* Post Media */}
-            {post.mediaUrl && post.mediaType === "image" && (
-              <img
-                src={`http://localhost:8000${post.mediaUrl}`}
-                alt="Post media"
-                className="w-full h-48 object-cover rounded-lg mb-2"
-              />
-            )}
-            {post.mediaUrl && post.mediaType === "video" && (
-              <video
-                controls
-                src={`http://localhost:8000${post.mediaUrl}`}
-                className="w-full h-48 object-cover rounded-lg mb-2"
-              />
-            )}
-            {post.mediaUrl && post.mediaType === "audio" && (
-              <audio
-                controls
-                src={`http://localhost:8000${post.mediaUrl}`}
-                className="w-full mb-2"
-              />
-            )}
-
-            {/* Like Button */}
-            <div className="flex flex-col items-center">
-              <button
-                className={`${
-                  likedPosts.has(post._id) ? "text-yellow-500" : "text-gray-500"
-                }`}
-                onClick={() => handleLike(post._id)}
-              >
-                <FaHeart size={24} />
-              </button>
-              <span className="mt-1 text-black">Likes: {post.likes}</span>
-            </div>
-          </div>
-        ))
-      ) : (
-        <p>No posts available</p>
-      )}
+          ))
+        ) : (
+          <p className="text-center text-gray-600">No posts available</p>
+        )}
+      </div>
     </div>
   );
 };

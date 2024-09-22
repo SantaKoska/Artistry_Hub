@@ -222,7 +222,7 @@ router.post("/forgot-password", async (req, res) => {
 
   const user = await User.findOne({ email });
   if (!user) {
-    return res.status(400).json({ message: "Useer not found" });
+    return res.status(400).json({ message: "User not found" });
   }
 
   // reset token which will expire

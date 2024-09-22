@@ -74,7 +74,7 @@ const CreatePost = () => {
   };
 
   return (
-    <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 w-full max-w-screen-lg mx-auto mt-8">
+    <div className="bg-slate-800 justify rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 w-full max-w-screen-2xl h-full   mx-14 mt-8">
       <form onSubmit={handleSubmit} className="w-full">
         <div className="mb-4">
           <textarea

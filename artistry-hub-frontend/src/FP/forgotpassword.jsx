@@ -14,7 +14,8 @@ const ForgotPassword = () => {
       await axios.post("http://localhost:8000/auth/forgot-password", { email });
       toast.success("Reset link sent to your email!");
     } catch (err) {
-      toast.error("Error sending reset link");
+      toast.error(`Error sending reset link : ${err.response?.data?.message}`);
+      setIsLoading(false);
     }
   };
 

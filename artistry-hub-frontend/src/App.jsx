@@ -13,6 +13,7 @@ import backgroundImage from "./assets/Van-Gogh-Starry-Night.svg";
 import { Routes } from "react-router-dom";
 import ArtistHome from "./Artist/artistHome";
 import CreatePost from "./Artist/createPost";
+import CommonProfile from "./common";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
             <Route index element={<ArtistHome />} />
             <Route path="artistprofile" element={<ArtistProfile />} />
             <Route path="createpost" element={<CreatePost />} />
+            <Route path="profile/:username" element={<CommonProfile />} />
           </Route>
           <Route path="reset-password/:token" element={<ResetPassword />} />
           <Route path="/" element={<Navigate replace to="/login" />} />

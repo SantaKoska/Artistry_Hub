@@ -14,6 +14,7 @@ const ArtistProfile = () => {
   const [confirmationModalIsOpen, setConfirmationModalIsOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [logoutModalIsOpen, setLogoutModalIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     description: "",
     artForm: "",
@@ -33,15 +34,15 @@ const ArtistProfile = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setProfile(response.data);
+      const profileData = response.data;
+      setProfile(profileData);
       setFormData({
-        description: response.data.description,
-        artForm: response.data.artForm,
-        specialisation: response.data.specialisation,
-        userName: response.data.userName,
+        description: profileData.description,
+        artForm: profileData.artForm,
+        specialisation: profileData.specialisation,
+        userName: profileData.userName,
       });
-      setPosts(response.data.postsinfo || []);
-      // console.log(response.data.numberOfPosts);
+      setPosts(profileData.postsinfo || []);
     } catch (error) {
       toast.error(`Error fetching profile: ${error.response?.data?.err}`);
     }
@@ -51,13 +52,8 @@ const ArtistProfile = () => {
     fetchProfile();
   }, [token]);
 
-  const handleOpenModal = () => {
-    setModalIsOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setModalIsOpen(false);
-  };
+  const handleOpenModal = () => setModalIsOpen(true);
+  const handleCloseModal = () => setModalIsOpen(false);
 
   const handleFileChange = (e) => {
     setFormData({ ...formData, profilePicture: e.target.files[0] });
@@ -69,6 +65,7 @@ const ArtistProfile = () => {
     Object.entries(formData).forEach(([key, value]) => {
       formDataToSend.append(key, value);
     });
+
     try {
       await axios.put(
         "http://localhost:8000/artist/artist-editprofile",
@@ -84,13 +81,16 @@ const ArtistProfile = () => {
       handleCloseModal();
       fetchProfile();
     } catch (error) {
-      toast.error(`Error updating profile ${error.response?.data?.err}`);
+      toast.error(`Error updating profile: ${error.response?.data?.err}`);
     }
   };
 
+  const handleOpenLogoutModal = () => setLogoutModalIsOpen(true);
+  const handleCloseLogoutModal = () => setLogoutModalIsOpen(false);
+
   const handleLogout = () => {
-    localStorage.removeItem("token"); // to clear the token
-    navigate("/login"); // to redirect to the login page
+    localStorage.removeItem("token");
+    navigate("/login");
   };
 
   const handleOpenConfirmationModal = (postId) => {
@@ -124,7 +124,7 @@ const ArtistProfile = () => {
 
   return (
     <>
-      <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 w-full max-w-screen-lg mt-96 mb-16">
+      <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 w-full max-w-screen-lg mt-36 mb-16">
         {profile && (
           <>
             <div className="flex flex-col md:flex-row gap-10 items-center">
@@ -132,7 +132,7 @@ const ArtistProfile = () => {
                 <img
                   src={`http://localhost:8000${profile.profilePicture}`}
                   alt="Profile"
-                  className="w-48 h-48 md:w-56 md:h-56 rounded-full mb-4"
+                  className="w-48 h-44 rounded-full mb-4"
                 />
                 <h1 className="text-5xl font-semibold text-yellow-400 mt-4 text-center">
                   {profile.userName}
@@ -171,14 +171,15 @@ const ArtistProfile = () => {
                   Edit Profile
                 </button>
                 <button
-                  onClick={handleLogout}
+                  onClick={handleOpenLogoutModal}
                   className="w-full md:w-64 text-[18px] font-semibold rounded-full bg-red-500 text-white hover:bg-red-600 py-2 transition-colors duration-400"
                 >
                   Logout
                 </button>
               </div>
             </div>
-            {/* // PROFILE */}
+
+            {/* Posts Section */}
             <div className="mt-10">
               <h2 className="text-3xl text-white mb-4">Posts</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -186,7 +187,7 @@ const ArtistProfile = () => {
                   posts.map((post) => (
                     <div
                       key={post._id}
-                      className="bg-yellow-300 rounded-lg p-4 text-white backdrop-filter backdrop-blur-md bg-opacity-30"
+                      className="bg-blue-100  rounded-lg p-4 text-black"
                     >
                       {post.mediaUrl && post.mediaType === "image" && (
                         <img
@@ -206,17 +207,16 @@ const ArtistProfile = () => {
                         <audio
                           controls
                           src={`http://localhost:8000${post.mediaUrl}`}
-                          className="w-full mb-2"
+                          className="w-full object-cover rounded-lg mb-2"
                         />
                       )}
                       <p>{post.content}</p>
-                      <p className="text-sm text-green-300">
+                      <p className="text-sm text-emerald-900">
                         Posted on: {new Date(post.timestamp).toLocaleString()}
                       </p>
                       <button
-                        // on click the the confirmation modal will popup so that we can confirm if yes it will call the funvtion handle delete post
                         onClick={() => handleOpenConfirmationModal(post._id)}
-                        className="mt-2 p-1 text-red-500 hover:text-red-700 font-semibold rounded-full bg-white hover:bg-slate-500 py-2 transition-colors duration-400"
+                        className="mt-2 p-1 text-red-500 hover:text-white font-semibold rounded-full bg-white hover:bg-red-500 py-2 transition-colors duration-400"
                       >
                         Delete Post
                       </button>
@@ -230,7 +230,7 @@ const ArtistProfile = () => {
           </>
         )}
 
-        {/* confirmation modal for the deleting the post */}
+        {/* Confirmation Modal */}
         <Modal
           isOpen={confirmationModalIsOpen}
           onRequestClose={handleCloseConfirmationModal}
@@ -250,109 +250,111 @@ const ArtistProfile = () => {
             </button>
             <button
               onClick={handleCloseConfirmationModal}
-              className="w-1/2 text-[18px] font-semibold rounded-full bg-green-500 text-white hover:bg-green-600 py-2 transition-colors duration-400"
+              className="w-1/2 text-[18px] font-semibold rounded-full bg-green-500 text-white hover:bgc py-2 transition-colors duration-400"
             >
               No, Cancel
             </button>
           </div>
         </Modal>
 
+        {/* Edit Profile Modal */}
         <Modal
           isOpen={modalIsOpen}
           onRequestClose={handleCloseModal}
-          className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 w-full md:w-1/3 mx-auto"
+          className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 w-full md:w-2/3 lg:w-1/2 mx-auto"
           overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
         >
           <h2 className="text-white text-2xl mb-4">Edit Profile</h2>
-          <form className="w-full">
-            <div className="relative mb-8">
-              <input
-                type="file"
-                onChange={handleFileChange}
-                className="text-white"
-              />
-              <label className="absolute text-white text-lg">
-                Profile Image
+          <form onSubmit={handleSave}>
+            <div className="flex flex-col space-y-4">
+              <label htmlFor="description" className="text-white">
+                Description
               </label>
-            </div>
-            <div className="relative mb-8">
-              <input
-                type="text"
-                value={formData.userName}
-                onChange={(e) =>
-                  setFormData({ ...formData, userName: e.target.value })
-                }
-                className="block w-full py-2.4 px-0 text-base text-white font-semibold border-0 border-b-2 border-emerald-900 bg-transparent appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
-                required
-              />
-              <label className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6">
-                Username
-              </label>
-              <BiUser className="absolute top-0 right-4 peer-focus:text-yellow-500" />
-            </div>
-            {/* Description Field */}
-            <div className="relative mb-8">
-              <input
-                type="text"
+              <textarea
+                id="description"
                 value={formData.description}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                className="block w-full py-2.4 px-0 text-base text-white font-semibold border-0 border-b-2 border-emerald-900 bg-transparent appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
-                required
+                className="p-2 rounded-md bg-slate-600 text-white"
               />
-              <label className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6">
-                Description
+              <label htmlFor="artForm" className="text-white">
+                Art Form
               </label>
-            </div>
-            {/* Art Form Field */}
-            <div className="relative mb-8">
-              <select
+              <input
+                id="artForm"
                 value={formData.artForm}
                 onChange={(e) =>
                   setFormData({ ...formData, artForm: e.target.value })
                 }
-                className="block w-full py-2.4 px-0 text-base text-white font-semibold border-0 border-b-2 border-emerald-900 bg-transparent appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
-              >
-                <option value="">Select Art Form</option>
-                <option value="Painting">Painting</option>
-                <option value="Sculpture">Sculpture</option>
-                <option value="Architecture">Architecture</option>
-                <option value="Literature">Literature</option>
-                <option value="Cinema">Cinema</option>
-                <option value="Theater">Theater</option>
-                <option value="Music">Music</option>
-              </select>
-              <label className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6">
-                Art Form
-              </label>
-            </div>
-            {/* Specialization Field */}
-            <div className="relative mb-8">
-              <input
-                type="text"
-                value={formData.specialisation}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    specialisation: e.target.value,
-                  })
-                }
-                className="block w-full py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:border-yellow-500 focus:outline-none peer"
-                required
+                className="p-2 rounded-md bg-slate-600 text-white"
               />
-              <label className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6">
+              <label htmlFor="specialisation" className="text-white">
                 Specialization
               </label>
+              <input
+                id="specialisation"
+                value={formData.specialisation}
+                onChange={(e) =>
+                  setFormData({ ...formData, specialisation: e.target.value })
+                }
+                className="p-2 rounded-md bg-slate-600 text-white"
+              />
+              <label htmlFor="userName" className="text-white">
+                Username
+              </label>
+              <input
+                id="userName"
+                value={formData.userName}
+                onChange={(e) =>
+                  setFormData({ ...formData, userName: e.target.value })
+                }
+                className="p-2 rounded-md bg-slate-600 text-white"
+              />
+              <label htmlFor="profilePicture" className="text-white">
+                Profile Picture
+              </label>
+              <input
+                id="profilePicture"
+                type="file"
+                onChange={handleFileChange}
+                className="p-2 rounded-md bg-slate-600 text-white"
+              />
+              <button
+                type="submit"
+                className="w-full md:w-64 text-[18px] font-semibold rounded-full bg-white text-black hover:bg-emerald-900 hover:text-white py-2 transition-colors duration-400"
+              >
+                Save
+              </button>
             </div>
-
-            <button
-              onClick={handleSave}
-              className="w-full text-[18px] font-semibold rounded-full bg-white text-black hover:bg-emerald-900 hover:text-white py-2 transition-colors duration-400"
-            >
-              Save
-            </button>
           </form>
+        </Modal>
+
+        <Modal
+          isOpen={logoutModalIsOpen}
+          onRequestClose={handleCloseLogoutModal}
+          className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 w-full md:w-1/3 mx-auto"
+          overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
+        >
+          <h2 className="text-white text-2xl mb-4">Confirm Logout</h2>
+          <p className="text-white mb-4">Are you sure you want to log out?</p>
+          <div className="flex justify-between">
+            <button
+              onClick={() => {
+                handleLogout();
+                handleCloseLogoutModal();
+              }}
+              className="w-1/2 text-[18px] font-semibold rounded-full bg-red-500 text-white hover:bg-red-600 py-2 transition-colors duration-400"
+            >
+              Yes, Logout
+            </button>
+            <button
+              onClick={handleCloseLogoutModal}
+              className="w-1/2 text-[18px] font-semibold rounded-full bg-green-500 text-white hover:bg-green-600 py-2 transition-colors duration-400"
+            >
+              No, Cancel
+            </button>
+          </div>
         </Modal>
       </div>
     </>

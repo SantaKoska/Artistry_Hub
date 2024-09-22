@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const authRoutes = require("./routes/auth");
 const artistRoutes = require("./routes/artist");
 const post = require("./routes/post");
+const commonthings = require("./routes/common");
 const User = require("./models/UserModel");
 const cors = require("cors");
 const path = require("path");
@@ -81,6 +82,8 @@ app.get("/hello", (req, res) => {
 
 //using if the auth.js
 app.use("/auth", authRoutes);
+
+app.use("/common-things", commonthings);
 
 app.use("/artist", artistRoutes);
 
