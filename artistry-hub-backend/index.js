@@ -65,11 +65,10 @@ app.use(passport.initialize());
 
 app.use("/dp", express.static(path.join(__dirname, "dp")));
 
-// serve post images, videos, and audio files
-app.use("/post/image", express.static(path.join(__dirname, "post/image")));
-app.use("/post/video", express.static(path.join(__dirname, "post/video")));
-app.use("/post/audio", express.static(path.join(__dirname, "post/audio")));
+app.use("/learning", express.static(path.join(__dirname, "learning")));
 
+// serve post images, videos, and audio files
+app.use("/storage", express.static(path.join(__dirname, "../storage")));
 //default route
 app.get("/", (req, res) => {
   res.send("I am Working");

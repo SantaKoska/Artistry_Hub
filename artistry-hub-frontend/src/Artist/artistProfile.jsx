@@ -187,7 +187,7 @@ const ArtistProfile = () => {
                   posts.map((post) => (
                     <div
                       key={post._id}
-                      className="bg-blue-100  rounded-lg p-4 text-black"
+                      className="bg-blue-100 rounded-lg p-4 text-black"
                     >
                       {post.mediaUrl && post.mediaType === "image" && (
                         <img
@@ -319,6 +319,7 @@ const ArtistProfile = () => {
                 type="file"
                 onChange={handleFileChange}
                 className="p-2 rounded-md bg-slate-600 text-white"
+                accept="image/*"
               />
               <button
                 type="submit"

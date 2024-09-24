@@ -79,7 +79,7 @@ const ArtistHome = () => {
           posts.map((post) => (
             <div
               key={post._id}
-              className="bg-blue-100 border border-yellow-500 rounded-lg shadow-lg mx-4 sm:mx-6 md:mx-8 lg:mx-10 xl:mx-12 p-6 mb-8 w-full max-w-3xl"
+              className="bg-blue-100 border border-yellow-500 rounded-lg shadow-lg mx-auto p-6 mb-8 w-full max-w-screen-xl"
             >
               {/* Profile Info */}
               <div className="flex items-center justify-between mb-3">

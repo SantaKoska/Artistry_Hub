@@ -31,10 +31,10 @@ const ArtistBase = () => {
           <nav className="flex justify-around p-2 text-white">
             {[
               { to: "/artist-Home", icon: <FaHome size={20} /> },
-              { to: "/messages", icon: <FaEnvelope size={20} /> },
-              { to: "/learning-platform", icon: <FaBook size={20} /> },
+              // { to: "/messages", icon: <FaEnvelope size={20} /> },
+              { to: "/artist-Home/my-courses", icon: <FaBook size={20} /> },
               { to: "/artist-Home/createpost", icon: <FaPlus size={20} /> },
-              { to: "/job-finding", icon: <FaBriefcase size={20} /> },
+              // { to: "/job-finding", icon: <FaBriefcase size={20} /> },
               {
                 to: "/service-providing",
                 icon: <span className="text-xl font-bold leading-none">S</span>,

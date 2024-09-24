@@ -8,15 +8,20 @@ const router = express.Router();
 // set up multer storage for different media types
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
+    let uploadPath;
+
     if (file.mimetype.startsWith("image/")) {
-      cb(null, "post/image/");
+      uploadPath = path.join(__dirname, "../../storage/post/image/");
     } else if (file.mimetype.startsWith("video/")) {
-      cb(null, "post/video/");
+      uploadPath = path.join(__dirname, "../../storage/post/video/");
     } else if (file.mimetype.startsWith("audio/")) {
-      cb(null, "post/audio/");
+      uploadPath = path.join(__dirname, "../../storage/post/audio/");
     } else {
-      cb({ message: "Unsupported file format" }, false);
+      return cb({ message: "Unsupported file format" }, false);
     }
+
+    // Ensure the directory exists
+    cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname)); // unique filename
@@ -37,7 +42,7 @@ router.post(
       const user = req.user;
 
       const mediaUrl = req.file
-        ? `/post/${mediaType}/${req.file.filename}`
+        ? `/storage/post/${mediaType}/${req.file.filename}`
         : null;
 
       const newPost = new Post({

@@ -14,6 +14,10 @@ import { Routes } from "react-router-dom";
 import ArtistHome from "./Artist/artistHome";
 import CreatePost from "./Artist/createPost";
 import CommonProfile from "./common";
+import MyCourses from "./Artist/Learning/MyCourses";
+import CreateCourse from "./Artist/Learning/CreateCourse";
+import AddVideo from "./Artist/Learning/AddVideo";
+import EditCourse from "./Artist/Learning/EditCourse";
 
 function App() {
   return (
@@ -42,6 +46,11 @@ function App() {
             <Route path="artistprofile" element={<ArtistProfile />} />
             <Route path="createpost" element={<CreatePost />} />
             <Route path="profile/:username" element={<CommonProfile />} />
+            <Route path="my-courses" element={<MyCourses />} />
+            <Route path="create-course" element={<CreateCourse />} />
+            <Route path="add-video/:courseId" element={<AddVideo />} />
+            <Route path="edit-course/:courseId" element={<EditCourse />} />
+            <Route path="" />
           </Route>
           <Route path="reset-password/:token" element={<ResetPassword />} />
           <Route path="/" element={<Navigate replace to="/login" />} />

@@ -4,6 +4,7 @@ const User = require("../models/UserModel"); // Updated to use the combined User
 const Artist = require("../models/ArtistModels");
 const Post = require("../models/PostModels");
 const Follower = require("../models/FollowerModels");
+const LearningCourse = require("../models/LearningCourseModel");
 const multer = require("multer");
 
 //authentication
@@ -168,6 +169,226 @@ router.get("/homeposts", verifyToken, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send("Server Error");
+  }
+});
+
+//
+//
+//for learning section
+//
+//
+
+const videoStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "learning/videos/"); // Path to save videos
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`); // Unique name for each file
+  },
+});
+
+const videoUpload = multer({ storage: videoStorage });
+
+// Create a new course
+router.post("/create-course", verifyToken, async (req, res) => {
+  const { courseName, level } = req.body;
+
+  try {
+    // Check if a course with the same name already exists
+    const existingCourse = await LearningCourse.findOne({ courseName });
+
+    if (existingCourse) {
+      return res.status(400).json({
+        message: "Course name already exists. Please choose a different name.",
+      });
+    }
+
+    // Create the new course if the name is unique
+    const newCourse = new LearningCourse({
+      courseName,
+      level,
+      videos: [],
+      createdBy: req.user.identifier,
+    });
+
+    await newCourse.save();
+
+    // Add course reference to the artist's teaching courses
+    await Artist.findOneAndUpdate(
+      { userId: req.user.identifier },
+      { $push: { teachingCourse: newCourse._id } }
+    );
+
+    res.status(201).json(newCourse);
+  } catch (error) {
+    console.error("Error creating course:", error);
+    res
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message });
+  }
+});
+
+// Add video with optional note to course
+router.post(
+  "/add-video/:courseId",
+  verifyToken,
+  videoUpload.single("video"),
+  async (req, res) => {
+    const { courseId } = req.params;
+    const { title, description, note } = req.body;
+
+    try {
+      const course = await LearningCourse.findById(courseId);
+      if (!course) return res.status(404).json({ error: "Course not found" });
+
+      // Limit videos to a maximum of 10
+      if (course.videos.length >= 10) {
+        return res
+          .status(400)
+          .json({ error: "Cannot add more than 10 videos" });
+      }
+
+      const videoObj = {
+        title,
+        description,
+        mediaUrl: `/learning/videos/${req.file.filename}`, // Store video path
+        note, // Directly associate the note with the video
+      };
+
+      course.videos.push(videoObj);
+      await course.save();
+      res.status(200).json(course);
+    } catch (error) {
+      console.error("Error adding video:", error);
+      res
+        .status(500)
+        .json({ message: "Internal Server Error", error: error.message });
+    }
+  }
+);
+
+// Edit a course
+router.put("/edit-course/:courseId", verifyToken, async (req, res) => {
+  const { courseId } = req.params;
+  const { courseName, level } = req.body;
+
+  try {
+    const course = await LearningCourse.findById(courseId);
+    if (!course) return res.status(404).json({ error: "Course not found" });
+
+    course.courseName = courseName || course.courseName;
+    course.level = level || course.level;
+
+    await course.save();
+    res.status(200).json(course);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update course" });
+  }
+});
+
+// Delete a course
+router.delete("/delete-course/:courseId", verifyToken, async (req, res) => {
+  const { courseId } = req.params;
+  try {
+    await LearningCourse.findByIdAndDelete(courseId);
+
+    // Also remove the course reference from artist's teaching courses
+    await Artist.findOneAndUpdate(
+      { userId: req.user.identifier },
+      { $pull: { teachingCourse: courseId } }
+    );
+
+    res.status(200).json({ message: "Course deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to delete course" });
+  }
+});
+
+// Edit a video within a course
+router.put(
+  "/edit-video/:courseId/:videoId",
+  verifyToken,
+  videoUpload.single("video"), // Include file upload handler
+  async (req, res) => {
+    const { courseId, videoId } = req.params;
+    const { title, description, note } = req.body;
+    console.log(req.body);
+
+    try {
+      const course = await LearningCourse.findById(courseId);
+      if (!course) return res.status(404).json({ error: "Course not found" });
+
+      const video = course.videos.id(videoId);
+      if (!video) return res.status(404).json({ error: "Video not found" });
+
+      video.title = title || video.title;
+      video.description = description || video.description;
+      video.note = note || video.note; // Update the note if provided
+
+      // Handle video file replacement
+      if (req.file) {
+        video.mediaUrl = `/learning/videos/${req.file.filename}`; // Update the video URL with new file path
+      }
+
+      await course.save();
+      res.status(200).json(course);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update video" });
+    }
+  }
+);
+
+// Delete a video from a course
+router.delete(
+  "/delete-video/:courseId/:videoId",
+  verifyToken,
+  async (req, res) => {
+    const { courseId, videoId } = req.params;
+
+    try {
+      const course = await LearningCourse.findById(courseId);
+      if (!course) return res.status(404).json({ error: "Course not found" });
+
+      course.videos = course.videos.filter(
+        (video) => video._id.toString() !== videoId
+      );
+      await course.save();
+      res.status(200).json(course);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete video" });
+    }
+  }
+);
+
+// Get courses created by the artist
+router.get("/my-courses", verifyToken, async (req, res) => {
+  try {
+    const courses = await LearningCourse.find({
+      createdBy: req.user.identifier,
+    });
+
+    if (courses.length === 0) {
+      return res.status(200).json({ message: "No courses found" });
+    }
+    res.status(200).json(courses);
+    // console.log(courses);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch courses" });
+  }
+});
+
+// Get videos in a specific course
+router.get("/get-videos/:courseId", async (req, res) => {
+  try {
+    const { courseId } = req.params;
+
+    const course = await LearningCourse.findById(courseId);
+    if (!course) return res.status(404).json({ message: "Course not found" });
+
+    return res.status(200).json({ videos: course.videos });
+  } catch (error) {
+    console.error("Error fetching videos:", error);
+    return res.status(500).json({ message: "Server error" });
   }
 });
 
