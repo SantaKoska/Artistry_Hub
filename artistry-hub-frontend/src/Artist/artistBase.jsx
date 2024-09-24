@@ -36,7 +36,7 @@ const ArtistBase = () => {
               { to: "/artist-Home/createpost", icon: <FaPlus size={20} /> },
               // { to: "/job-finding", icon: <FaBriefcase size={20} /> },
               {
-                to: "/service-providing",
+                to: "/artist-Home/Service-Request",
                 icon: <span className="text-xl font-bold leading-none">S</span>,
               },
               { to: "/artist-Home/artistprofile", icon: <FaUser size={20} /> },

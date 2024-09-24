@@ -5,6 +5,7 @@ const Artist = require("../models/ArtistModels");
 const Post = require("../models/PostModels");
 const Follower = require("../models/FollowerModels");
 const LearningCourse = require("../models/LearningCourseModel");
+const ServiceRequest = require("../models/ServiceRequestModels");
 const multer = require("multer");
 
 //authentication
@@ -141,31 +142,37 @@ router.put(
 router.get("/homeposts", verifyToken, async (req, res) => {
   try {
     const userId = req.user.identifier;
-    // console.log(userId);
-    // Get user's artForm
+
+    // Get user's artForm (if needed)
     const artist = await Artist.findOne({ userId });
 
-    // get posts by users followed by the logged-in user
+    // Get posts by users followed by the logged-in user
     const followedUsers = await Follower.find({ followerId: userId }).select(
       "followingId"
     );
     const followedUserIds = followedUsers.map((f) => f.followingId);
 
+    // Fetch followed posts and sort by createdAt
     const followedPosts = await Post.find({ user: { $in: followedUserIds } })
       .populate("user")
+      .sort({ createdAt: -1 }) // Sort by createdAt in descending order
       .limit(10);
 
-    // get posts by all users
+    // Fetch posts by all other users and sort by createdAt
     const otherPosts = await Post.find({
       user: { $nin: followedUserIds.concat([userId]) },
     })
       .populate("user")
+      .sort({ createdAt: -1 }) // Sort by createdAt in descending order
       .limit(10);
 
+    // Combine both followed and other posts
     const posts = [...followedPosts, ...otherPosts];
-    // console.log(posts);
 
-    res.json({ posts, userId });
+    // Sort the combined posts by createdAt to get the most recent posts first
+    const sortedPosts = posts.sort((a, b) => b.createdAt - a.createdAt);
+
+    res.json({ posts: sortedPosts, userId });
   } catch (error) {
     console.error(error);
     res.status(500).send("Server Error");
@@ -389,6 +396,104 @@ router.get("/get-videos/:courseId", async (req, res) => {
   } catch (error) {
     console.error("Error fetching videos:", error);
     return res.status(500).json({ message: "Server error" });
+  }
+});
+//
+//
+//
+//Service Request route
+//
+//
+//
+const ServiceImage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "Service/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`); // Unique name for each file
+  },
+});
+
+const serviceupload = multer({ storage: ServiceImage }).array("images", 5);
+
+router.post(
+  "/create-service-request",
+  verifyToken,
+  serviceupload,
+  async (req, res) => {
+    try {
+      const userId = req.user.identifier;
+
+      // Get the artist's art form
+      const artist = await Artist.findOne({ userId });
+      if (!artist) {
+        return res.status(400).json({ msg: "Artist not found" });
+      }
+
+      const { description } = req.body; // Get description from the body
+      const images = req.files.map((file) => `/Service/${file.filename}`); // Get image paths from uploaded files
+
+      const newServiceRequest = new ServiceRequest({
+        userId,
+        artForm: artist.artForm, // Automatically set from the artist model
+        description,
+        images,
+      });
+
+      await newServiceRequest.save();
+      res.status(201).json(newServiceRequest);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send("Server Error");
+    }
+  }
+);
+
+// Route to retrieve the service requests created by the user (using your existing code)
+router.get("/my-service-requests", verifyToken, async (req, res) => {
+  try {
+    const serviceRequests = await ServiceRequest.find({
+      userId: req.user.identifier,
+    });
+    // console.log(serviceRequests);
+    return res.status(200).json(serviceRequests);
+  } catch (error) {
+    console.error("Error fetching service requests:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Edit a service request (same as before)
+router.put("/service-requests/:id", serviceupload, async (req, res) => {
+  const { description } = req.body;
+  const files = req.files;
+
+  try {
+    const request = await ServiceRequest.findById(req.params.id);
+    if (!request)
+      return res.status(404).json({ message: "Service request not found" });
+
+    request.description = description;
+    if (files.length > 0) {
+      request.images = files.map((file) => `/Service/${file.filename}`);
+    }
+    await request.save();
+
+    res.json(request);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating service request", error });
+  }
+});
+
+// Delete a service request (same as before)
+router.delete("/service-requests/:id", async (req, res) => {
+  try {
+    const request = await ServiceRequest.findByIdAndDelete(req.params.id);
+    if (!request)
+      return res.status(404).json({ message: "Service request not found" });
+    res.json({ message: "Service request deleted" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting service request", error });
   }
 });
 

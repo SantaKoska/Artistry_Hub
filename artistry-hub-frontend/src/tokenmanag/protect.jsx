@@ -11,14 +11,12 @@ const PrivateRoute = ({ children }) => {
   try {
     const decodedToken = jwtDecode(token);
     const currentTime = Date.now() / 1000;
-
+    // checking if token is expired
     if (decodedToken.exp < currentTime) {
-      // Token is expired
-      localStorage.removeItem("token"); // Clear expired token
+      localStorage.removeItem("token"); // clear expired token
       return <Navigate to="/login" />;
     }
   } catch (error) {
-    // If token decoding fails, treat it as an invalid token
     localStorage.removeItem("token");
     return <Navigate to="/login" />;
   }

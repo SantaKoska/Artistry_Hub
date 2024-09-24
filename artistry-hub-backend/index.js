@@ -67,6 +67,8 @@ app.use("/dp", express.static(path.join(__dirname, "dp")));
 
 app.use("/learning", express.static(path.join(__dirname, "learning")));
 
+app.use("/Service", express.static(path.join(__dirname, "Service")));
+
 // serve post images, videos, and audio files
 app.use("/storage", express.static(path.join(__dirname, "../storage")));
 //default route
