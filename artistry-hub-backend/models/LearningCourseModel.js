@@ -11,15 +11,27 @@ const LearningCourseSchema = new mongoose.Schema(
       enum: ["Beginner", "Intermediate", "Professional"],
       required: true,
     },
-    videos: [
+    chapters: [
       {
-        title: String,
-        description: String,
-        mediaUrl: String, // URL to the video file
-        note: {
+        title: {
           type: String,
-          default: "", // Optional note for the video
+          required: true,
         },
+        description: {
+          type: String,
+          required: true,
+        },
+        lessons: [
+          {
+            title: String,
+            description: String,
+            mediaUrl: String, // URL to the video file
+            noteUrl: {
+              type: String,
+              default: "", // url to the PDF note
+            },
+          },
+        ],
       },
     ],
     createdBy: {

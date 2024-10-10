@@ -74,35 +74,35 @@ const ArtistHome = () => {
 
   return (
     <div className="container mx-auto w-full max-w-screen-2xl pt-28 pb-20">
-      <div className="mt-96 pt-40">
+      <div className="grid gap-10 mt-16 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {posts.length > 0 ? (
           posts.map((post) => (
             <div
               key={post._id}
-              className="bg-blue-100 border border-yellow-500 rounded-lg shadow-lg mx-auto p-6 mb-8 w-full max-w-screen-xl"
+              className="bg-white border border-gray-200 rounded-lg shadow-lg mx-auto p-6 mb-8 hover:shadow-2xl transition-shadow duration-300"
             >
               {/* Profile Info */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center">
-                  <img
-                    src={`http://localhost:8000${post.user.profilePicture}`}
-                    alt={post.user.userName}
-                    className="w-12 h-12 rounded-full"
-                  />
-                  <div className="ml-4">
-                    <Link to={`/artist-Home/profile/${post.user.userName}`}>
-                      <p className="font-bold text-lg text-emerald-900 hover:underline">
-                        {post.user.userName}
-                      </p>
-                    </Link>
-                    <p className="text-sm text-gray-600">
-                      {new Date(post.timestamp).toLocaleString()}
+              <div className="flex items-center mb-4">
+                <img
+                  src={`http://localhost:8000${post.user.profilePicture}`}
+                  alt={post.user.userName}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <div className="ml-4">
+                  <Link to={`/artist-Home/profile/${post.user.userName}`}>
+                    <p className="font-bold text-lg text-emerald-900 hover:underline">
+                      {post.user.userName}
                     </p>
-                  </div>
+                  </Link>
+                  <p className="text-sm text-gray-500">
+                    {new Date(post.timestamp).toLocaleString()}
+                  </p>
                 </div>
               </div>
+
               {/* Post Content */}
-              <p className="mb-4 text-black text-base">{post.content}</p>
+              <p className="mb-4 text-gray-700 ">{post.content}</p>
+
               {post.mediaUrl && post.mediaType === "image" && (
                 <img
                   src={`http://localhost:8000${post.mediaUrl}`}
@@ -121,29 +121,32 @@ const ArtistHome = () => {
                 <audio
                   controls
                   src={`http://localhost:8000${post.mediaUrl}`}
-                  className="w-full mb-4"
+                  className="w-full mb-4 mr-20 object-cover rounded-md"
                 />
               )}
+
               {/* Like Button */}
               <div className="flex items-center">
                 <button
-                  className={`${
+                  className={`focus:outline-none ${
                     likedPosts.has(post._id)
-                      ? "text-yellow-500"
-                      : "text-gray-500"
+                      ? "text-red-500"
+                      : "text-gray-500 hover:text-red-500"
                   } transition-colors duration-300`}
                   onClick={() => handleLike(post._id)}
                 >
                   <FaHeart size={24} />
                 </button>
-                <span className="ml-2 text-black text-sm">
-                  Likes: {post.likes}
+                <span className="ml-2 text-gray-700 text-sm">
+                  {post.likes} {post.likes === 1 ? "Like" : "Likes"}
                 </span>
               </div>
             </div>
           ))
         ) : (
-          <p className="text-center text-gray-600">No posts available</p>
+          <p className="text-center text-gray-600 col-span-full">
+            No posts available
+          </p>
         )}
       </div>
     </div>

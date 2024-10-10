@@ -4,24 +4,20 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 
-const CreatePost = () => {
+const CreatePost = ({ onClose }) => {
   const [content, setContent] = useState("");
   const [mediaFile, setMediaFile] = useState(null);
-  const [mediaType, setMediaType] = useState(""); // image, video, audio
-  const [previewUrl, setPreviewUrl] = useState(null); // for media preview
-
-  const token = localStorage.getItem("token"); // JWT token for authorization
+  const [mediaType, setMediaType] = useState("");
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     setMediaFile(file);
-
-    // Generate a preview URL
     const preview = URL.createObjectURL(file);
     setPreviewUrl(preview);
 
-    // Determine media type based on file type
     if (file.type.startsWith("image/")) {
       setMediaType("image");
     } else if (file.type.startsWith("video/")) {
@@ -38,7 +34,6 @@ const CreatePost = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!content && !mediaFile) {
       toast.error("Post content or media is required!");
       return;
@@ -47,26 +42,23 @@ const CreatePost = () => {
     const formData = new FormData();
     formData.append("content", content);
     if (mediaFile) {
-      formData.append("media", mediaFile); // append the media file
-      formData.append("mediaType", mediaType); // send media type to backend
+      formData.append("media", mediaFile);
+      formData.append("mediaType", mediaType);
     }
 
     try {
-      const response = await axios.post(
-        "http://localhost:8000/posts/create-post",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data", // for file uploads
-          },
-        }
-      );
+      await axios.post("http://localhost:8000/posts/create-post", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
       toast.success("Post created successfully!");
       setContent("");
       setMediaFile(null);
       setMediaType("");
-      setPreviewUrl(null); // reset preview
+      setPreviewUrl(null);
+      onClose(); // Close modal after successful submission
       navigate("/artist-Home");
     } catch (error) {
       toast.error(`Failed to create post: ${error.response?.data?.error}`);
@@ -74,7 +66,7 @@ const CreatePost = () => {
   };
 
   return (
-    <div className="bg-slate-800 justify rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 w-full max-w-screen-2xl h-full mx-auto mt-8">
+    <div>
       <form onSubmit={handleSubmit} className="w-full">
         <div className="mb-6">
           <textarea
@@ -95,29 +87,14 @@ const CreatePost = () => {
               type="file"
               onChange={handleFileChange}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              accept="image/*,video/*,audio/*" // restrict file types
+              accept="image/*,video/*,audio/*"
             />
             <div className="flex items-center justify-center py-2 px-6 text-white font-semibold bg-opacity-50 hover:bg-opacity-70 transition-all duration-300">
               Choose File
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 ml-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M3 16s3-3 7-3 7 3 7 3v4H3v-4z"
-                />
-              </svg>
             </div>
           </div>
         </div>
 
-        {/* media Preview */}
         {previewUrl && mediaType === "image" && (
           <div className="mb-6">
             <img
@@ -127,7 +104,6 @@ const CreatePost = () => {
             />
           </div>
         )}
-
         {previewUrl && mediaType === "video" && (
           <div className="mb-6">
             <video controls className="w-full h-auto rounded-lg shadow-lg">
@@ -135,7 +111,6 @@ const CreatePost = () => {
             </video>
           </div>
         )}
-
         {previewUrl && mediaType === "audio" && (
           <div className="mb-6">
             <audio controls className="w-full rounded-lg shadow-lg">

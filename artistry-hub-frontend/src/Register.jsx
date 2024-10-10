@@ -365,7 +365,7 @@ const Register = () => {
   };
 
   return (
-    <div className=" bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 relative">
+    <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 relative mt-96">
       <div>
         <h1 className="text-4xl font-semibold text-white text-center mb-6">
           Register

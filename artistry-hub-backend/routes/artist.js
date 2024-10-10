@@ -6,6 +6,7 @@ const Post = require("../models/PostModels");
 const Follower = require("../models/FollowerModels");
 const LearningCourse = require("../models/LearningCourseModel");
 const ServiceRequest = require("../models/ServiceRequestModels");
+const path = require("path");
 const multer = require("multer");
 
 //authentication
@@ -187,217 +188,333 @@ router.get("/homeposts", verifyToken, async (req, res) => {
 
 const videoStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "learning/videos/"); // Path to save videos
+    const videosPath = path.join(__dirname, "../learning/videos/");
+    const notesPath = path.join(__dirname, "../learning/notes/");
+    // Check the file type and save to the appropriate folder
+    if (file.mimetype.startsWith("video")) {
+      cb(null, videosPath);
+    } else {
+      cb(null, notesPath);
+    }
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`); // Unique name for each file
+    // Save the file with a unique name (timestamp)
+    cb(null, `${Date.now()}-${file.originalname}`);
   },
 });
 
-const videoUpload = multer({ storage: videoStorage });
+const videoornoteUpload = multer({ storage: videoStorage });
+
+// Helper function for checking course existence
+const findCourseById = async (courseId) => {
+  const course = await LearningCourse.findById(courseId);
+  if (!course) throw new Error("Course not found");
+  return course;
+};
+
+// Helper function for checking chapter existence
+const findChapterInCourse = (course, chapterId) => {
+  const chapter = course.chapters.id(chapterId);
+  if (!chapter) throw new Error("Chapter not found");
+  return chapter;
+};
 
 // Create a new course
 router.post("/create-course", verifyToken, async (req, res) => {
   const { courseName, level } = req.body;
-
+  // console.log("req body", req.body);
   try {
-    // Check if a course with the same name already exists
     const existingCourse = await LearningCourse.findOne({ courseName });
-
     if (existingCourse) {
-      return res.status(400).json({
-        message: "Course name already exists. Please choose a different name.",
-      });
+      return res.status(400).json({ message: "Course name already exists." });
     }
 
-    // Create the new course if the name is unique
     const newCourse = new LearningCourse({
       courseName,
       level,
-      videos: [],
+      chapters: [],
       createdBy: req.user.identifier,
     });
 
+    console.log("find the new course information", req.user.identifier);
     await newCourse.save();
-
-    // Add course reference to the artist's teaching courses
     await Artist.findOneAndUpdate(
       { userId: req.user.identifier },
       { $push: { teachingCourse: newCourse._id } }
     );
-
     res.status(201).json(newCourse);
   } catch (error) {
     console.error("Error creating course:", error);
-    res
-      .status(500)
-      .json({ message: "Internal Server Error", error: error.message });
+    res.status(500).json({ message: "Error creating course", error });
   }
 });
 
-// Add video with optional note to course
-router.post(
-  "/add-video/:courseId",
-  verifyToken,
-  videoUpload.single("video"),
-  async (req, res) => {
-    const { courseId } = req.params;
-    const { title, description, note } = req.body;
+// Delete course by ID
+router.delete("/delete-course/:id", verifyToken, async (req, res) => {
+  const { id } = req.params;
 
-    try {
-      const course = await LearningCourse.findById(courseId);
-      if (!course) return res.status(404).json({ error: "Course not found" });
+  try {
+    const course = await LearningCourse.findById(id);
 
-      // Limit videos to a maximum of 10
-      if (course.videos.length >= 10) {
-        return res
-          .status(400)
-          .json({ error: "Cannot add more than 10 videos" });
-      }
-
-      const videoObj = {
-        title,
-        description,
-        mediaUrl: `/learning/videos/${req.file.filename}`, // Store video path
-        note, // Directly associate the note with the video
-      };
-
-      course.videos.push(videoObj);
-      await course.save();
-      res.status(200).json(course);
-    } catch (error) {
-      console.error("Error adding video:", error);
-      res
-        .status(500)
-        .json({ message: "Internal Server Error", error: error.message });
+    if (!course) {
+      return res.status(404).json({ message: "Course not found." });
     }
-  }
-);
 
-// Edit a course
-router.put("/edit-course/:courseId", verifyToken, async (req, res) => {
-  const { courseId } = req.params;
-  const { courseName, level } = req.body;
+    // Check if the user is authorized to delete the course
+    if (course.createdBy.toString() !== req.user.identifier) {
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to delete this course." });
+    }
 
-  try {
-    const course = await LearningCourse.findById(courseId);
-    if (!course) return res.status(404).json({ error: "Course not found" });
-
-    course.courseName = courseName || course.courseName;
-    course.level = level || course.level;
-
-    await course.save();
-    res.status(200).json(course);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to update course" });
-  }
-});
-
-// Delete a course
-router.delete("/delete-course/:courseId", verifyToken, async (req, res) => {
-  const { courseId } = req.params;
-  try {
-    await LearningCourse.findByIdAndDelete(courseId);
-
-    // Also remove the course reference from artist's teaching courses
+    // Remove course from the artist's teachingCourse array
     await Artist.findOneAndUpdate(
       { userId: req.user.identifier },
-      { $pull: { teachingCourse: courseId } }
+      { $pull: { teachingCourse: course._id } }
     );
 
-    res.status(200).json({ message: "Course deleted successfully" });
+    // Delete the course
+    await LearningCourse.deleteOne({ _id: id });
+    res.status(200).json({ message: "Course deleted successfully." });
   } catch (error) {
-    res.status(500).json({ error: "Failed to delete course" });
+    console.error("Error deleting course:", error);
+    res.status(500).json({ message: "Error deleting course", error });
   }
 });
 
-// Edit a video within a course
-router.put(
-  "/edit-video/:courseId/:videoId",
+router.get("/my-courses", verifyToken, async (req, res) => {
+  try {
+    // Fetch courses created by the authenticated user
+    const courses = await LearningCourse.find({
+      createdBy: req.user.identifier,
+    }).populate("chapters");
+
+    if (!courses.length) {
+      return res
+        .status(200)
+        .json({ message: "No courses found for this user." });
+    }
+
+    res.status(200).json(courses);
+  } catch (error) {
+    console.log("Error fetching courses:", error);
+    res.status(500).json({ message: "Error fetching courses", error });
+  }
+});
+
+// Add Chapter to a Course
+router.post("/add-chapter/:courseId", verifyToken, async (req, res) => {
+  const { courseId } = req.params;
+  const { title, description } = req.body;
+
+  try {
+    const course = await findCourseById(courseId);
+    course.chapters.push({ title, description, lessons: [] });
+    await course.save();
+    res.status(200).json(course);
+    console.log(course);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error adding chapter", error });
+  }
+});
+
+// Add Lesson (video, note) to Chapter
+router.post(
+  "/add-lesson/:courseId/:chapterId",
   verifyToken,
-  videoUpload.single("video"), // Include file upload handler
+  videoornoteUpload.fields([
+    { name: "video", maxCount: 1 },
+    { name: "note", maxCount: 1 },
+  ]),
   async (req, res) => {
-    const { courseId, videoId } = req.params;
-    const { title, description, note } = req.body;
-    console.log(req.body);
+    const { courseId, chapterId } = req.params;
+    const { title, description } = req.body;
+    console.log(req.params);
 
     try {
-      const course = await LearningCourse.findById(courseId);
-      if (!course) return res.status(404).json({ error: "Course not found" });
+      const course = await findCourseById(courseId);
+      const chapter = findChapterInCourse(course, chapterId);
 
-      const video = course.videos.id(videoId);
-      if (!video) return res.status(404).json({ error: "Video not found" });
-
-      video.title = title || video.title;
-      video.description = description || video.description;
-      video.note = note || video.note; // Update the note if provided
-
-      // Handle video file replacement
-      if (req.file) {
-        video.mediaUrl = `/learning/videos/${req.file.filename}`; // Update the video URL with new file path
+      if (chapter.lessons.length >= 10) {
+        return res.status(400).json({
+          message: "Cannot add more than 10 lessons to this chapter.",
+        });
       }
+
+      // Fetch video and note file paths
+      const videoFile =
+        req.files && req.files.video ? req.files.video[0].filename : null;
+      const noteFile =
+        req.files && req.files.note ? req.files.note[0].filename : null;
+
+      chapter.lessons.push({
+        title,
+        description,
+        mediaUrl: videoFile ? `/learning/videos/${videoFile}` : null,
+        noteUrl: noteFile ? `/learning/notes/${noteFile}` : "",
+      });
 
       await course.save();
       res.status(200).json(course);
     } catch (error) {
-      res.status(500).json({ error: "Failed to update video" });
+      console.error("Error adding lesson:", error);
+      res.status(500).json({ message: "Error adding lesson", error });
     }
   }
 );
 
-// Delete a video from a course
-router.delete(
-  "/delete-video/:courseId/:videoId",
+// Edit Chapter
+router.put(
+  "/edit-chapter/:courseId/:chapterId",
   verifyToken,
   async (req, res) => {
-    const { courseId, videoId } = req.params;
+    const { courseId, chapterId } = req.params;
+    const { title, description } = req.body;
 
     try {
-      const course = await LearningCourse.findById(courseId);
-      if (!course) return res.status(404).json({ error: "Course not found" });
+      const course = await findCourseById(courseId);
+      const chapter = findChapterInCourse(course, chapterId);
 
-      course.videos = course.videos.filter(
-        (video) => video._id.toString() !== videoId
+      chapter.title = title || chapter.title;
+      chapter.description = description || chapter.description;
+
+      await course.save();
+      res.status(200).json(course);
+    } catch (error) {
+      res.status(500).json({ message: "Error editing chapter", error });
+    }
+  }
+);
+
+// Delete Chapter
+router.delete(
+  "/delete-chapter/:courseId/:chapterId",
+  verifyToken,
+  async (req, res) => {
+    const { courseId, chapterId } = req.params;
+
+    try {
+      const course = await findCourseById(courseId);
+      course.chapters = course.chapters.filter(
+        (ch) => ch._id.toString() !== chapterId
       );
       await course.save();
       res.status(200).json(course);
     } catch (error) {
-      res.status(500).json({ error: "Failed to delete video" });
+      res.status(500).json({ message: "Error deleting chapter", error });
     }
   }
 );
 
-// Get courses created by the artist
-router.get("/my-courses", verifyToken, async (req, res) => {
-  try {
-    const courses = await LearningCourse.find({
-      createdBy: req.user.identifier,
-    });
+// Edit Lesson
+router.put(
+  "/edit-lesson/:courseId/:chapterId/:lessonId",
+  verifyToken,
+  videoornoteUpload.fields([
+    { name: "video", maxCount: 1 },
+    { name: "note", maxCount: 1 },
+  ]),
+  async (req, res) => {
+    const { courseId, chapterId, lessonId } = req.params;
+    const { title, description } = req.body;
 
-    if (courses.length === 0) {
-      return res.status(200).json({ message: "No courses found" });
+    try {
+      const course = await findCourseById(courseId);
+      const chapter = findChapterInCourse(course, chapterId);
+      const lesson = chapter.lessons.id(lessonId);
+
+      lesson.title = title || lesson.title;
+      lesson.description = description || lesson.description;
+      lesson.mediaUrl = req.file
+        ? `/learning/videos/${req.file.filename}`
+        : lesson.mediaUrl;
+      lesson.noteUrl = req.file
+        ? `/learning/notes/${req.file.filename}`
+        : lesson.noteUrl;
+
+      await course.save();
+      res.status(200).json(course);
+    } catch (error) {
+      res.status(500).json({ message: "Error editing lesson", error });
     }
-    res.status(200).json(courses);
-    // console.log(courses);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch courses" });
   }
-});
+);
 
-// Get videos in a specific course
-router.get("/get-videos/:courseId", async (req, res) => {
+// Delete Lesson
+router.delete(
+  "/delete-lesson/:courseId/:chapterId/:lessonId",
+  verifyToken,
+  async (req, res) => {
+    console.log(req.params);
+    const { courseId, chapterId, lessonId } = req.params;
+
+    try {
+      const course = await findCourseById(courseId);
+      const chapter = findChapterInCourse(course, chapterId);
+
+      chapter.lessons = chapter.lessons.filter(
+        (lesson) => lesson._id.toString() !== lessonId
+      );
+      await course.save();
+      res.status(200).json(course);
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting lesson", error });
+    }
+  }
+);
+
+// Edit Course Details (Course Name, Level, etc.)
+router.put("/edit-course/:courseId", verifyToken, async (req, res) => {
+  const { courseId } = req.params;
+  const { courseName, level, chapters } = req.body; // Assuming you're sending the courseName, level, and chapters
+
   try {
-    const { courseId } = req.params;
-
     const course = await LearningCourse.findById(courseId);
-    if (!course) return res.status(404).json({ message: "Course not found" });
+    if (!course) {
+      return res.status(404).json({ message: "Course not found." });
+    }
 
-    return res.status(200).json({ videos: course.videos });
+    // Check if the courseName is unique (excluding current course)
+    if (courseName && courseName !== course.courseName) {
+      const existingCourse = await LearningCourse.findOne({ courseName });
+      if (existingCourse) {
+        return res.status(400).json({ message: "Course name already exists." });
+      }
+    }
+
+    // Update course details
+    course.courseName = courseName || course.courseName;
+    course.level = level || course.level;
+
+    // If chapters are provided in the request body, update the chapters
+    if (chapters && Array.isArray(chapters)) {
+      course.chapters = chapters.map((chapter) => {
+        return {
+          _id: chapter._id, // Keep the original chapter ID
+          title: chapter.title || "",
+          description: chapter.description || "",
+          lessons: chapter.lessons
+            ? chapter.lessons.map((lesson) => ({
+                _id: lesson._id, // Keep the original lesson ID
+                title: lesson.title || "",
+                description: lesson.description || "",
+                mediaUrl: lesson.mediaUrl || "",
+                noteUrl: lesson.noteUrl || "",
+              }))
+            : [], // Map lessons or leave as an empty array
+        };
+      });
+    }
+
+    await course.save(); // Save updated course
+    res.status(200).json(course);
   } catch (error) {
-    console.error("Error fetching videos:", error);
-    return res.status(500).json({ message: "Server error" });
+    console.error;
+    res.status(500).json({ message: "Error updating course", error });
   }
 });
+
 //
 //
 //

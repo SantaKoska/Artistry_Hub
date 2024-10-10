@@ -93,10 +93,10 @@ const CommonProfile = () => {
 
   return (
     <>
-      <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 w-full max-w-screen-lg mt-36 mb-16">
+      <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 w-full max-w-screen-lg mx-auto mb-16">
         {profile && (
           <>
-            <div className="flex flex-col md:flex-row gap-10 items-center">
+            <div className="flex flex-col md:flex-row gap-10 items-center justify-between">
               <div className="flex flex-col items-center">
                 <img
                   src={`http://localhost:8000${profile.profilePicture}`}

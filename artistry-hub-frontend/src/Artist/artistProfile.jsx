@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { BiUser } from "react-icons/bi";
 import Modal from "react-modal";
 import { useNavigate } from "react-router-dom";
 
@@ -56,7 +55,12 @@ const ArtistProfile = () => {
   const handleCloseModal = () => setModalIsOpen(false);
 
   const handleFileChange = (e) => {
-    setFormData({ ...formData, profilePicture: e.target.files[0] });
+    const file = e.target.files[0];
+    if (file && file.type.startsWith("image/")) {
+      setFormData({ ...formData, profilePicture: file });
+    } else {
+      toast.error("Please upload a valid image file");
+    }
   };
 
   const handleSave = async (e) => {
@@ -124,7 +128,7 @@ const ArtistProfile = () => {
 
   return (
     <>
-      <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 w-full max-w-screen-lg mt-36 mb-16">
+      <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 max-w-screen-lg w-full mx-auto">
         {profile && (
           <>
             <div className="flex flex-col md:flex-row gap-10 items-center">
@@ -238,99 +242,26 @@ const ArtistProfile = () => {
           overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
         >
           <h2 className="text-white text-2xl mb-4">Confirm Deletion</h2>
-          <p className="text-white mb-4">
+          <p className="text-white">
             Are you sure you want to delete this post?
           </p>
-          <div className="flex justify-between">
-            <button
-              onClick={handleDeletePost}
-              className="w-1/2 text-[18px] font-semibold rounded-full bg-red-500 text-white hover:bg-red-600 py-2 transition-colors duration-400"
-            >
-              Yes, Delete
-            </button>
+          <div className="flex justify-between mt-4">
             <button
               onClick={handleCloseConfirmationModal}
-              className="w-1/2 text-[18px] font-semibold rounded-full bg-green-500 text-white hover:bgc py-2 transition-colors duration-400"
+              className="bg-gray-500 text-white rounded px-4 py-2"
             >
-              No, Cancel
+              Cancel
+            </button>
+            <button
+              onClick={handleDeletePost}
+              className="bg-red-500 text-white rounded px-4 py-2"
+            >
+              Delete
             </button>
           </div>
         </Modal>
 
-        {/* Edit Profile Modal */}
-        <Modal
-          isOpen={modalIsOpen}
-          onRequestClose={handleCloseModal}
-          className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 w-full md:w-2/3 lg:w-1/2 mx-auto"
-          overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
-        >
-          <h2 className="text-white text-2xl mb-4">Edit Profile</h2>
-          <form onSubmit={handleSave}>
-            <div className="flex flex-col space-y-4">
-              <label htmlFor="description" className="text-white">
-                Description
-              </label>
-              <textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                className="p-2 rounded-md bg-slate-600 text-white"
-              />
-              <label htmlFor="artForm" className="text-white">
-                Art Form
-              </label>
-              <input
-                id="artForm"
-                value={formData.artForm}
-                onChange={(e) =>
-                  setFormData({ ...formData, artForm: e.target.value })
-                }
-                className="p-2 rounded-md bg-slate-600 text-white"
-              />
-              <label htmlFor="specialisation" className="text-white">
-                Specialization
-              </label>
-              <input
-                id="specialisation"
-                value={formData.specialisation}
-                onChange={(e) =>
-                  setFormData({ ...formData, specialisation: e.target.value })
-                }
-                className="p-2 rounded-md bg-slate-600 text-white"
-              />
-              <label htmlFor="userName" className="text-white">
-                Username
-              </label>
-              <input
-                id="userName"
-                value={formData.userName}
-                onChange={(e) =>
-                  setFormData({ ...formData, userName: e.target.value })
-                }
-                className="p-2 rounded-md bg-slate-600 text-white"
-              />
-              <label htmlFor="profilePicture" className="text-white">
-                Profile Picture
-              </label>
-              <input
-                id="profilePicture"
-                type="file"
-                onChange={handleFileChange}
-                className="p-2 rounded-md bg-slate-600 text-white"
-                accept="image/*"
-              />
-              <button
-                type="submit"
-                className="w-full md:w-64 text-[18px] font-semibold rounded-full bg-white text-black hover:bg-emerald-900 hover:text-white py-2 transition-colors duration-400"
-              >
-                Save
-              </button>
-            </div>
-          </form>
-        </Modal>
-
+        {/* Logout Modal */}
         <Modal
           isOpen={logoutModalIsOpen}
           onRequestClose={handleCloseLogoutModal}
@@ -338,24 +269,101 @@ const ArtistProfile = () => {
           overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
         >
           <h2 className="text-white text-2xl mb-4">Confirm Logout</h2>
-          <p className="text-white mb-4">Are you sure you want to log out?</p>
-          <div className="flex justify-between">
-            <button
-              onClick={() => {
-                handleLogout();
-                handleCloseLogoutModal();
-              }}
-              className="w-1/2 text-[18px] font-semibold rounded-full bg-red-500 text-white hover:bg-red-600 py-2 transition-colors duration-400"
-            >
-              Yes, Logout
-            </button>
+          <p className="text-white">Are you sure you want to logout?</p>
+          <div className="flex justify-between mt-4">
             <button
               onClick={handleCloseLogoutModal}
-              className="w-1/2 text-[18px] font-semibold rounded-full bg-green-500 text-white hover:bg-green-600 py-2 transition-colors duration-400"
+              className="bg-gray-500 text-white rounded px-4 py-2"
             >
-              No, Cancel
+              Cancel
+            </button>
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 text-white rounded px-4 py-2"
+            >
+              Logout
             </button>
           </div>
+        </Modal>
+
+        {/* Profile Edit Modal */}
+        <Modal
+          isOpen={modalIsOpen}
+          onRequestClose={handleCloseModal}
+          className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 w-full md:w-1/3 mx-auto"
+          overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
+        >
+          <h2 className="text-white text-2xl mb-4">Edit Profile</h2>
+          <form onSubmit={handleSave} className="space-y-4">
+            <div>
+              <label className="block text-white">Description</label>
+              <input
+                type="text"
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                className="w-full p-2 rounded-md"
+              />
+            </div>
+            <div>
+              <label className="block text-white">Art Form</label>
+              <input
+                type="text"
+                value={formData.artForm}
+                onChange={(e) =>
+                  setFormData({ ...formData, artForm: e.target.value })
+                }
+                className="w-full p-2 rounded-md"
+              />
+            </div>
+            <div>
+              <label className="block text-white">Specialization</label>
+              <input
+                type="text"
+                value={formData.specialisation}
+                onChange={(e) =>
+                  setFormData({ ...formData, specialisation: e.target.value })
+                }
+                className="w-full p-2 rounded-md"
+              />
+            </div>
+            <div>
+              <label className="block text-white">Username</label>
+              <input
+                type="text"
+                value={formData.userName}
+                onChange={(e) =>
+                  setFormData({ ...formData, userName: e.target.value })
+                }
+                className="w-full p-2 rounded-md"
+              />
+            </div>
+            <div>
+              <label className="block text-white">Profile Picture</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="block w-full text-white"
+              />
+            </div>
+            <div className="flex justify-between">
+              <button
+                type="submit"
+                className="bg-emerald-500 text-white rounded px-4 py-2"
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                onClick={handleCloseModal}
+                className="bg-red-500 text-white rounded px-4 py-2"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
         </Modal>
       </div>
     </>

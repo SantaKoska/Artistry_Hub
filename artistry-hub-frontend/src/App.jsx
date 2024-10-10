@@ -12,10 +12,13 @@ import ArtistBase from "./Artist/artistBase";
 import backgroundImage from "./assets/Van-Gogh-Starry-Night.svg";
 import { Routes } from "react-router-dom";
 import ArtistHome from "./Artist/artistHome";
-import CreatePost from "./Artist/createPost";
 import CommonProfile from "./common";
 import MyCourses from "./Artist/Learning/MyCourses";
 import CreateServiceRequest from "./Artist/artistServiceRequest";
+import LoginRegisterBase from "./loginregisterbase";
+import HomePage from "./home";
+import EditCourse from "./Artist/Learning/EditCourse";
+import AddCourse from "./Artist/Learning/AddCourse";
 
 function App() {
   return (
@@ -29,9 +32,19 @@ function App() {
         <ToastContainer />
         {/* Routes */}
         <Routes>
-          <Route path="login" element={<Login />} />
-          <Route path="register" element={<Register />} />
+          <Route path="/" element={<LoginRegisterBase />}>
+            <Route path="login" element={<Login />} />
+            <Route path="register" element={<Register />} />
+          </Route>
           <Route path="login/forgotpassword" element={<ForgotPassword />} />
+          <Route
+            path="/home"
+            element={
+              <PrivateRoute>
+                <HomePage />
+              </PrivateRoute>
+            }
+          />
           <Route
             path="/artist-Home"
             element={
@@ -42,9 +55,10 @@ function App() {
           >
             <Route index element={<ArtistHome />} />
             <Route path="artistprofile" element={<ArtistProfile />} />
-            <Route path="createpost" element={<CreatePost />} />
             <Route path="profile/:username" element={<CommonProfile />} />
             <Route path="my-courses" element={<MyCourses />} />
+            <Route path="add-course" element={<AddCourse />} />
+            <Route path="edit-course/:courseid" element={<EditCourse />} />
             <Route path="Service-Request" element={<CreateServiceRequest />} />
           </Route>
           <Route path="reset-password/:token" element={<ResetPassword />} />
