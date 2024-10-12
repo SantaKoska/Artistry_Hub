@@ -172,14 +172,12 @@ const CreateServiceRequest = () => {
                   className="bg-yellow-400 text-black p-2 rounded-lg hover:bg-yellow-500 flex items-center"
                 >
                   <BiEdit className="w-5 h-5 mr-2" /> {/* Edit icon */}
-                  Edit
                 </button>
                 <button
                   onClick={() => handleDelete(request._id)}
                   className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 flex items-center"
                 >
                   <BiTrash className="w-5 h-5 mr-2" /> {/* Delete icon */}
-                  Delete
                 </button>
               </div>
             </li>

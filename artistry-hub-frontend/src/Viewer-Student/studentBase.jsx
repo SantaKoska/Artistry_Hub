@@ -5,7 +5,7 @@ import Logo from "../assets/LOGO.png";
 import CreatePost from "../common/createPost"; // Import the CreatePost component
 import axios from "axios"; // Assuming you use axios for API calls
 
-const ArtistBase = () => {
+const StudentBase = () => {
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [userData, setUserData] = useState({
     userName: "",
@@ -25,7 +25,6 @@ const ArtistBase = () => {
           }
         );
         setUserData(response.data.profile);
-        // console.log(response.data);
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -42,7 +41,7 @@ const ArtistBase = () => {
           {/* Message Icon */}
           <div className="flex items-center">
             <Link
-              to="/artist-Home/Message"
+              to="/student-Home/Message"
               className="text-white hover:text-yellow-400 transition-colors duration-300"
             >
               <FaEnvelope size={20} aria-label="Messages" />
@@ -61,7 +60,7 @@ const ArtistBase = () => {
               <span className="text-gray-400 text-sm">{userData.role}</span>
             </div>
             <Link
-              to="/artist-Home/artistprofile"
+              to="/student-Home/studentprofile"
               className="text-white hover:text-yellow-400 transition-colors duration-300"
             >
               <img
@@ -100,8 +99,8 @@ const ArtistBase = () => {
         <footer>
           <nav className="flex justify-around p-2 text-white">
             {[
-              { to: "/artist-Home", icon: <FaHome size={20} /> },
-              { to: "/artist-Home/my-courses", icon: <FaBook size={20} /> },
+              { to: "/student-Home", icon: <FaHome size={20} /> },
+              { to: "/student-Home/my-courses", icon: <FaBook size={20} /> },
               {
                 icon: (
                   <FaPlus
@@ -112,7 +111,7 @@ const ArtistBase = () => {
                 ),
               },
               {
-                to: "/artist-Home/Service-Request",
+                to: "/student-Home/service-requests",
                 icon: <span className="text-xl font-bold leading-none">S</span>,
               },
             ].map(({ to, icon }, index) => (
@@ -136,4 +135,4 @@ const ArtistBase = () => {
   );
 };
 
-export default ArtistBase;
+export default StudentBase;

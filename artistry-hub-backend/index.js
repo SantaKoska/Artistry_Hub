@@ -7,6 +7,7 @@ const authRoutes = require("./routes/auth");
 const artistRoutes = require("./routes/artist");
 const post = require("./routes/post");
 const commonthings = require("./routes/common");
+const message = require("./routes/message");
 const User = require("./models/UserModel");
 const cors = require("cors");
 const path = require("path");
@@ -89,6 +90,8 @@ app.use("/common-things", commonthings);
 app.use("/artist", artistRoutes);
 
 app.use("/posts", post);
+
+app.use("/message", message);
 
 //the app losening to the port
 app.listen(8000, () => {

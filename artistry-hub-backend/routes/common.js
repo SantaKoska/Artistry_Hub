@@ -43,7 +43,6 @@ router.get("/profile/:username", verifyToken, async (req, res) => {
         additionalData = {
           artForm: artistData.artForm,
           specialisation: artistData.specialisation,
-          // Add other artist-specific fields here
         };
         break;
 
@@ -53,8 +52,7 @@ router.get("/profile/:username", verifyToken, async (req, res) => {
         });
         additionalData = {
           coursesEnrolled: viewerStudentData.coursesEnrolled,
-          favoriteArtists: viewerStudentData.favoriteArtists,
-          // Add other viewer/student-specific fields here
+          favoriteArtists: viewerStudentData.artForm,
         };
         break;
 
@@ -152,6 +150,31 @@ router.post("/profile/:username/follow", verifyToken, async (req, res) => {
     }
   } catch (error) {
     console.error("Error following/unfollowing user:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/usericon", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.identifier; // Assuming the token contains user ID
+    const user = await User.findById(userId).select(
+      "userName role profilePicture"
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Send back the user's username, role, and profile picture
+    res.json({
+      profile: {
+        userName: user.userName,
+        role: user.role,
+        profilePicture: user.profilePicture, // Include the profile picture
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
     res.status(500).json({ message: "Server error" });
   }
 });

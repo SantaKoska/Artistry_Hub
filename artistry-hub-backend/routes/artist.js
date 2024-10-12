@@ -144,8 +144,38 @@ router.get("/homeposts", verifyToken, async (req, res) => {
   try {
     const userId = req.user.identifier;
 
-    // Get user's artForm (if needed)
-    const artist = await Artist.findOne({ userId });
+    // Get posts by users followed by the logged-in user
+    const followedUsers = await Follower.find({ followerId: userId }).select(
+      "followingId"
+    );
+    const followedUserIds = followedUsers.map((f) => f.followingId);
+
+    // Fetch the latest 10 posts from followed users
+    const followedPosts = await Post.find({ user: { $in: followedUserIds } })
+      .populate("user")
+      .sort({ timestamp: -1 }) // Sort by timestamp in descending order
+      .limit(10);
+
+    // Fetch the latest 10 posts from users not followed by the logged-in user
+    const nonFollowedPosts = await Post.find({
+      user: { $nin: followedUserIds.concat([userId]) }, // Posts by others except the user
+    })
+      .populate("user")
+      .sort({ timestamp: -1 }) // Sort by timestamp in descending order
+      .limit(10);
+
+    // Combine the two sets of posts
+    const posts = [...followedPosts, ...nonFollowedPosts];
+
+    res.json({ posts, userId });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server Error");
+  }
+});
+router.get("/homeposts", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.identifier;
 
     // Get posts by users followed by the logged-in user
     const followedUsers = await Follower.find({ followerId: userId }).select(
@@ -153,27 +183,24 @@ router.get("/homeposts", verifyToken, async (req, res) => {
     );
     const followedUserIds = followedUsers.map((f) => f.followingId);
 
-    // Fetch followed posts and sort by createdAt
+    // Fetch the latest 10 posts from followed users
     const followedPosts = await Post.find({ user: { $in: followedUserIds } })
       .populate("user")
-      .sort({ createdAt: -1 }) // Sort by createdAt in descending order
+      .sort({ timestamp: -1 }) // Sort by timestamp in descending order
       .limit(10);
 
-    // Fetch posts by all other users and sort by createdAt
-    const otherPosts = await Post.find({
-      user: { $nin: followedUserIds.concat([userId]) },
+    // Fetch the latest 10 posts from users not followed by the logged-in user
+    const nonFollowedPosts = await Post.find({
+      user: { $nin: followedUserIds.concat([userId]) }, // Posts by others except the user
     })
       .populate("user")
-      .sort({ createdAt: -1 }) // Sort by createdAt in descending order
+      .sort({ timestamp: -1 }) // Sort by timestamp in descending order
       .limit(10);
 
-    // Combine both followed and other posts
-    const posts = [...followedPosts, ...otherPosts];
+    // Combine the two sets of posts
+    const posts = [...followedPosts, ...nonFollowedPosts];
 
-    // Sort the combined posts by createdAt to get the most recent posts first
-    const sortedPosts = posts.sort((a, b) => b.createdAt - a.createdAt);
-
-    res.json({ posts: sortedPosts, userId });
+    res.json({ posts, userId });
   } catch (error) {
     console.error(error);
     res.status(500).send("Server Error");

@@ -35,6 +35,7 @@ const ArtistProfile = () => {
       );
       const profileData = response.data;
       setProfile(profileData);
+      // console.log(profileData);
       setFormData({
         description: profileData.description,
         artForm: profileData.artForm,

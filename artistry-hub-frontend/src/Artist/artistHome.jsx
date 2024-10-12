@@ -48,6 +48,7 @@ const ArtistHome = () => {
         }
       );
 
+      // Refetch posts to update the like count and liked posts
       const updatedPosts = await axios.get(
         "http://localhost:8000/artist/homeposts",
         {
@@ -101,7 +102,7 @@ const ArtistHome = () => {
               </div>
 
               {/* Post Content */}
-              <p className="mb-4 text-gray-700 ">{post.content}</p>
+              <p className="mb-4 text-gray-700">{post.content}</p>
 
               {post.mediaUrl && post.mediaType === "image" && (
                 <img
@@ -121,7 +122,7 @@ const ArtistHome = () => {
                 <audio
                   controls
                   src={`http://localhost:8000${post.mediaUrl}`}
-                  className="w-full mb-4 mr-20 object-cover rounded-md"
+                  className="w-full mb-4"
                 />
               )}
 

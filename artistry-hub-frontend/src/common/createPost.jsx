@@ -100,7 +100,7 @@ const CreatePost = ({ onClose }) => {
             <img
               src={previewUrl}
               alt="Preview"
-              className="w-full h-auto rounded-lg shadow-lg transition-transform duration-200 hover:scale-105"
+              className="w-full h-52 rounded-lg shadow-lg transition-transform duration-200 hover:scale-105"
             />
           </div>
         )}
