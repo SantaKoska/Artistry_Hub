@@ -97,6 +97,7 @@ const MessagePage = () => {
       setRequests((prevRequests) =>
         prevRequests.filter((request) => request.sender !== requesterId)
       );
+      fetchChatList();
     } catch (error) {
       console.error("Error accepting request:", error);
     }
@@ -146,22 +147,19 @@ const MessagePage = () => {
         }
       );
 
+      setMessageInput("");
+
       // Update the local messages state with the new message
       setMessages((prevMessages) => [
         ...prevMessages,
         { content: messageInput, sender: user._id },
       ]);
-      setMessageInput(""); // Clear the input
     } catch (error) {
-      toast.error(
-        `Error sending message: ${
-          error.response?.data?.message || "An error occurred"
-        }`,
-        {
-          position: "top-center",
-          autoClose: 3000,
-        }
-      );
+      setMessageInput("");
+      toast.error(`Error sending message: ${error.response?.data?.message}`, {
+        position: "top-center",
+        autoClose: 3000,
+      });
     }
   };
 
@@ -230,7 +228,7 @@ const MessagePage = () => {
             fetchSearchResults(e.target.value);
           }}
         />
-        <BiSearch className="absolute left-3 top-3 text-gray-400" />
+        <BiSearch className="absolute left-9 top-7 text-gray-400" />
 
         {/* Search results */}
         {searchResults.length > 0 && (

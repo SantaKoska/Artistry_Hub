@@ -71,7 +71,6 @@ router.put(
     try {
       const user = req.user; // extracted from token
       const { description, artForm, specialisation, userName } = req.body;
-
       // fetch user, profile, and artist
       const userRecord = await User.findById(user.identifier);
       const artist = await Artist.findOne({ userId: user.identifier });
@@ -173,39 +172,6 @@ router.get("/homeposts", verifyToken, async (req, res) => {
     res.status(500).send("Server Error");
   }
 });
-router.get("/homeposts", verifyToken, async (req, res) => {
-  try {
-    const userId = req.user.identifier;
-
-    // Get posts by users followed by the logged-in user
-    const followedUsers = await Follower.find({ followerId: userId }).select(
-      "followingId"
-    );
-    const followedUserIds = followedUsers.map((f) => f.followingId);
-
-    // Fetch the latest 10 posts from followed users
-    const followedPosts = await Post.find({ user: { $in: followedUserIds } })
-      .populate("user")
-      .sort({ timestamp: -1 }) // Sort by timestamp in descending order
-      .limit(10);
-
-    // Fetch the latest 10 posts from users not followed by the logged-in user
-    const nonFollowedPosts = await Post.find({
-      user: { $nin: followedUserIds.concat([userId]) }, // Posts by others except the user
-    })
-      .populate("user")
-      .sort({ timestamp: -1 }) // Sort by timestamp in descending order
-      .limit(10);
-
-    // Combine the two sets of posts
-    const posts = [...followedPosts, ...nonFollowedPosts];
-
-    res.json({ posts, userId });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Server Error");
-  }
-});
 
 //
 //
@@ -263,7 +229,7 @@ router.post("/create-course", verifyToken, async (req, res) => {
       createdBy: req.user.identifier,
     });
 
-    console.log("find the new course information", req.user.identifier);
+    // console.log("find the new course information", req.user.identifier);
     await newCourse.save();
     await Artist.findOneAndUpdate(
       { userId: req.user.identifier },
@@ -339,7 +305,7 @@ router.post("/add-chapter/:courseId", verifyToken, async (req, res) => {
     course.chapters.push({ title, description, lessons: [] });
     await course.save();
     res.status(200).json(course);
-    console.log(course);
+    // console.log(course);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error adding chapter", error });
@@ -357,7 +323,7 @@ router.post(
   async (req, res) => {
     const { courseId, chapterId } = req.params;
     const { title, description } = req.body;
-    console.log(req.params);
+    // console.log(req.params);
 
     try {
       const course = await findCourseById(courseId);
@@ -473,7 +439,7 @@ router.delete(
   "/delete-lesson/:courseId/:chapterId/:lessonId",
   verifyToken,
   async (req, res) => {
-    console.log(req.params);
+    // console.log(req.params);
     const { courseId, chapterId, lessonId } = req.params;
 
     try {

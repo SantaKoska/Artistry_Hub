@@ -41,7 +41,7 @@ const StudentBase = () => {
           {/* Message Icon */}
           <div className="flex items-center">
             <Link
-              to="/student-Home/Message"
+              to="/viewer-student-home/Message"
               className="text-white hover:text-yellow-400 transition-colors duration-300"
             >
               <FaEnvelope size={20} aria-label="Messages" />
@@ -60,7 +60,7 @@ const StudentBase = () => {
               <span className="text-gray-400 text-sm">{userData.role}</span>
             </div>
             <Link
-              to="/student-Home/studentprofile"
+              to="/viewer-student-home/studentprofile"
               className="text-white hover:text-yellow-400 transition-colors duration-300"
             >
               <img
@@ -99,8 +99,11 @@ const StudentBase = () => {
         <footer>
           <nav className="flex justify-around p-2 text-white">
             {[
-              { to: "/student-Home", icon: <FaHome size={20} /> },
-              { to: "/student-Home/my-courses", icon: <FaBook size={20} /> },
+              { to: "/viewer-student-home", icon: <FaHome size={20} /> },
+              {
+                to: "/viewer-student-home/learning",
+                icon: <FaBook size={20} />,
+              },
               {
                 icon: (
                   <FaPlus
@@ -111,7 +114,7 @@ const StudentBase = () => {
                 ),
               },
               {
-                to: "/student-Home/service-requests",
+                to: "/viewer-student-home/service-requests",
                 icon: <span className="text-xl font-bold leading-none">S</span>,
               },
             ].map(({ to, icon }, index) => (

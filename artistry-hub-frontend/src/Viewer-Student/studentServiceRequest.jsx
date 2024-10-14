@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { BiEdit, BiTrash } from "react-icons/bi"; // Import icons
 
-const ArtistCreateServiceRequest = () => {
+const StudentCreateServiceRequest = () => {
   const [description, setDescription] = useState("");
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
@@ -15,7 +15,7 @@ const ArtistCreateServiceRequest = () => {
     const fetchServiceRequests = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8000/artist/my-service-requests",
+          "http://localhost:8000/student/my-service-requests",
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -53,7 +53,7 @@ const ArtistCreateServiceRequest = () => {
       if (editingRequest) {
         // Handle Edit
         const response = await axios.put(
-          `http://localhost:8000/artist/service-requests/${editingRequest._id}`,
+          `http://localhost:8000/student/service-requests/${editingRequest._id}`,
           formData,
           {
             headers: {
@@ -71,7 +71,7 @@ const ArtistCreateServiceRequest = () => {
       } else {
         // Handle Create
         const response = await axios.post(
-          "http://localhost:8000/artist/create-service-request",
+          "http://localhost:8000/student/create-service-request", // Changed endpoint for students
           formData,
           {
             headers: {
@@ -102,7 +102,7 @@ const ArtistCreateServiceRequest = () => {
   const handleDelete = async (id) => {
     try {
       await axios.delete(
-        `http://localhost:8000/artist/service-requests/${id}`,
+        `http://localhost:8000/student/service-requests/${id}`, // Changed endpoint for students
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
@@ -199,7 +199,8 @@ const ArtistCreateServiceRequest = () => {
                   htmlFor="description"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Description (Please give details of the Service You need)
+                  Description (Please provide details about the service you
+                  need)
                 </label>
                 <textarea
                   id="description"
@@ -214,7 +215,7 @@ const ArtistCreateServiceRequest = () => {
                   htmlFor="images"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Upload Images (You can Upload maximum of 5 images)
+                  Upload Images (You can upload a maximum of 5 images)
                 </label>
                 <input
                   type="file"
@@ -263,4 +264,4 @@ const ArtistCreateServiceRequest = () => {
   );
 };
 
-export default ArtistCreateServiceRequest;
+export default StudentCreateServiceRequest;

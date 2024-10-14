@@ -111,7 +111,7 @@ router.post(
         });
         await newMessage.save();
 
-        return res.status(201).json({ message: "Message sent as a request." });
+        return res.status(400).json({ message: "Message sent as a request." });
       }
 
       newMessage = new Message({
@@ -126,7 +126,7 @@ router.post(
       res.status(201).json(newMessage);
     } catch (error) {
       console.error("Error sending message:", error);
-      res.status(500).json({ error: "Failed to send message" });
+      res.status(500).json({ message: "Failed to send message" });
     }
   }
 );

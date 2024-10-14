@@ -1,3 +1,4 @@
+// LearningCourseSchema.js
 const mongoose = require("mongoose");
 
 const LearningCourseSchema = new mongoose.Schema(

@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 Modal.setAppElement("#root");
 
-const ArtistProfile = () => {
+const StudentProfile = () => {
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -16,7 +16,6 @@ const ArtistProfile = () => {
   const [formData, setFormData] = useState({
     description: "",
     artForm: "",
-    specialisation: "",
     userName: "",
     profilePicture: null,
   });
@@ -24,28 +23,27 @@ const ArtistProfile = () => {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const { data } = await axios.get(
-          "http://localhost:8000/artist/artist-profile",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        setProfile(data);
-        setFormData({
-          description: data.description,
-          artForm: data.artForm,
-          specialisation: data.specialisation,
-          userName: data.userName,
-        });
-        setPosts(data.postsinfo || []);
-      } catch (error) {
-        toast.error(`Error fetching profile: ${error.response?.data?.err}`);
-      }
-    };
+  const fetchProfile = async () => {
+    try {
+      const { data } = await axios.get(
+        "http://localhost:8000/student/student-profile", // Adjusted to student profile route
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setProfile(data);
+      setFormData({
+        description: data.description,
+        artForm: data.artForm,
+        userName: data.userName,
+      });
+      setPosts(data.postsinfo || []);
+    } catch (error) {
+      toast.error(`Error fetching profile: ${error.response?.data?.err}`);
+    }
+  };
 
+  useEffect(() => {
     fetchProfile();
   }, [token]);
 
@@ -77,7 +75,7 @@ const ArtistProfile = () => {
 
     try {
       await axios.put(
-        "http://localhost:8000/artist/artist-editprofile",
+        "http://localhost:8000/student/student-editprofile", // Adjusted to student edit profile route
         formDataToSend,
         {
           headers: {
@@ -90,6 +88,7 @@ const ArtistProfile = () => {
       handleCloseModal();
       fetchProfile();
     } catch (error) {
+      console.log(error);
       toast.error(`Error updating profile: ${error.response?.data?.err}`);
     }
   };
@@ -214,9 +213,6 @@ const ArtistProfile = () => {
               <p className="text-xl font-semibold">
                 Art Form: {profile.artForm}
               </p>
-              <p className="text-xl font-semibold">
-                Specialization: {profile.specialisation}
-              </p>
               <div className="flex flex-col gap-4">
                 <button
                   onClick={handleOpenModal}
@@ -245,6 +241,7 @@ const ArtistProfile = () => {
             </div>
           </div>
 
+          {/* Delete Post Confirmation Modal */}
           <Modal
             isOpen={confirmationModalIsOpen}
             onRequestClose={handleCloseConfirmationModal}
@@ -271,6 +268,7 @@ const ArtistProfile = () => {
             </div>
           </Modal>
 
+          {/* Logout Confirmation Modal */}
           <Modal
             isOpen={logoutModalIsOpen}
             onRequestClose={handleCloseLogoutModal}
@@ -295,6 +293,7 @@ const ArtistProfile = () => {
             </div>
           </Modal>
 
+          {/* Edit Profile Modal */}
           <Modal
             isOpen={modalIsOpen}
             onRequestClose={handleCloseModal}
@@ -348,21 +347,6 @@ const ArtistProfile = () => {
               </div>
 
               <div className="flex flex-col">
-                <label htmlFor="specialisation" className="text-white">
-                  Specialization
-                </label>
-                <input
-                  id="specialisation"
-                  type="text"
-                  className="bg-gray-700 rounded p-2 text-white"
-                  value={formData.specialisation}
-                  onChange={(e) =>
-                    setFormData({ ...formData, specialisation: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="flex flex-col">
                 <label htmlFor="profilePicture" className="text-white">
                   Profile Picture
                 </label>
@@ -398,4 +382,4 @@ const ArtistProfile = () => {
   );
 };
 
-export default ArtistProfile;
+export default StudentProfile;

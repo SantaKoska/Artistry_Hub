@@ -15,12 +15,16 @@ import ArtistHome from "./Artist/artistHome";
 import CommonProfile from "./common/common";
 import MyCourses from "./Artist/Learning/MyCourses";
 import MessagePage from "./common/message";
-import CreateServiceRequest from "./Artist/artistServiceRequest";
 import LoginRegisterBase from "./loginregisterbase";
 import HomePage from "./home";
 import EditCourse from "./Artist/Learning/EditCourse";
 import AddCourse from "./Artist/Learning/AddCourse";
 import StudentBase from "./Viewer-Student/studentBase";
+import StudentHome from "./Viewer-Student/studentHome";
+import StudentProfile from "./Viewer-Student/studentProfile";
+import StudentCreateServiceRequest from "./Viewer-Student/studentServiceRequest";
+import ArtistCreateServiceRequest from "./Artist/artistServiceRequest";
+import StudentDashboard from "./Viewer-Student/Studentlearning/LearnDashboard";
 
 function App() {
   return (
@@ -62,7 +66,10 @@ function App() {
             <Route path="my-courses" element={<MyCourses />} />
             <Route path="add-course" element={<AddCourse />} />
             <Route path="edit-course/:courseid" element={<EditCourse />} />
-            <Route path="Service-Request" element={<CreateServiceRequest />} />
+            <Route
+              path="Service-Request"
+              element={<ArtistCreateServiceRequest />}
+            />
             <Route path="Message" element={<MessagePage />} />
           </Route>
 
@@ -74,7 +81,18 @@ function App() {
                 <StudentBase />
               </PrivateRoute>
             }
-          ></Route>
+          >
+            <Route index element={<StudentHome />} />
+            <Route path="studentprofile" element={<StudentProfile />} />
+            <Route path="profile/:username" element={<CommonProfile />} />
+            <Route path="Message" element={<MessagePage />} />
+            <Route
+              path="service-requests"
+              element={<StudentCreateServiceRequest />}
+            />
+            <Route path="learning" element={<StudentDashboard />} />
+          </Route>
+
           <Route path="reset-password/:token" element={<ResetPassword />} />
           <Route path="/" element={<Navigate replace to="/login" />} />
         </Routes>

@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
+const { Schema } = mongoose;
 
-const viewerstudentschema = new mongoose.Schema({
+const ViewerStudentSchema = new Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "User", // Reference to the student user
     required: true,
   },
   artForm: {
@@ -14,26 +15,47 @@ const viewerstudentschema = new mongoose.Schema({
       "Architecture",
       "Literature",
       "Cinema",
-      "Theatre",
+      "Theater",
       "Music",
     ],
     required: true,
   },
-
   enrolledCourses: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Course",
+      courseId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "LearningCourse", // Reference to courses
+        required: true,
+      },
+      progress: {
+        type: Number, // Course progress in percentage
+        default: 0,
+      },
+      tickedLessons: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Lesson", // Store lesson IDs that are completed
+        },
+      ],
+      tickedChapters: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Chapter", // Store chapter IDs that are fully completed
+        },
+      ],
+      certificateIssued: {
+        type: Boolean,
+        default: false,
+      },
+      certificateName: String, // Name entered for the certificate
     },
   ],
   completedCourses: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Course",
+      ref: "LearningCourse", // Reference to completed courses
     },
   ],
 });
 
-const Viewerstudent = mongoose.model("ViewerStudent", viewerstudentschema);
-
-module.exports = Viewerstudent;
+module.exports = mongoose.model("ViewerStudent", ViewerStudentSchema);

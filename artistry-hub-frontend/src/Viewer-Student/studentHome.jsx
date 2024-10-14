@@ -3,17 +3,17 @@ import axios from "axios";
 import { FaHeart } from "react-icons/fa";
 import { Link } from "react-router-dom"; // Import Link for navigation
 
-const ArtistHome = () => {
+const StudentHome = () => {
   const [posts, setPosts] = useState([]);
   const [likedPosts, setLikedPosts] = useState(new Set());
-  const [expandedPosts, setExpandedPosts] = useState(new Set()); // To track expanded posts
+  const [expandedPosts, setExpandedPosts] = useState(new Set()); // State to track expanded posts
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8000/artist/homeposts",
+          "http://localhost:8000/student/homeposts",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -51,7 +51,7 @@ const ArtistHome = () => {
 
       // Refetch posts to update the like count and liked posts
       const updatedPosts = await axios.get(
-        "http://localhost:8000/artist/homeposts",
+        "http://localhost:8000/student/homeposts",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -75,15 +75,45 @@ const ArtistHome = () => {
   };
 
   const toggleReadMore = (postId) => {
-    setExpandedPosts((prev) => {
-      const newExpandedPosts = new Set(prev);
-      if (newExpandedPosts.has(postId)) {
-        newExpandedPosts.delete(postId);
-      } else {
-        newExpandedPosts.add(postId);
-      }
-      return newExpandedPosts;
-    });
+    const updatedExpandedPosts = new Set(expandedPosts);
+    if (expandedPosts.has(postId)) {
+      updatedExpandedPosts.delete(postId); // Collapse the post
+    } else {
+      updatedExpandedPosts.add(postId); // Expand the post
+    }
+    setExpandedPosts(updatedExpandedPosts);
+  };
+
+  const renderContent = (post) => {
+    const contentLimit = 100; // Limit to the number of characters before "Read More"
+
+    if (expandedPosts.has(post._id) || post.content.length <= contentLimit) {
+      return (
+        <>
+          {post.content}
+          {post.content.length > contentLimit && (
+            <span
+              className="text-blue-500 cursor-pointer ml-2"
+              onClick={() => toggleReadMore(post._id)}
+            >
+              Read Less
+            </span>
+          )}
+        </>
+      );
+    } else {
+      return (
+        <>
+          {post.content.slice(0, contentLimit)}...
+          <span
+            className="text-blue-500 cursor-pointer ml-2"
+            onClick={() => toggleReadMore(post._id)}
+          >
+            Read More
+          </span>
+        </>
+      );
+    }
   };
 
   return (
@@ -103,7 +133,9 @@ const ArtistHome = () => {
                   className="w-12 h-12 rounded-full object-cover"
                 />
                 <div className="ml-4">
-                  <Link to={`/artist-Home/profile/${post.user.userName}`}>
+                  <Link
+                    to={`/viewer-student-home/profile/${post.user.userName}`}
+                  >
                     <p className="font-bold text-lg text-emerald-900 hover:underline">
                       {post.user.userName}
                     </p>
@@ -114,7 +146,6 @@ const ArtistHome = () => {
                 </div>
               </div>
 
-              {/* Post Media */}
               {post.mediaUrl && post.mediaType === "image" && (
                 <img
                   src={`http://localhost:8000${post.mediaUrl}`}
@@ -138,22 +169,10 @@ const ArtistHome = () => {
               )}
 
               {/* Post Content */}
-              <p className="mb-4 text-gray-700">
-                {expandedPosts.has(post._id)
-                  ? post.content
-                  : `${post.content.slice(0, 150)}...`}
-              </p>
-              {post.content.length > 150 && (
-                <button
-                  className="text-blue-500 hover:underline"
-                  onClick={() => toggleReadMore(post._id)}
-                >
-                  {expandedPosts.has(post._id) ? "Read Less" : "Read More"}
-                </button>
-              )}
+              <p className="mb-4 text-gray-700">{renderContent(post)}</p>
 
               {/* Like Button */}
-              <div className="flex items-center mt-4">
+              <div className="flex items-center">
                 <button
                   className={`focus:outline-none ${
                     likedPosts.has(post._id)
@@ -180,4 +199,4 @@ const ArtistHome = () => {
   );
 };
 
-export default ArtistHome;
+export default StudentHome;
