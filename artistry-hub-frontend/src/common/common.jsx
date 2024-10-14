@@ -8,6 +8,7 @@ const CommonProfile = () => {
   const { username } = useParams();
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [expandedPosts, setExpandedPosts] = useState(new Set()); // Track expanded posts
   const [selectedPost, setSelectedPost] = useState(null); // For modal post
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
   const token = localStorage.getItem("token");
@@ -84,6 +85,50 @@ const CommonProfile = () => {
       }));
     } catch (error) {
       console.error("Error liking/unliking post:", error);
+    }
+  };
+
+  // Function to toggle Read More/Read Less
+  const toggleReadMore = (postId) => {
+    const updatedExpandedPosts = new Set(expandedPosts);
+    if (expandedPosts.has(postId)) {
+      updatedExpandedPosts.delete(postId); // Collapse the post
+    } else {
+      updatedExpandedPosts.add(postId); // Expand the post
+    }
+    setExpandedPosts(updatedExpandedPosts);
+  };
+
+  // Function to render post content with Read More/Read Less functionality
+  const renderPostContent = (post) => {
+    const contentLimit = 100; // Limit to the number of characters before "Read More"
+
+    if (expandedPosts.has(post._id) || post.content.length <= contentLimit) {
+      return (
+        <>
+          {post.content}
+          {post.content.length > contentLimit && (
+            <span
+              className="text-blue-500 cursor-pointer ml-2"
+              onClick={() => toggleReadMore(post._id)}
+            >
+              Read Less
+            </span>
+          )}
+        </>
+      );
+    } else {
+      return (
+        <>
+          {post.content.slice(0, contentLimit)}...
+          <span
+            className="text-blue-500 cursor-pointer ml-2"
+            onClick={() => toggleReadMore(post._id)}
+          >
+            Read More
+          </span>
+        </>
+      );
     }
   };
 
@@ -186,7 +231,8 @@ const CommonProfile = () => {
                           className="w-full mb-2"
                         />
                       )}
-                      <p>{post.content}</p>
+                      {renderPostContent(post)}{" "}
+                      {/* Updated to use the render function */}
                       <p className="text-sm text-emerald-900">
                         Posted on: {new Date(post.timestamp).toLocaleString()}
                       </p>
@@ -214,41 +260,33 @@ const CommonProfile = () => {
               {selectedPost.mediaUrl && selectedPost.mediaType === "image" && (
                 <img
                   src={`http://localhost:8000${selectedPost.mediaUrl}`}
-                  alt="Post media"
-                  className="w-full h-64 object-cover rounded-md mb-4"
+                  alt="Expanded post media"
+                  className="w-full mb-2"
                 />
               )}
               {selectedPost.mediaUrl && selectedPost.mediaType === "video" && (
                 <video
                   controls
                   src={`http://localhost:8000${selectedPost.mediaUrl}`}
-                  className="w-full h-64 object-cover rounded-md mb-4"
+                  className="w-full mb-2"
                 />
               )}
               {selectedPost.mediaUrl && selectedPost.mediaType === "audio" && (
                 <audio
                   controls
                   src={`http://localhost:8000${selectedPost.mediaUrl}`}
-                  className="w-full mb-4"
+                  className="w-full mb-2"
                 />
               )}
-              <div className="flex justify-between items-center mt-4">
-                <button
-                  onClick={handleLikeToggle}
-                  className="flex items-center"
-                >
-                  <FaHeart
-                    className={`transition-colors duration-200 ${
-                      selectedPost.liked ? "text-yellow-500" : "text-black"
-                    }`}
-                    size={24}
-                  />
-                  <span className="ml-2">{selectedPost.likes} Likes</span>
-                </button>
-              </div>
+              <button
+                onClick={handleLikeToggle}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-300"
+              >
+                {selectedPost.liked ? "Unlike" : "Like"} ({selectedPost.likes})
+              </button>
               <button
                 onClick={closeModal}
-                className="mt-4 bg-yellow-500 text-white py-2 px-4 rounded-lg"
+                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors duration-300 ml-4"
               >
                 Close
               </button>

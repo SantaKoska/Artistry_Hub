@@ -6,19 +6,18 @@ const CourseDetails = ({
   course,
   onBack,
   isEnrolled,
-  fetchEnrolledCourses,
-  enrolledCourseDetails, // To get details about ticked lessons and chapters
+  fetchEnrolledCourses, // To get details about ticked lessons and chapters
 }) => {
   const [selectedLesson, setSelectedLesson] = useState(null); // Manage selected lesson
   const [selectedChapterId, setSelectedChapterId] = useState(null); // Track selected chapter ID
   const [isProcessing, setIsProcessing] = useState(false); // Manage API call status
-  const [isCertificateReady, setIsCertificateReady] = useState(false); // To track if the course is fully completed
-  const [hasGeneratedCertificate, setHasGeneratedCertificate] = useState(false); // Track if a certificate has been generated
+  const [isCertificateReady, setIsCertificateReady] = useState(false); // Track if the course is fully completed
+  const [enrolledCourseDetails, setEnrolledCourseDetails] = useState(null); // Store enrolled course details
   const token = localStorage.getItem("token");
 
   if (!course) return null; // If no course is passed, render nothing
 
-  // Check completion status
+  // Check completion status and get enrolled course details
   const checkCompletionStatus = async () => {
     try {
       const response = await axios.get(
@@ -27,8 +26,9 @@ const CourseDetails = ({
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      const { isCompleted } = response.data; // Assuming API returns this field
+      const { isCompleted, enrolledCourse } = response.data; // Get completion status and enrolled course details
       setIsCertificateReady(isCompleted);
+      setEnrolledCourseDetails(enrolledCourse); // Store the enrolled course details
     } catch (error) {
       console.error("Error checking completion status:", error);
     }
@@ -81,7 +81,7 @@ const CourseDetails = ({
   // Generate certificate
   const handleGenerateCertificate = async () => {
     try {
-      const name = hasGeneratedCertificate
+      const name = enrolledCourseDetails?.certificateName
         ? enrolledCourseDetails.certificateName
         : prompt("Enter your name for the certificate:");
       if (!name) return; // Cancel if no name provided
@@ -100,7 +100,7 @@ const CourseDetails = ({
       a.download = `${course.courseName}_Certificate.pdf`; // Filename for the downloaded certificate
       a.click();
       window.URL.revokeObjectURL(url);
-      setHasGeneratedCertificate(true); // Mark certificate as generated
+      setIsCertificateReady(true); // Mark certificate as generated
     } catch (error) {
       console.error("Error generating certificate:", error);
     }
@@ -120,77 +120,98 @@ const CourseDetails = ({
   }
 
   return (
-    <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30">
-      <h1 className="text-4xl font-bold text-yellow-400 mb-6">
+    <div className="bg-slate-800 rounded-md p-8 shadow-xl backdrop-filter backdrop-blur-md bg-opacity-40 max-w-4xl mx-auto">
+      <h1 className="text-4xl font-bold text-yellow-400 mb-4">
         {course.courseName}
       </h1>
-      <p className="text-xl text-gray-400 mb-4">Level: {course.level}</p>
+      <p className="text-xl text-gray-300 mb-6">
+        Level: <span className="font-semibold">{course.level}</span>
+      </p>
 
       {/* Enroll or Unenroll button based on the enrolled status */}
-      {!isEnrolled ? (
-        <button
-          className="bg-emerald-900 text-white p-2 rounded-lg hover:bg-emerald-800 transition-colors duration-200"
-          onClick={handleEnroll}
-          disabled={isProcessing}
-        >
-          {isProcessing ? "Enrolling..." : "Enroll"}
-        </button>
-      ) : isCertificateReady ? (
-        <button
-          className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-500 transition-colors duration-200"
-          onClick={handleGenerateCertificate}
-        >
-          Generate Certificate
-        </button>
-      ) : (
-        <button
-          className="bg-red-700 text-white p-2 rounded-lg hover:bg-red-800 transition-colors duration-200"
-          onClick={handleUnenroll}
-          disabled={isProcessing}
-        >
-          {isProcessing ? "Unenrolling..." : "Unenroll"}
-        </button>
-      )}
+      <div className="mb-6">
+        {!isEnrolled ? (
+          <button
+            className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-transform transform hover:scale-105 duration-200"
+            onClick={handleEnroll}
+            disabled={isProcessing}
+          >
+            {isProcessing ? "Enrolling..." : "Enroll"}
+          </button>
+        ) : isCertificateReady ? (
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-500 transition-transform transform hover:scale-105 duration-200"
+            onClick={handleGenerateCertificate}
+          >
+            Generate Certificate
+          </button>
+        ) : (
+          <button
+            className="bg-red-700 text-white px-4 py-2 rounded-lg hover:bg-red-800 transition-transform transform hover:scale-105 duration-200"
+            onClick={handleUnenroll}
+            disabled={isProcessing}
+          >
+            {isProcessing ? "Unenrolling..." : "Unenroll"}
+          </button>
+        )}
+      </div>
 
-      <h2 className="text-3xl font-bold text-emerald-300 mt-6">Chapters</h2>
+      <h2 className="text-3xl font-bold text-emerald-300 mt-8 mb-4">
+        Chapters
+      </h2>
+
       {course.chapters.length > 0 ? (
-        course.chapters.map((chapter, idx) => (
-          <div key={idx} className="my-4">
-            <h3 className="text-2xl font-semibold text-emerald-500">
-              Chapter {idx + 1}: {chapter.title}{" "}
-              {enrolledCourseDetails?.tickedChapters?.includes(chapter._id) && (
-                <span className="text-green-500">✔</span>
-              )}
-            </h3>
-            <p className="text-gray-400 mb-2">{chapter.description}</p>
+        <div className="space-y-6">
+          {course.chapters.map((chapter, idx) => (
+            <div key={idx} className="p-6 bg-slate-700 rounded-lg shadow-md">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-2xl font-semibold text-emerald-300">
+                  Chapter {idx + 1}: {chapter.title}
+                </h3>
+                {enrolledCourseDetails?.tickedChapters?.includes(
+                  chapter._id
+                ) && (
+                  <span className="text-green-400 font-bold text-lg">
+                    ✔ Completed
+                  </span>
+                )}
+              </div>
+              <p className="text-gray-400 mb-4">{chapter.description}</p>
 
-            <ul className="list-disc pl-5">
-              {chapter.lessons.map((lesson, lessonIdx) => (
-                <li
-                  key={lessonIdx}
-                  className={`text-lg ${
-                    isEnrolled
-                      ? "text-emerald-400 cursor-pointer hover:text-emerald-300"
-                      : "text-gray-500"
-                  }`}
-                  onClick={() => {
-                    if (isEnrolled) {
-                      setSelectedLesson(lesson); // Set the selected lesson
-                      setSelectedChapterId(chapter._id); // Set the selected chapter ID
-                    }
-                  }}
-                >
-                  {lesson.title}{" "}
-                  {enrolledCourseDetails?.tickedLessons?.includes(
-                    lesson._id
-                  ) && <span className="text-green-500">✔</span>}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))
+              <ul className="space-y-3">
+                {chapter.lessons.map((lesson, lessonIdx) => (
+                  <li
+                    key={lessonIdx}
+                    className={`text-lg ${
+                      isEnrolled
+                        ? "text-emerald-400 cursor-pointer hover:text-emerald-300 transition-colors"
+                        : "text-gray-500"
+                    }`}
+                    onClick={() => {
+                      if (isEnrolled) {
+                        setSelectedLesson(lesson); // Set the selected lesson
+                        setSelectedChapterId(chapter._id); // Set the selected chapter ID
+                      }
+                    }}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span>{lesson.title}</span>
+                      {enrolledCourseDetails?.tickedLessons?.includes(
+                        lesson._id
+                      ) && (
+                        <span className="text-green-400 font-semibold">
+                          ✔ Completed
+                        </span>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
       ) : (
-        <p>No chapters available.</p>
+        <p className="text-gray-500 mt-4">No chapters available.</p>
       )}
     </div>
   );

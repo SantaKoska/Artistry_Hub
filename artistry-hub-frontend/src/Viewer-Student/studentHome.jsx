@@ -133,9 +133,7 @@ const StudentHome = () => {
                   className="w-12 h-12 rounded-full object-cover"
                 />
                 <div className="ml-4">
-                  <Link
-                    to={`/viewer-student-home/profile/${post.user.userName}`}
-                  >
+                  <Link to={`/profile/${post.user.userName}`}>
                     <p className="font-bold text-lg text-emerald-900 hover:underline">
                       {post.user.userName}
                     </p>

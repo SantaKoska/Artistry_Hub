@@ -44,6 +44,14 @@ function App() {
           </Route>
           <Route path="login/forgotpassword" element={<ForgotPassword />} />
           <Route
+            path="profile/:username"
+            element={
+              <PrivateRoute>
+                <CommonProfile />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/home"
             element={
               <PrivateRoute>
@@ -62,7 +70,6 @@ function App() {
           >
             <Route index element={<ArtistHome />} />
             <Route path="artistprofile" element={<ArtistProfile />} />
-            <Route path="profile/:username" element={<CommonProfile />} />
             <Route path="my-courses" element={<MyCourses />} />
             <Route path="add-course" element={<AddCourse />} />
             <Route path="edit-course/:courseid" element={<EditCourse />} />
@@ -84,7 +91,6 @@ function App() {
           >
             <Route index element={<StudentHome />} />
             <Route path="studentprofile" element={<StudentProfile />} />
-            <Route path="profile/:username" element={<CommonProfile />} />
             <Route path="Message" element={<MessagePage />} />
             <Route
               path="service-requests"

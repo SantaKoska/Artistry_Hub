@@ -611,12 +611,20 @@ router.get("/check-completion/:courseId", verifyToken, async (req, res) => {
     // Check if all lessons within each chapter are ticked
     const allLessonsCompleted = course.chapters.every(
       (chapter) =>
-        enrolledCourse.tickedLessons.length === chapter.lessons.length
+        enrolledCourse.tickedLessons.filter((lesson) =>
+          chapter.lessons.some(
+            (courseLesson) => courseLesson._id.toString() === lesson.toString()
+          )
+        ).length === chapter.lessons.length
     );
 
     const isCompleted = allChaptersCompleted && allLessonsCompleted;
 
-    res.status(200).json({ isCompleted });
+    // Send the completion status and enrolled course details in the response
+    res.status(200).json({
+      isCompleted,
+      enrolledCourse, // Send enrolledCourse details as well
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error checking completion status." });

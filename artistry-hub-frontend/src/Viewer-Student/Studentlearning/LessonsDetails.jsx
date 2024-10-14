@@ -8,6 +8,7 @@ const LessonDetails = ({ lesson, courseId, chapterId, onBack, onComplete }) => {
   const videoRef = useRef(null);
   const token = localStorage.getItem("token");
 
+  console.log(courseId);
   // Function to mark lesson as complete
   const markLessonAsComplete = async () => {
     try {

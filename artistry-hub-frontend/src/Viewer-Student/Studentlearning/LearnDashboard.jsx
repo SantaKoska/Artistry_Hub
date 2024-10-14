@@ -8,6 +8,7 @@ const StudentDashboard = () => {
   const token = localStorage.getItem("token");
   const [availableCourses, setAvailableCourses] = useState([]);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [courseProgress, setCourseProgress] = useState({});
 
   // Fetch Available Courses
   const fetchAvailableCourses = async () => {
@@ -24,7 +25,7 @@ const StudentDashboard = () => {
     }
   };
 
-  // Fetch Enrolled Courses
+  // Fetch Enrolled Courses and their progress
   const fetchEnrolledCourses = async () => {
     try {
       const response = await axios.get(
@@ -34,9 +35,35 @@ const StudentDashboard = () => {
         }
       );
       setEnrolledCourses(response.data);
+
+      // Fetch progress for each enrolled course
+      response.data.forEach(async (course) => {
+        const progressRes = await axios.get(
+          `http://localhost:8000/student/check-completion/${course._id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setCourseProgress((prevProgress) => ({
+          ...prevProgress,
+          [course._id]: progressRes.data.isCompleted
+            ? 100
+            : calculateProgress(course, progressRes.data.enrolledCourse),
+        }));
+      });
     } catch (error) {
       console.error("Error fetching enrolled courses:", error);
     }
+  };
+
+  // Calculate progress percentage based on ticked lessons and chapters
+  const calculateProgress = (course, enrolledCourse) => {
+    const totalLessons = course.chapters.reduce(
+      (sum, chapter) => sum + chapter.lessons.length,
+      0
+    );
+    const completedLessons = enrolledCourse.tickedLessons.length;
+    return Math.round((completedLessons / totalLessons) * 100);
   };
 
   // Fetch courses when component mounts
@@ -143,9 +170,26 @@ const StudentDashboard = () => {
                           <h2 className="text-2xl font-semibold text-emerald-300">
                             {course.courseName}
                           </h2>
-                          <p className="text-gray-400">
-                            Level: {course.level} - Progress: {course.progress}%
-                          </p>
+                          <p className="text-gray-400">Level: {course.level}</p>
+
+                          {/* Progress Bar */}
+                          <div className="relative pt-1">
+                            <div className="flex mb-2 items-center justify-between">
+                              <div>
+                                <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-yellow-400 bg-emerald-800">
+                                  Progress: {courseProgress[course._id] || 0}%
+                                </span>
+                              </div>
+                            </div>
+                            <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-yellow-100">
+                              <div
+                                style={{
+                                  width: `${courseProgress[course._id] || 0}%`,
+                                }}
+                                className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-yellow-400"
+                              ></div>
+                            </div>
+                          </div>
                         </div>
                       ))
                     ) : (

@@ -4,6 +4,8 @@ import { BiSearch } from "react-icons/bi";
 import { AiOutlineMessage, AiOutlineSend } from "react-icons/ai";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Link } from "react-router-dom";
+import moment from "moment"; // Add moment for formatting timestamps
 
 const MessagePage = () => {
   const [chats, setChats] = useState([]);
@@ -16,10 +18,6 @@ const MessagePage = () => {
   const [requests, setRequests] = useState([]);
   const token = localStorage.getItem("token");
 
-  //   console.log(requests);
-
-  //   console.log(messages);
-
   useEffect(() => {
     if (token) {
       fetchUserDetails();
@@ -29,16 +27,13 @@ const MessagePage = () => {
   }, [token]);
 
   useEffect(() => {
-    // Polling interval for fetching new messages every 5 seconds
     let pollingInterval;
     if (currentChat) {
       pollingInterval = setInterval(() => {
         fetchMessageHistory(currentChat.id);
       }, 2000);
     }
-
     return () => {
-      // Clear interval when the component unmounts or chat changes
       clearInterval(pollingInterval);
     };
   }, [currentChat]);
@@ -79,7 +74,16 @@ const MessagePage = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setRequests(response.data);
+
+      // Filter out duplicate requests from the same user
+      const uniqueRequests = response.data.reduce((acc, request) => {
+        if (!acc.some((req) => req.sender._id === request.sender._id)) {
+          acc.push(request);
+        }
+        return acc;
+      }, []);
+
+      setRequests(uniqueRequests);
     } catch (error) {
       console.error("Error fetching message requests:", error);
     }
@@ -95,7 +99,7 @@ const MessagePage = () => {
         }
       );
       setRequests((prevRequests) =>
-        prevRequests.filter((request) => request.sender !== requesterId)
+        prevRequests.filter((request) => request.sender._id !== requesterId)
       );
       fetchChatList();
     } catch (error) {
@@ -149,10 +153,9 @@ const MessagePage = () => {
 
       setMessageInput("");
 
-      // Update the local messages state with the new message
       setMessages((prevMessages) => [
         ...prevMessages,
-        { content: messageInput, sender: user._id },
+        { content: messageInput, sender: user._id, createdAt: new Date() },
       ]);
     } catch (error) {
       setMessageInput("");
@@ -165,7 +168,6 @@ const MessagePage = () => {
 
   const deleteMessage = async (messageId) => {
     try {
-      console.log(messageId);
       await axios.delete(
         `http://localhost:8000/message/delete-message/${messageId}`,
         {
@@ -216,7 +218,6 @@ const MessagePage = () => {
 
   return (
     <div className="flex h-screen bg-slate-800 rounded-md shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 p-6 pb-28 mb-48 text-black">
-      {/* Chat List Section */}
       <div className="w-full md:w-1/3 bg-white rounded-md p-4 shadow-md relative">
         <input
           type="text"
@@ -230,7 +231,6 @@ const MessagePage = () => {
         />
         <BiSearch className="absolute left-9 top-7 text-gray-400" />
 
-        {/* Search results */}
         {searchResults.length > 0 && (
           <div className="absolute bg-white border mt-2 max-h-40 overflow-y-auto w-full z-10 rounded-md shadow-lg">
             {searchResults.map((result) => (
@@ -252,7 +252,6 @@ const MessagePage = () => {
           </div>
         )}
 
-        {/* Chat list */}
         <div className="mt-4">
           <h3 className="font-semibold mb-2 text-black">Chats</h3>
           {chats.map((chat) => (
@@ -272,21 +271,21 @@ const MessagePage = () => {
           ))}
         </div>
 
-        {/* Message Requests Section */}
         <h2 className="font-semibold mt-4 text-black">Message Requests</h2>
         {requests.map((request) => (
           <div
-            key={request.sender}
-            className="flex justify-between items-center bg-gray-100 p-2 rounded mt-2"
+            key={request.sender._id}
+            className="flex items-center p-2 bg-gray-200 mb-2 rounded-md"
           >
             <img
               src={`http://localhost:8000${request.sender.profilePicture}`}
-              className="w-10 h-10 rounded-full" // Ensure it's styled as a circle
+              alt={request.sender.userName}
+              className="w-10 h-10 rounded-full"
             />
-            <p className="font-semibold">{request.sender.userName}</p>
+            <p className="ml-2 text-black">{request.sender.userName}</p>
             <button
-              onClick={() => handleAcceptRequest(request.sender)}
-              className="bg-blue-500 text-white px-2 py-1 rounded"
+              className="ml-auto px-3 py-1 bg-blue-500 text-white rounded-md"
+              onClick={() => handleAcceptRequest(request.sender._id)}
             >
               Accept
             </button>
@@ -294,64 +293,72 @@ const MessagePage = () => {
         ))}
       </div>
 
-      {/* Message Section */}
-      <div className="w-full md:w-2/3 bg-white rounded-md p-4 shadow-md ml-4">
+      <div className="w-full md:w-2/3 bg-white rounded-md p-4 shadow-md relative">
         {currentChat ? (
           <>
-            <div className="flex items-center p-2 border-b border-gray-300 mb-4">
+            <div className="flex items-center p-2 bg-slate-500 rounded-lg">
               <img
                 src={`http://localhost:8000${currentChat.profilePicture}`}
                 alt={currentChat.userName}
-                className="w-10 h-10 rounded-full"
+                className="w-12 h-12 rounded-full"
               />
-              <p className="ml-2 font-semibold text-black">
-                {currentChat.userName}
-              </p>
+              <Link to={`/profile/${currentChat.userName}`}>
+                <p className="font-bold text-lg text-white hover:underline pl-4">
+                  {currentChat.userName}
+                </p>
+              </Link>
             </div>
 
-            {/* Message history */}
-            <div className="h-96 overflow-y-auto mb-4">
-              {messages.map((message) => (
-                <div
-                  key={message._id}
-                  className={`p-2 my-2 rounded-md ${
-                    message.sender === user._id
-                      ? "bg-blue-500 text-white ml-auto"
-                      : "bg-gray-200 text-black"
-                  }`}
-                >
-                  <p>{message.content}</p>
-                  {message.sender === user._id && (
-                    <button
-                      className="ml-2 text-red-500 hover:text-red-700"
-                      onClick={() => deleteMessage(message._id)}
+            <div className="mt-4 h-[400px] overflow-y-auto">
+              {messages.length > 0 ? (
+                messages.map((message) => (
+                  <div
+                    key={message._id}
+                    className={`flex flex-col ${
+                      message.sender === user._id ? "items-end" : "items-start"
+                    }`}
+                  >
+                    <div
+                      className={`p-2 rounded-lg mb-2 max-w-[80%] ${
+                        message.sender === user._id
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-200 text-black"
+                      }`}
                     >
-                      Delete
-                    </button>
-                  )}
-                </div>
-              ))}
+                      <p>{message.content}</p>
+                    </div>
+                    {/* Timestamp */}
+                    <p className="text-gray-400 text-xs mt-1">
+                      {moment(message.createdAt).format("MMM DD, YYYY, h:mm A")}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 text-center">No messages yet.</p>
+              )}
             </div>
 
-            {/* Message input */}
-            <div className="flex">
-              <input
-                type="text"
-                value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
-                placeholder="Type a message"
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                onClick={sendMessage}
-                className="ml-2 bg-blue-500 text-white px-4 py-2 rounded-md"
-              >
-                <AiOutlineSend />
-              </button>
+            <div className="absolute bottom-0 left-0 w-full p-4">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="text"
+                  placeholder="Type a message..."
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={messageInput}
+                  onChange={(e) => setMessageInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                />
+                <button
+                  className="p-2 bg-blue-500 text-white rounded-md"
+                  onClick={sendMessage}
+                >
+                  <AiOutlineSend />
+                </button>
+              </div>
             </div>
           </>
         ) : (
-          <p className="text-center text-black">
+          <p className="text-gray-500 text-center mt-16">
             Select a chat to start messaging
           </p>
         )}
