@@ -644,18 +644,51 @@ router.put(
   verifyToken,
   async (req, res) => {
     const { serviceProviderId } = req.body;
+    const currentUser = req.user; // Assuming req.user contains the authenticated user
 
     try {
+      // Find the service request
       const request = await ServiceRequest.findById(req.params.id);
-      if (!request)
+      if (!request) {
         return res.status(404).json({ message: "Service request not found" });
+      }
 
       // Update the service provider and status
       request.serviceProviderId = serviceProviderId;
       request.status = "Accepted"; // Change status to Accepted
 
       await request.save();
-      res.json(request);
+
+      // Automatically follow the service provider
+      const serviceProvider = await User.findById(serviceProviderId); // Assuming serviceProviderId is the _id of the User
+      if (!serviceProvider) {
+        return res.status(404).json({ message: "Service provider not found" });
+      }
+
+      // Check if the current user is already following the service provider
+      const followRecord = await Follower.findOne({
+        followerId: currentUser.identifier,
+        followingId: serviceProvider._id,
+      });
+
+      if (!followRecord) {
+        // If not following, create a new follower document
+        const newFollow = new Follower({
+          followerId: currentUser.identifier,
+          followingId: serviceProvider._id,
+        });
+        await newFollow.save();
+
+        // Update the current user's following list
+        await User.findByIdAndUpdate(currentUser.identifier, {
+          $addToSet: { following: serviceProvider._id },
+        });
+      }
+
+      res.json({
+        message: "Service provider selected and followed successfully",
+        request,
+      });
     } catch (error) {
       res
         .status(500)

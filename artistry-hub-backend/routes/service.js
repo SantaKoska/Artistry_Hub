@@ -12,11 +12,14 @@ router.get("/requests", verifyToken, async (req, res) => {
   const user = req.user; // Extracted from the token
 
   try {
+    // console.log(specialization);
     // Find the service provider's expertise based on the user ID from the token
     const serviceProvider = await ServiceProvider.findOne({
       userId: user.identifier,
     });
 
+    const artform = serviceProvider.expertise;
+    // console.log(artform);
     if (!serviceProvider) {
       return res.status(404).json({ message: "Service provider not found" });
     }
@@ -32,13 +35,13 @@ router.get("/requests", verifyToken, async (req, res) => {
       query.specialization = specialization; // Add specialization filter if provided
     }
 
-    const requests = await ServiceRequest.find(query).populate(
-      "userId",
-      "userName profilePicture"
-    );
+    const requests = await ServiceRequest.find(query).populate("userId");
 
-    res.json(requests);
+    // console.log(requests);
+
+    res.status(200).json({ requests, artform });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Error fetching service requests", error });
   }
 });

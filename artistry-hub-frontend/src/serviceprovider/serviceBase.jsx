@@ -41,7 +41,7 @@ const ServiceProviderBase = () => {
           {/* Message Icon */}
           <div className="flex items-center">
             <Link
-              to="/service-provider/messages"
+              to="/Service-Provider-home/Message"
               className="text-white hover:text-yellow-400 transition-colors duration-300"
             >
               <FaEnvelope size={20} aria-label="Messages" />
@@ -99,7 +99,7 @@ const ServiceProviderBase = () => {
         <footer>
           <nav className="flex justify-around p-2 text-white">
             {[
-              { to: "/service-provider", icon: <FaHome size={20} /> },
+              { to: "/Service-Provider-home", icon: <FaHome size={20} /> },
               {
                 icon: (
                   <FaPlus
@@ -109,11 +109,6 @@ const ServiceProviderBase = () => {
                   />
                 ),
               },
-              {
-                to: "/service-provider/messages",
-                icon: <FaEnvelope size={20} />,
-              },
-              { to: "/service-provider/profile", icon: <FaUser size={20} /> },
             ].map(({ to, icon }, index) => (
               <div
                 key={index}

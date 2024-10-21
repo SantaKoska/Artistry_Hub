@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { BiEdit, BiTrash } from "react-icons/bi";
+import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
@@ -12,6 +13,7 @@ const ArtistCreateServiceRequest = () => {
   const [imagePreviews, setImagePreviews] = useState([]);
   const [serviceRequests, setServiceRequests] = useState([]);
   const [editingRequest, setEditingRequest] = useState(null);
+  const [viewProviders, setViewProviders] = useState(false);
   const [acceptedProviders, setAcceptedProviders] = useState([]);
   const [userArtForm, setUserArtForm] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -110,8 +112,8 @@ const ArtistCreateServiceRequest = () => {
       resetForm();
       setShowModal(false);
     } catch (error) {
-      console.error("Error creating/updating service request:", error);
-      toast.error("Failed to create/update service request. Please try again.");
+      // console.error("Error creating/updating service request:", error);
+      toast.error(error.response?.data?.message);
     }
   };
 
@@ -205,13 +207,17 @@ const ArtistCreateServiceRequest = () => {
       const response = await axios.get(
         `http://localhost:8000/artist/service-requests/${requestId}/service-providers`,
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
       );
+
       setAcceptedProviders(response.data);
+      console.log(response.data);
+      setViewProviders(true); // Trigger view once data is fetched
     } catch (error) {
-      console.error("Error fetching service providers:", error);
-      toast.error("Failed to fetch service providers. Please try again.");
+      console.error("Error fetching providers:", error);
     }
   };
 
@@ -276,37 +282,55 @@ const ArtistCreateServiceRequest = () => {
                   View Providers
                 </button>
 
-                <div className="mt-2">
-                  {acceptedProviders.length > 0 ? (
-                    <>
-                      <h3 className="text-lg font-medium">
-                        Accepted Providers:
-                      </h3>
-                      <ul className="list-disc pl-5">
-                        {acceptedProviders.map((provider) => (
-                          <li
-                            key={provider._id}
-                            className="mt-1 flex justify-between"
-                          >
-                            <span>{provider.name}</span>
-                            <button
-                              onClick={() =>
-                                handleSelectProvider(request._id, provider._id)
-                              }
-                              className="text-green-400 underline ml-2"
+                {viewProviders && ( // Only display the providers if the view state is set to true
+                  <div className="mt-2  text-yellow-500">
+                    {acceptedProviders.length > 0 ? (
+                      <>
+                        <h3 className="text-lg font-medium text-yellow-500">
+                          Accepted Providers:
+                        </h3>
+                        <ul className="list-disc pl-5">
+                          {acceptedProviders.map((provider) => (
+                            <li
+                              key={provider._id}
+                              className="mt-1 flex justify-between"
                             >
-                              Select
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    </>
-                  ) : (
-                    <p className="text-red-500 font-light">
-                      No providers have accepted this request yet.
-                    </p>
-                  )}
-                </div>
+                              <div className="flex items-center mb-4">
+                                <img
+                                  src={`http://localhost:8000${provider.profilePicture}`}
+                                  alt={provider.userName}
+                                  className="w-12 h-12 rounded-full object-cover border-2 border-yellow-500"
+                                />
+                                <div className="ml-4">
+                                  <Link to={`/profile/${provider.userName}`}>
+                                    <p className="font-bold text-lg text-emerald-900 hover:underline">
+                                      {provider.userName}
+                                    </p>
+                                  </Link>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() =>
+                                  handleSelectProvider(
+                                    request._id,
+                                    provider._id
+                                  )
+                                }
+                                className="text-white bg-emerald-600 px-4 py-2 rounded-lg font-medium shadow-md hover:bg-emerald-700 hover:shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-1"
+                              >
+                                Select
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    ) : (
+                      <p className="text-red-500 font-light">
+                        No providers have accepted this request yet.
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             </li>
           ))}

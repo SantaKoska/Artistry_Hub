@@ -110,6 +110,7 @@ function App() {
             }
           >
             <Route index element={<ServiceProviderHome />} />
+            <Route path="Message" element={<MessagePage />} />
           </Route>
 
           <Route path="reset-password/:token" element={<ResetPassword />} />

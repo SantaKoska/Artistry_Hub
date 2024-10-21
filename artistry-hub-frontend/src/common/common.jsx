@@ -143,7 +143,7 @@ const CommonProfile = () => {
       <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 w-full max-w-screen-lg mx-auto mt-16">
         <button
           onClick={() => navigate(-1)} // This will navigate back to the previous page
-          className="text-black bg-white hover:bg-black hover:text-emerald-800 hover:underline rounded-md p-4"
+          className="text-black bg-white hover:bg-black hover:text-emerald-800 hover:underline rounded-md p-4 transition-all duration-300"
         >
           Back
         </button>
@@ -154,7 +154,7 @@ const CommonProfile = () => {
                 <img
                   src={`http://localhost:8000${profile.profilePicture}`}
                   alt="Profile"
-                  className="w-48 h-44 rounded-full mb-4"
+                  className="w-48 h-44 rounded-full mb-4 shadow-xl"
                 />
                 <h1 className="text-5xl font-semibold text-yellow-400 mt-4 text-center">
                   {profile.userName}
@@ -200,7 +200,7 @@ const CommonProfile = () => {
                 )}
                 <button
                   onClick={handleFollowToggle}
-                  className="w-full md:w-64 text-[18px] font-semibold rounded-full bg-yellow-500 text-white hover:bg-yellow-600 py-2 transition-colors duration-400"
+                  className="w-full md:w-64 text-[18px] font-semibold rounded-full bg-yellow-500 text-white hover:bg-yellow-600 py-2 shadow-lg hover:shadow-xl transition-all duration-400"
                 >
                   {profile.following ? "Unfollow" : "Follow"}
                 </button>
@@ -215,21 +215,21 @@ const CommonProfile = () => {
                   posts.map((post) => (
                     <div
                       key={post._id}
-                      className="bg-blue-100 rounded-lg p-4 text-black hover:shadow-lg transition-shadow duration-200"
+                      className="bg-blue-100 rounded-lg p-4 text-black hover:shadow-xl hover:bg-blue-200 transition-all duration-200"
                       onClick={() => openModal(post)}
                     >
                       {post.mediaUrl && post.mediaType === "image" && (
                         <img
                           src={`http://localhost:8000${post.mediaUrl}`}
                           alt="Post media"
-                          className="w-full h-48 object-cover rounded-lg mb-2"
+                          className="w-full h-48 object-cover rounded-lg mb-2 shadow-md"
                         />
                       )}
                       {post.mediaUrl && post.mediaType === "video" && (
                         <video
                           controls
                           src={`http://localhost:8000${post.mediaUrl}`}
-                          className="w-full h-48 object-cover rounded-lg mb-2"
+                          className="w-full h-48 object-cover rounded-lg mb-2 shadow-md"
                         />
                       )}
                       {post.mediaUrl && post.mediaType === "audio" && (
@@ -240,7 +240,6 @@ const CommonProfile = () => {
                         />
                       )}
                       {renderPostContent(post)}{" "}
-                      {/* Updated to use the render function */}
                       <p className="text-sm text-emerald-900">
                         Posted on: {new Date(post.timestamp).toLocaleString()}
                       </p>
@@ -262,7 +261,7 @@ const CommonProfile = () => {
           overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
         >
           {selectedPost && (
-            <div className="bg-white p-5 rounded-lg">
+            <div className="bg-white p-5 rounded-lg shadow-xl">
               <h2 className="text-2xl font-bold mb-4">Expanded Post</h2>
               <p className="mb-4">{selectedPost.content}</p>
               {selectedPost.mediaUrl && selectedPost.mediaType === "image" && (
@@ -286,18 +285,21 @@ const CommonProfile = () => {
                   className="w-full mb-2"
                 />
               )}
-              <button
-                onClick={handleLikeToggle}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-300"
-              >
-                {selectedPost.liked ? "Unlike" : "Like"} ({selectedPost.likes})
-              </button>
-              <button
-                onClick={closeModal}
-                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors duration-300 ml-4"
-              >
-                Close
-              </button>
+              <div className="flex justify-between">
+                <button
+                  onClick={handleLikeToggle}
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 shadow-lg transition-all duration-300"
+                >
+                  {selectedPost.liked ? "Unlike" : "Like"} ({selectedPost.likes}
+                  )
+                </button>
+                <button
+                  onClick={closeModal}
+                  className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 shadow-lg transition-all duration-300"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           )}
         </Modal>

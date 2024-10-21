@@ -5,7 +5,9 @@ const ServiceProviderHome = () => {
   const [requests, setRequests] = useState([]);
   const [specialization, setSpecialization] = useState("All");
   const [filteredRequests, setFilteredRequests] = useState([]);
+  const [specializations, setSpecializations] = useState([]);
   const token = localStorage.getItem("token");
+  const [userArtForm, setUserArtForm] = useState(null);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -14,15 +16,22 @@ const ServiceProviderHome = () => {
           "http://localhost:8000/service/requests",
           {
             headers: {
-              Authorization: `Bearer ${token}`, // Send token in the Authorization header
+              Authorization: `Bearer ${token}`,
             },
             params: {
-              specialization, // Send specialization as query param
+              specialization,
             },
           }
         );
-        setRequests(response.data);
-        setFilteredRequests(response.data);
+
+        setRequests(response.data.requests); // Access requests from the response object
+        setFilteredRequests(response.data.requests);
+
+        // Set userArtForm based on the first request, if available
+        if (response.data.requests.length > 0) {
+          const artForm = response.data.artform; // Get artForm from the response
+          setUserArtForm(artForm);
+        }
       } catch (error) {
         console.error("Error fetching service requests:", error);
       }
@@ -31,6 +40,23 @@ const ServiceProviderHome = () => {
     fetchRequests();
   }, [specialization, token]);
 
+  useEffect(() => {
+    const fetchSpecializations = async () => {
+      if (userArtForm) {
+        try {
+          const response = await axios.get(
+            `http://localhost:8000/common-things/specializations/${userArtForm}`
+          );
+          setSpecializations(response.data);
+        } catch (error) {
+          console.error("Error fetching specializations:", error);
+        }
+      }
+    };
+
+    fetchSpecializations();
+  }, [userArtForm]);
+
   const handleAccept = async (requestId) => {
     try {
       await axios.post(
@@ -38,13 +64,12 @@ const ServiceProviderHome = () => {
         {},
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Include token when accepting the request
+            Authorization: `Bearer ${token}`,
           },
         }
       );
-      setRequests(
-        (prevRequests) =>
-          prevRequests.filter((request) => request._id !== requestId) // Remove the accepted request from the list
+      setRequests((prevRequests) =>
+        prevRequests.filter((request) => request._id !== requestId)
       );
     } catch (error) {
       console.error("Error accepting request:", error);
@@ -58,13 +83,12 @@ const ServiceProviderHome = () => {
         {},
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Include token when ignoring the request
+            Authorization: `Bearer ${token}`,
           },
         }
       );
-      setRequests(
-        (prevRequests) =>
-          prevRequests.filter((request) => request._id !== requestId) // Remove the ignored request from the list
+      setRequests((prevRequests) =>
+        prevRequests.filter((request) => request._id !== requestId)
       );
     } catch (error) {
       console.error("Error ignoring request:", error);
@@ -72,30 +96,33 @@ const ServiceProviderHome = () => {
   };
 
   const handleSpecializationChange = (event) => {
-    setSpecialization(event.target.value); // Update specialization filter
+    setSpecialization(event.target.value);
   };
 
   return (
-    <div className="container mx-auto w-full max-w-screen-2xl pt-28 pb-20">
+    <div className="p-8">
       {/* Filter Section */}
-      <div className="flex justify-between mb-6">
-        <div>
-          <label htmlFor="specialization" className="text-lg font-bold">
-            Specialization:
-          </label>
-          <select
-            id="specialization"
-            value={specialization}
-            onChange={handleSpecializationChange}
-            className="ml-2 p-2 border border-gray-300 rounded-md"
-          >
-            <option value="All">All</option>
-            <option value="Painting">Painting</option>
-            <option value="Sculpting">Sculpting</option>
-            <option value="Photography">Photography</option>
-            {/* Add more specializations as needed */}
-          </select>
-        </div>
+      <div className="flex justify-between items-center mb-6 p-6 bg-gray-800 rounded-lg shadow-lg backdrop-filter backdrop-blur-lg bg-opacity-30">
+        <label
+          htmlFor="specialization"
+          className="text-lg font-bold text-yellow-400"
+        >
+          Specialization:
+        </label>
+        <select
+          id="specialization"
+          value={specialization}
+          onChange={handleSpecializationChange}
+          className="ml-4 p-3 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-transparent text-black
+         transition"
+        >
+          <option value="All">All</option>
+          {specializations.map((spec) => (
+            <option key={spec} value={spec}>
+              {spec}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Service Requests List */}
@@ -104,16 +131,16 @@ const ServiceProviderHome = () => {
           filteredRequests.map((request) => (
             <div
               key={request._id}
-              className="bg-white border border-gray-200 rounded-lg shadow-lg p-6 mb-8"
+              className="bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-6 mb-8 transition-transform transform hover:scale-105"
             >
               <div className="flex items-center mb-4">
                 <img
                   src={`http://localhost:8000${request.userId.profilePicture}`}
                   alt={request.userId.userName}
-                  className="w-12 h-12 rounded-full object-cover"
+                  className="w-12 h-12 rounded-full object-cover border-2 border-yellow-500"
                 />
                 <div className="ml-4">
-                  <p className="font-bold text-lg text-emerald-900">
+                  <p className="font-bold text-lg text-yellow-400">
                     {request.userId.userName}
                   </p>
                 </div>
@@ -121,32 +148,32 @@ const ServiceProviderHome = () => {
 
               {/* Request Images */}
               {request.images.length > 0 && (
-                <div className="mb-4">
+                <div className="mb-4 grid grid-cols-1 gap-2">
                   {request.images.map((image, index) => (
                     <img
                       key={index}
                       src={`http://localhost:8000${image}`}
                       alt="Request"
-                      className="w-full h-64 object-cover rounded-md"
+                      className="w-full h-64 object-cover rounded-md border border-gray-600"
                     />
                   ))}
                 </div>
               )}
 
               {/* Request Description */}
-              <p className="text-gray-700 mb-4">{request.description}</p>
+              <p className="text-gray-300 mb-4">{request.description}</p>
 
               {/* Action Buttons */}
               <div className="flex justify-between">
                 <button
                   onClick={() => handleAccept(request._id)}
-                  className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                  className="bg-yellow-400 text-black px-4 py-2 rounded-full hover:bg-yellow-500 transition"
                 >
                   Accept
                 </button>
                 <button
                   onClick={() => handleIgnore(request._id)}
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                  className="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition"
                 >
                   Not Interested
                 </button>
@@ -154,7 +181,7 @@ const ServiceProviderHome = () => {
             </div>
           ))
         ) : (
-          <p className="text-center text-gray-600 col-span-full">
+          <p className="text-center text-gray-400 col-span-full">
             No service requests available.
           </p>
         )}
