@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { BiSearch } from "react-icons/bi";
-import { AiOutlineMessage, AiOutlineSend } from "react-icons/ai";
+import {
+  AiOutlineMessage,
+  AiOutlineSend,
+  AiOutlineDelete,
+} from "react-icons/ai";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Link } from "react-router-dom";
@@ -16,6 +20,9 @@ const MessagePage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [user, setUser] = useState(null);
   const [requests, setRequests] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [messageToDelete, setMessageToDelete] = useState(null);
+
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -166,7 +173,7 @@ const MessagePage = () => {
     }
   };
 
-  const deleteMessage = async (messageId) => {
+  const handleDeleteMessage = async (messageId) => {
     try {
       await axios.delete(
         `http://localhost:8000/message/delete-message/${messageId}`,
@@ -177,6 +184,7 @@ const MessagePage = () => {
       setMessages((prevMessages) =>
         prevMessages.filter((msg) => msg._id !== messageId)
       );
+      setIsModalOpen(false); // Close the modal after deletion
     } catch (error) {
       console.error("Error deleting message:", error);
     }
@@ -217,8 +225,8 @@ const MessagePage = () => {
   };
 
   return (
-    <div className="flex h-screen bg-slate-800 rounded-md shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 p-6 pb-28 mb-48 text-black">
-      <div className="w-full md:w-1/3 bg-white rounded-md p-4 shadow-md relative">
+    <div className="flex h-full bg-slate-800 rounded-md shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 p-6 pb-10 mb-8 text-black">
+      <div className="w-full md:w-1/3 bg-white rounded-md p-4 shadow-md mr-10 relative">
         <input
           type="text"
           placeholder="Search users..."
@@ -319,13 +327,25 @@ const MessagePage = () => {
                     }`}
                   >
                     <div
-                      className={`p-2 rounded-lg mb-2 max-w-[80%] ${
+                      className={`p-3 pr-10 rounded-lg mb-2 max-w-[80%] relative ${
                         message.sender === user._id
                           ? "bg-blue-500 text-white"
                           : "bg-gray-200 text-black"
                       }`}
                     >
                       <p>{message.content}</p>
+                      {/* Delete Button for User's Messages */}
+                      {message.sender === user._id && (
+                        <button
+                          className="absolute top-0 right-0 mt-1 mr-1 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-all"
+                          onClick={() => {
+                            setIsModalOpen(true);
+                            setMessageToDelete(message._id);
+                          }}
+                        >
+                          <AiOutlineDelete className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                     {/* Timestamp */}
                     <p className="text-gray-400 text-xs mt-1">
@@ -337,6 +357,36 @@ const MessagePage = () => {
                 <p className="text-gray-500 text-center">No messages yet.</p>
               )}
             </div>
+
+            {isModalOpen && (
+              <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+                <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+                  <h2 className="text-lg font-semibold mb-4">
+                    Confirm Deletion
+                  </h2>
+                  <p className="mb-4">
+                    Are you sure you want to delete this message?
+                  </p>
+                  <div className="flex justify-center space-x-4">
+                    <button
+                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                      onClick={async () => {
+                        await handleDeleteMessage(messageToDelete);
+                        setIsModalOpen(false);
+                      }}
+                    >
+                      Delete
+                    </button>
+                    <button
+                      className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition"
+                      onClick={() => setIsModalOpen(false)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="absolute bottom-0 left-0 w-full p-4">
               <div className="flex items-center space-x-2">

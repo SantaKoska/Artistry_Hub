@@ -414,21 +414,38 @@ router.put(
 
     try {
       const course = await findCourseById(courseId);
-      const chapter = findChapterInCourse(course, chapterId);
-      const lesson = chapter.lessons.id(lessonId);
+      if (!course) {
+        return res.status(404).json({ message: "Course not found" });
+      }
 
+      const chapter = findChapterInCourse(course, chapterId);
+      if (!chapter) {
+        return res.status(404).json({ message: "Chapter not found" });
+      }
+
+      const lesson = chapter.lessons.id(lessonId);
+      if (!lesson) {
+        return res.status(404).json({ message: "Lesson not found" });
+      }
+
+      // Update title and description if provided
       lesson.title = title || lesson.title;
       lesson.description = description || lesson.description;
-      lesson.mediaUrl = req.file
-        ? `/learning/videos/${req.file.filename}`
-        : lesson.mediaUrl;
-      lesson.noteUrl = req.file
-        ? `/learning/notes/${req.file.filename}`
-        : lesson.noteUrl;
 
+      // Update media URLs only if new files are uploaded
+      if (req.files && req.files.video && req.files.video[0]) {
+        lesson.mediaUrl = `/learning/videos/${req.files.video[0].filename}`;
+      }
+
+      if (req.files && req.files.note && req.files.note[0]) {
+        lesson.noteUrl = `/learning/notes/${req.files.note[0].filename}`;
+      }
+
+      // Save the updated course
       await course.save();
       res.status(200).json(course);
     } catch (error) {
+      console.error("Error editing lesson", error);
       res.status(500).json({ message: "Error editing lesson", error });
     }
   }
@@ -526,6 +543,7 @@ const ServiceImage = multer.diskStorage({
 
 const serviceupload = multer({ storage: ServiceImage }).array("images", 5);
 
+// Create a service request
 router.post(
   "/create-service-request",
   verifyToken,
@@ -540,12 +558,13 @@ router.post(
         return res.status(400).json({ msg: "Artist not found" });
       }
 
-      const { description } = req.body; // Get description from the body
+      const { description, specialization } = req.body; // Get description and specialization from the body
       const images = req.files.map((file) => `/Service/${file.filename}`); // Get image paths from uploaded files
 
       const newServiceRequest = new ServiceRequest({
         userId,
         artForm: artist.artForm, // Automatically set from the artist model
+        specialization,
         description,
         images,
       });
@@ -559,21 +578,93 @@ router.post(
   }
 );
 
-// Route to retrieve the service requests created by the user (using your existing code)
+// Retrieve the service requests created by the user
 router.get("/my-service-requests", verifyToken, async (req, res) => {
   try {
+    // First, find the artist using the user's identifier
+    const artist = await Artist.findOne({ userId: req.user.identifier }).select(
+      "artForm"
+    );
+
+    if (!artist) {
+      return res.status(404).json({ message: "Artist not found" });
+    }
+
+    // Then, find the service requests by the user
     const serviceRequests = await ServiceRequest.find({
       userId: req.user.identifier,
+    }).populate("serviceProviderId"); // Populate service provider details
+
+    // Prepare the response
+    const serviceRequestsWithArtForm = serviceRequests.map((request) => ({
+      ...request.toObject(), // Attach the service request details
+      artForm: artist.artForm, // Attach the artist's art form
+    }));
+
+    // Return the response with the art form and service requests
+    return res.status(200).json({
+      artForm: artist.artForm, // Always include the art form
+      serviceRequests: serviceRequestsWithArtForm, // Include service requests (empty if none)
     });
-    // console.log(serviceRequests);
-    return res.status(200).json(serviceRequests);
   } catch (error) {
     console.error("Error fetching service requests:", error);
     return res.status(500).json({ message: "Server error" });
   }
 });
 
-// Edit a service request (same as before)
+// Fetch accepted service providers for a specific service request
+router.get(
+  "/service-requests/:id/service-providers",
+  verifyToken,
+  async (req, res) => {
+    try {
+      const request = await ServiceRequest.findById(req.params.id).populate(
+        "serviceProviderId"
+      );
+      if (!request) {
+        return res.status(404).json({ message: "Service request not found" });
+      }
+
+      // Assuming serviceProviderId contains the IDs of accepted service providers
+      const acceptedProviders = await User.find({
+        _id: { $in: request.serviceProviderId },
+      });
+
+      res.status(200).json(acceptedProviders);
+    } catch (error) {
+      console.error("Error fetching service providers:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  }
+);
+
+// Select a service provider for a service request
+router.put(
+  "/service-requests/:id/select-provider",
+  verifyToken,
+  async (req, res) => {
+    const { serviceProviderId } = req.body;
+
+    try {
+      const request = await ServiceRequest.findById(req.params.id);
+      if (!request)
+        return res.status(404).json({ message: "Service request not found" });
+
+      // Update the service provider and status
+      request.serviceProviderId = serviceProviderId;
+      request.status = "Accepted"; // Change status to Accepted
+
+      await request.save();
+      res.json(request);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Error selecting service provider", error });
+    }
+  }
+);
+
+// Edit a service request
 router.put("/service-requests/:id", serviceupload, async (req, res) => {
   const { description } = req.body;
   const files = req.files;
@@ -583,19 +674,59 @@ router.put("/service-requests/:id", serviceupload, async (req, res) => {
     if (!request)
       return res.status(404).json({ message: "Service request not found" });
 
-    request.description = description;
-    if (files.length > 0) {
-      request.images = files.map((file) => `/Service/${file.filename}`);
+    // Prevent editing if the request is accepted
+    if (request.status === "Accepted") {
+      return res.status(403).json({ message: "Cannot edit accepted requests" });
     }
-    await request.save();
 
+    request.description = description;
+
+    // Allow new images to be added without removing existing ones
+    if (files.length > 0) {
+      if (request.images.length + files.length > 5) {
+        // Assuming the limit is 5
+        return res
+          .status(400)
+          .json({ message: "Image limit reached. Please remove some images." });
+      }
+      request.images.push(...files.map((file) => `/Service/${file.filename}`));
+    }
+
+    await request.save();
     res.json(request);
   } catch (error) {
     res.status(500).json({ message: "Error updating service request", error });
   }
 });
 
-// Delete a service request (same as before)
+// Remove a specific image from the service request
+router.delete("/service-requests/:id/images", async (req, res) => {
+  const { id } = req.params;
+  const { imagePath } = req.body;
+  try {
+    const request = await ServiceRequest.findById(id);
+    if (!request)
+      return res.status(407).json({ message: "Service request not found" });
+
+    // Prevent editing if the request is accepted
+    if (request.status === "Accepted") {
+      return res
+        .status(403)
+        .json({ message: "Cannot remove images from accepted requests" });
+    }
+
+    // Filter out the image to be removed
+    request.images = request.images.filter((img) => img !== imagePath);
+
+    await request.save();
+    res.json({ message: "Image removed", images: request.images });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error removing image", error });
+  }
+});
+
+// Delete a service request
 router.delete("/service-requests/:id", async (req, res) => {
   try {
     const request = await ServiceRequest.findByIdAndDelete(req.params.id);

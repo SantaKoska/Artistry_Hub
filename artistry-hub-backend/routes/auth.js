@@ -283,4 +283,5 @@ router.post("/reset-password/:token", async (req, res) => {
 
   res.status(200).json({ message: "Password has been reset" });
 });
+
 module.exports = router;

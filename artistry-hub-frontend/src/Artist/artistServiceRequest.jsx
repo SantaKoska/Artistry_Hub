@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { BiEdit, BiTrash } from "react-icons/bi"; // Import icons
+import { BiEdit, BiTrash } from "react-icons/bi";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const ArtistCreateServiceRequest = () => {
   const [description, setDescription] = useState("");
+  const [specializationOptions, setSpecializationOptions] = useState([]);
+  const [selectedSpecialization, setSelectedSpecialization] = useState("");
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [serviceRequests, setServiceRequests] = useState([]);
-  const [showCreateRequest, setShowCreateRequest] = useState(false);
-  const [editingRequest, setEditingRequest] = useState(null); // State for editing request
+  const [editingRequest, setEditingRequest] = useState(null);
+  const [acceptedProviders, setAcceptedProviders] = useState([]);
+  const [userArtForm, setUserArtForm] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
 
-  // Fetch existing service requests
+  // console.log(editingRequest);
+
   useEffect(() => {
     const fetchServiceRequests = async () => {
       try {
@@ -22,36 +30,56 @@ const ArtistCreateServiceRequest = () => {
             },
           }
         );
-        setServiceRequests(response.data || []);
+        const { artForm, serviceRequests: serviceRequestsData } = response.data;
+        setServiceRequests(serviceRequestsData || []);
+        setUserArtForm(artForm);
       } catch (error) {
         console.error("Error fetching service requests:", error);
         setServiceRequests([]);
       }
     };
-
     fetchServiceRequests();
   }, []);
 
+  useEffect(() => {
+    if (userArtForm) {
+      const fetchSpecializations = async () => {
+        try {
+          const response = await axios.get(
+            `http://localhost:8000/common-things/specializations/${userArtForm}`
+          );
+          setSpecializationOptions(response.data);
+        } catch (error) {
+          console.error("Error fetching specializations:", error);
+        }
+      };
+      fetchSpecializations();
+    }
+  }, [userArtForm]);
+
   const handleImageChange = (e) => {
     const selectedImages = Array.from(e.target.files);
-    setImages(selectedImages);
+    if (images.length + selectedImages.length > 5) {
+      toast.error("Image limit reached. Please remove some images.");
+      return;
+    }
+    setImages((prev) => [...prev, ...selectedImages]);
 
-    // Create image previews
     const previews = selectedImages.map((file) => URL.createObjectURL(file));
-    setImagePreviews(previews);
+    setImagePreviews((prev) => [...prev, ...previews]);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
     formData.append("description", description);
+    formData.append("specialization", selectedSpecialization);
     images.forEach((image) => {
       formData.append("images", image);
     });
 
     try {
       if (editingRequest) {
-        // Handle Edit
         const response = await axios.put(
           `http://localhost:8000/artist/service-requests/${editingRequest._id}`,
           formData,
@@ -61,7 +89,6 @@ const ArtistCreateServiceRequest = () => {
             },
           }
         );
-        // Update the request in the list
         setServiceRequests((prevRequests) =>
           prevRequests.map((req) =>
             req._id === editingRequest._id ? response.data : req
@@ -69,7 +96,6 @@ const ArtistCreateServiceRequest = () => {
         );
         setEditingRequest(null);
       } else {
-        // Handle Create
         const response = await axios.post(
           "http://localhost:8000/artist/create-service-request",
           formData,
@@ -81,22 +107,47 @@ const ArtistCreateServiceRequest = () => {
         );
         setServiceRequests((prevRequests) => [...prevRequests, response.data]);
       }
-
-      // Reset the form after submission
       resetForm();
-      setShowCreateRequest(false);
+      setShowModal(false);
     } catch (error) {
       console.error("Error creating/updating service request:", error);
+      toast.error("Failed to create/update service request. Please try again.");
     }
   };
 
   const handleEdit = (request) => {
     setEditingRequest(request);
     setDescription(request.description);
+    setSelectedSpecialization(request.specialization);
     setImagePreviews(
       request.images.map((img) => `http://localhost:8000${img}`)
     );
-    setShowCreateRequest(true);
+    setShowModal(true);
+  };
+
+  const handleImageDelete = async (imagePath) => {
+    if (!editingRequest) return;
+    try {
+      // Extract relative path from the full URL
+      const relativeImagePath = imagePath.replace("http://localhost:8000", "");
+
+      const response = await axios.delete(
+        `http://localhost:8000/artist/service-requests/${editingRequest._id}/images`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          data: { imagePath: relativeImagePath }, // Send only the relative path
+        }
+      );
+
+      setImages(response.data.images); // Update images state after deletion
+      setImagePreviews(
+        response.data.images.map((img) => `http://localhost:8000${img}`) // Update the full URL for previews
+      );
+      toast.success("Image removed successfully.");
+    } catch (error) {
+      console.error("Error removing image:", error);
+      toast.error("Failed to remove image. Please try again.");
+    }
   };
 
   const handleDelete = async (id) => {
@@ -110,25 +161,58 @@ const ArtistCreateServiceRequest = () => {
       setServiceRequests(serviceRequests.filter((req) => req._id !== id));
     } catch (error) {
       console.error("Error deleting service request:", error);
+      toast.error("Failed to delete service request. Please try again.");
     }
   };
 
-  // Reset form fields and previews
   const resetForm = () => {
     setDescription("");
+    setSelectedSpecialization("");
     setImages([]);
     setImagePreviews([]);
-    setEditingRequest(null); // Reset editing state
+    setEditingRequest(null);
   };
 
   const handleCancel = () => {
     resetForm();
-    setShowCreateRequest(false);
+    setShowModal(false);
   };
 
   const handleAddServiceRequest = () => {
-    resetForm(); // Clear the form when adding a new request
-    setShowCreateRequest(true);
+    resetForm();
+    setShowModal(true);
+  };
+
+  const handleSelectProvider = async (requestId, providerId) => {
+    try {
+      await axios.put(
+        `http://localhost:8000/artist/service-requests/${requestId}/select-provider`,
+        { serviceProviderId: providerId },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      toast.success("Search for the service provider's name and connect.");
+      navigate("/artist-Home/Message");
+    } catch (error) {
+      console.error("Error selecting service provider:", error);
+      toast.error("Error selecting service provider. Please try again.");
+    }
+  };
+
+  const handleFetchProviders = async (requestId) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/artist/service-requests/${requestId}/service-providers`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      setAcceptedProviders(response.data);
+    } catch (error) {
+      console.error("Error fetching service providers:", error);
+      toast.error("Failed to fetch service providers. Please try again.");
+    }
   };
 
   return (
@@ -157,12 +241,13 @@ const ArtistCreateServiceRequest = () => {
               {request.images && request.images.length > 0 && (
                 <div className="mt-2 flex space-x-2">
                   {request.images.map((img, index) => (
-                    <img
-                      key={index}
-                      src={`http://localhost:8000${img}`}
-                      alt={`request image ${index}`}
-                      className="w-20 h-20 object-cover border border-gray-300 rounded-md"
-                    />
+                    <div key={index} className="relative">
+                      <img
+                        src={`http://localhost:8000${img}`}
+                        alt={`request image ${index}`}
+                        className="w-20 h-20 object-cover border border-gray-300 rounded-md"
+                      />
+                    </div>
                   ))}
                 </div>
               )}
@@ -171,90 +256,144 @@ const ArtistCreateServiceRequest = () => {
                   onClick={() => handleEdit(request)}
                   className="bg-yellow-400 text-black p-2 rounded-lg hover:bg-yellow-500 flex items-center"
                 >
-                  <BiEdit className="w-5 h-5 mr-2" /> {/* Edit icon */}
+                  <BiEdit className="mr-2" />
+                  Edit
                 </button>
                 <button
                   onClick={() => handleDelete(request._id)}
-                  className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 flex items-center"
+                  className="bg-red-600 text-white p-2 rounded-lg hover:bg-red-700 flex items-center"
                 >
-                  <BiTrash className="w-5 h-5 mr-2" /> {/* Delete icon */}
+                  <BiTrash className="mr-2" />
+                  Delete
                 </button>
+              </div>
+
+              <div className="mt-4">
+                <button
+                  onClick={() => handleFetchProviders(request._id)}
+                  className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700"
+                >
+                  View Providers
+                </button>
+
+                <div className="mt-2">
+                  {acceptedProviders.length > 0 ? (
+                    <>
+                      <h3 className="text-lg font-medium">
+                        Accepted Providers:
+                      </h3>
+                      <ul className="list-disc pl-5">
+                        {acceptedProviders.map((provider) => (
+                          <li
+                            key={provider._id}
+                            className="mt-1 flex justify-between"
+                          >
+                            <span>{provider.name}</span>
+                            <button
+                              onClick={() =>
+                                handleSelectProvider(request._id, provider._id)
+                              }
+                              className="text-green-400 underline ml-2"
+                            >
+                              Select
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  ) : (
+                    <p className="text-red-500 font-light">
+                      No providers have accepted this request yet.
+                    </p>
+                  )}
+                </div>
               </div>
             </li>
           ))}
         </ul>
       )}
 
-      {showCreateRequest && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-lg">
-            <h2 className="text-2xl font-bold text-yellow-400 mb-4">
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-8 rounded-lg w-full max-w-2xl">
+            <h2 className="text-xl font-semibold mb-4">
               {editingRequest
                 ? "Edit Service Request"
                 : "Create Service Request"}
             </h2>
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
-                <label
-                  htmlFor="description"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Description (Please give details of the Service You need)
-                </label>
+                <label className="block text-gray-700 mb-2">Description:</label>
                 <textarea
-                  id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md"
                   required
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
                 />
               </div>
+
               <div className="mb-4">
-                <label
-                  htmlFor="images"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Upload Images (You can Upload maximum of 5 images)
+                <label className="block text-gray-700 mb-2">
+                  Specialization:
                 </label>
+                <select
+                  value={selectedSpecialization}
+                  onChange={(e) => setSelectedSpecialization(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                  required
+                >
+                  <option value="">Select a specialization</option>
+                  {specializationOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2">Images:</label>
                 <input
                   type="file"
-                  id="images"
                   multiple
-                  accept="image/*"
                   onChange={handleImageChange}
-                  className="mt-1 block w-full"
+                  className="w-full"
                 />
-                {imagePreviews.length > 0 && (
-                  <div className="mt-2">
-                    <h3 className="text-sm font-medium">Image Previews:</h3>
-                    <div className="flex space-x-2">
-                      {imagePreviews.map((preview, index) => (
-                        <img
-                          key={index}
-                          src={preview}
-                          alt={`preview ${index}`}
-                          className="w-20 h-20 object-cover border border-gray-300 rounded-md"
-                        />
-                      ))}
+                <div className="mt-4 flex space-x-2">
+                  {imagePreviews.map((preview, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={preview}
+                        alt={`preview ${index}`}
+                        className="w-20 h-20 object-cover border border-gray-300 rounded-md"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleImageDelete(preview)}
+                        className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full"
+                      >
+                        <BiTrash />
+                      </button>
                     </div>
-                  </div>
-                )}
+                  ))}
+                </div>
               </div>
-              <button
-                type="submit"
-                className="text-lg font-medium bg-emerald-900 text-white hover:bg-yellow-400 hover:text-black py-3 px-8 rounded-lg transition-all duration-300"
-              >
-                {editingRequest
-                  ? "Update Service Request"
-                  : "Submit Service Request"}
-              </button>
-              <button
-                type="button"
-                onClick={handleCancel} // Trigger cancel behavior
-                className="text-lg font-medium border-2 border-yellow-500 bg-white text-red-500 hover:bg-red-500 hover:text-white ml-9 py-3 px-8 rounded-lg transition-all duration-300"
-              >
-                Cancel
-              </button>
+
+              <div className="flex justify-between">
+                <button
+                  type="submit"
+                  className="bg-emerald-600 text-white py-2 px-4 rounded-md hover:bg-emerald-700"
+                >
+                  {editingRequest ? "Update Request" : "Create Request"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="bg-gray-400 text-white py-2 px-4 rounded-md hover:bg-gray-500"
+                >
+                  Cancel
+                </button>
+              </div>
             </form>
           </div>
         </div>

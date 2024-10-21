@@ -12,6 +12,7 @@ const message = require("./routes/message");
 const User = require("./models/UserModel");
 const cors = require("cors");
 const path = require("path");
+const service = require("./routes/service");
 
 //for env
 require("dotenv").config();
@@ -95,6 +96,8 @@ app.use("/posts", post);
 app.use("/message", message);
 
 app.use("/student", studentRoutes);
+
+app.use("/service", service);
 
 //the app losening to the port
 app.listen(8000, () => {

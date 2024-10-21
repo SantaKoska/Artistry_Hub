@@ -25,6 +25,8 @@ import StudentProfile from "./Viewer-Student/studentProfile";
 import StudentCreateServiceRequest from "./Viewer-Student/studentServiceRequest";
 import ArtistCreateServiceRequest from "./Artist/artistServiceRequest";
 import StudentDashboard from "./Viewer-Student/Studentlearning/LearnDashboard";
+import ServiceProviderBase from "./serviceprovider/serviceBase";
+import ServiceProviderHome from "./serviceprovider/servicehome";
 
 function App() {
   return (
@@ -97,6 +99,17 @@ function App() {
               element={<StudentCreateServiceRequest />}
             />
             <Route path="learning" element={<StudentDashboard />} />
+          </Route>
+
+          <Route
+            path="/Service-Provider-home"
+            element={
+              <PrivateRoute>
+                <ServiceProviderBase />
+              </PrivateRoute>
+            }
+          >
+            <Route index element={<ServiceProviderHome />} />
           </Route>
 
           <Route path="reset-password/:token" element={<ResetPassword />} />

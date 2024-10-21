@@ -36,7 +36,7 @@ const loginUser = async (credentials, navigate) => {
         break;
 
       case "Service Provider":
-        navigate("/home");
+        navigate("/Service-Provider-home");
         break;
 
       default:

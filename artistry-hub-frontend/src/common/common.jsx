@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { FaHeart } from "react-icons/fa"; // For like button
 import Modal from "react-modal"; // For modal functionality
 
@@ -12,6 +12,8 @@ const CommonProfile = () => {
   const [selectedPost, setSelectedPost] = useState(null); // For modal post
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
   const token = localStorage.getItem("token");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -138,7 +140,13 @@ const CommonProfile = () => {
 
   return (
     <>
-      <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 w-full max-w-screen-lg mx-auto mb-16">
+      <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 w-full max-w-screen-lg mx-auto mt-16">
+        <button
+          onClick={() => navigate(-1)} // This will navigate back to the previous page
+          className="text-black bg-white hover:bg-black hover:text-emerald-800 hover:underline rounded-md p-4"
+        >
+          Back
+        </button>
         {profile && (
           <>
             <div className="flex flex-col md:flex-row gap-10 items-center justify-between">

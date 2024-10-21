@@ -336,6 +336,30 @@ const Register = () => {
     );
   };
 
+  const [specializations, setSpecializations] = useState([]);
+
+  const handleArtFormChange = async (e) => {
+    const artForm = e.target.value;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      additionalData: {
+        ...prevFormData.additionalData,
+        artForm,
+        specialisation: "", // reset specialization
+      },
+    }));
+
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/common-things/specializations/${artForm}`
+      );
+      setSpecializations(response.data);
+      console.log(response.data); // Update available specializations
+    } catch (error) {
+      console.error("Error fetching specializations: ", error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     // for debugging we gona use the below line
@@ -365,7 +389,7 @@ const Register = () => {
   };
 
   return (
-    <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 relative mt-96">
+    <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 relative mt-32">
       <div>
         <h1 className="text-4xl font-semibold text-white text-center mb-6">
           Register
@@ -549,18 +573,19 @@ const Register = () => {
 
           {formData.role === "Artist" && (
             <>
+              {/* Art Form Dropdown */}
               <div className="relative my-4 mt-8">
                 <select
                   name="additionalData.artForm"
                   className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
                   value={formData.additionalData.artForm || ""}
-                  onChange={handleInputChange}
+                  onChange={handleArtFormChange} // Handles the art form change
                 >
                   <option value="" disabled>
-                    Select your artform
+                    Select your art form
                   </option>
                   <option value="Painting">Painting</option>
-                  <option value="Sculpturet">Sculpture</option>
+                  <option value="Sculpture">Sculpture</option>
                   <option value="Architecture">Architecture</option>
                   <option value="Literature">Literature</option>
                   <option value="Cinema">Cinema</option>
@@ -574,61 +599,40 @@ const Register = () => {
                   Known Art Form
                 </label>
               </div>
-              <div className="relative my-4 mt-8">
-                <input
-                  type="text"
-                  name="additionalData.specialisation"
-                  className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
-                    errors["additionalData.specialisation"]
-                      ? "border-red-500"
-                      : "border-emerald-900"
-                  } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
-                  placeholder=" "
-                  value={formData.additionalData.specialisation || ""}
-                  onChange={handleInputChange}
-                />
-                <label
-                  htmlFor="additionalData.specialisation"
-                  className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
-                >
-                  Specialisation
-                </label>
-                {errors["additionalData.specialisation"] && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors["additionalData.specialisation"]}
-                  </p>
-                )}
-              </div>
-            </>
-          )}
 
-          {/* if viewer/students is selected */}
-          {formData.role === "Viewer/Student" && (
-            <div className="relative my-4 mt-8">
-              <select
-                name="additionalData.artForm"
-                className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
-                value={formData.additionalData.artForm || ""}
-                onChange={handleInputChange}
-              >
-                <option value="" disabled>
-                  Select your artform
-                </option>
-                <option value="Painting">Painting</option>
-                <option value="Sculpturet">Sculpture</option>
-                <option value="Architecture">Architecture</option>
-                <option value="Literature">Literature</option>
-                <option value="Cinema">Cinema</option>
-                <option value="Theater">Theater</option>
-                <option value="Music">Music</option>
-              </select>
-              <label
-                htmlFor="additionalData.artForm"
-                className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
-              >
-                Favourite Art Form
-              </label>
-            </div>
+              {/* Specialisation Dropdown */}
+              {formData.additionalData.artForm && (
+                <div className="relative my-4 mt-8">
+                  <select
+                    name="additionalData.specialisation"
+                    className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+                    value={formData.additionalData.specialisation || ""}
+                    onChange={handleInputChange} // handleInputChange to manage form state for specialization
+                  >
+                    <option value="" disabled>
+                      Select your specialisation
+                    </option>
+                    {specializations.length > 0 ? (
+                      specializations.map((spec, index) => (
+                        <option key={index} value={spec}>
+                          {spec}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>
+                        No specializations available
+                      </option>
+                    )}
+                  </select>
+                  <label
+                    htmlFor="additionalData.specialisation"
+                    className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
+                  >
+                    Specialisation
+                  </label>
+                </div>
+              )}
+            </>
           )}
 
           {/* if service provider is selected */}

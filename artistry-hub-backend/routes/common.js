@@ -7,6 +7,7 @@ const ViewerStudent = require("../models/Viewer-StudentModel");
 const Institution = require("../models/InstituationModels");
 const ServiceProvider = require("../models/ServiceProviderModels");
 const Follower = require("../models/FollowerModels");
+const ArtFormSpecialization = require("../models/ArtFormSpecializationModels");
 const { verifyToken } = require("../utils/tokendec");
 
 // Fetch user profile by username
@@ -177,6 +178,21 @@ router.get("/usericon", verifyToken, async (req, res) => {
     console.error("Error fetching user profile:", error);
     res.status(500).json({ message: "Server error" });
   }
+});
+
+router.get("/specializations/:artForm", (req, res) => {
+  const { artForm } = req.params;
+  // Query database to get specializations for the given art form
+  ArtFormSpecialization.findOne({ artForm })
+    .then((artFormSpecialization) => {
+      if (!artFormSpecialization) {
+        return res
+          .status(404)
+          .json({ message: "No specializations found for this art form" });
+      }
+      res.json(artFormSpecialization.specializations);
+    })
+    .catch((err) => res.status(500).json({ error: "Error fetching data" }));
 });
 
 module.exports = router;
