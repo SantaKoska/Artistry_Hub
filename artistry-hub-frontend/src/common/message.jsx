@@ -48,7 +48,7 @@ const MessagePage = () => {
   const fetchUserDetails = async () => {
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/message/profile`,
+        `${import.meta.env.VITE_BACKEND_URL}/message/profile`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -62,7 +62,7 @@ const MessagePage = () => {
   const fetchChatList = async () => {
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/message/chat-list`,
+        `${import.meta.env.VITE_BACKEND_URL}/message/chat-list`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -76,7 +76,7 @@ const MessagePage = () => {
   const fetchRequests = async () => {
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/message/pending-requests`,
+        `${import.meta.env.VITE_BACKEND_URL}/message/pending-requests`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -99,7 +99,7 @@ const MessagePage = () => {
   const handleAcceptRequest = async (requesterId) => {
     try {
       await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/message/accept-request`,
+        `${import.meta.env.VITE_BACKEND_URL}/message/accept-request`,
         { requesterId },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -118,7 +118,7 @@ const MessagePage = () => {
     if (!chatId) return;
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/message/message-history/${chatId}`,
+        `${import.meta.env.VITE_BACKEND_URL}/message/message-history/${chatId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -151,7 +151,7 @@ const MessagePage = () => {
 
     try {
       await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/message/send-message`,
+        `${import.meta.env.VITE_BACKEND_URL}/message/send-message`,
         messageData,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -176,7 +176,9 @@ const MessagePage = () => {
   const handleDeleteMessage = async (messageId) => {
     try {
       await axios.delete(
-        `${process.env.REACT_APP_BACKEND_URL}/message/delete-message/${messageId}`,
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/message/delete-message/${messageId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -195,7 +197,9 @@ const MessagePage = () => {
 
     try {
       await axios.delete(
-        `${process.env.REACT_APP_BACKEND_URL}/message/clear-chat/${currentChat._id}`,
+        `${import.meta.env.VITE_BACKEND_URL}/message/clear-chat/${
+          currentChat._id
+        }`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -213,7 +217,9 @@ const MessagePage = () => {
     }
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/message/search?query=${searchTerm}`,
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/message/search?query=${searchTerm}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -248,7 +254,9 @@ const MessagePage = () => {
                 onClick={() => handleSearchUserClick(result)}
               >
                 <img
-                  src={`${process.env.REACT_APP_BACKEND_URL}${result.profilePicture}`}
+                  src={`${import.meta.env.VITE_BACKEND_URL}${
+                    result.profilePicture
+                  }`}
                   className="w-10 h-10 rounded-full"
                   alt={result.userName}
                 />
@@ -269,7 +277,9 @@ const MessagePage = () => {
               onClick={() => handleChatClick(chat)}
             >
               <img
-                src={`${process.env.REACT_APP_BACKEND_URL}${chat.profilePicture}`}
+                src={`${import.meta.env.VITE_BACKEND_URL}${
+                  chat.profilePicture
+                }`}
                 alt={chat.userName}
                 className="w-10 h-10 rounded-full"
               />
@@ -286,7 +296,9 @@ const MessagePage = () => {
             className="flex items-center p-2 bg-gray-200 mb-2 rounded-md"
           >
             <img
-              src={`${process.env.REACT_APP_BACKEND_URL}${request.sender.profilePicture}`}
+              src={`${import.meta.env.VITE_BACKEND_URL}${
+                request.sender.profilePicture
+              }`}
               alt={request.sender.userName}
               className="w-10 h-10 rounded-full"
             />
@@ -306,7 +318,9 @@ const MessagePage = () => {
           <>
             <div className="flex items-center p-2 bg-slate-500 rounded-lg">
               <img
-                src={`${process.env.REACT_APP_BACKEND_URL}${currentChat.profilePicture}`}
+                src={`${import.meta.env.VITE_BACKEND_URL}${
+                  currentChat.profilePicture
+                }`}
                 alt={currentChat.userName}
                 className="w-12 h-12 rounded-full"
               />

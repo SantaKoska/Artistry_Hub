@@ -26,7 +26,9 @@ const ServiceProviderProfile = () => {
     const fetchProfile = async () => {
       try {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/service/service-provider-profile`,
+          `${
+            import.meta.env.VITE_BACKEND_URL
+          }/service/service-provider-profile`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -75,7 +77,9 @@ const ServiceProviderProfile = () => {
 
     try {
       const response = await axios.put(
-        `${process.env.REACT_APP_BACKEND_URL}/service/service-provider-editprofile`,
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/service/service-provider-editprofile`,
         formDataToSend,
         {
           headers: {
@@ -95,7 +99,7 @@ const ServiceProviderProfile = () => {
   const handleDeletePost = async () => {
     try {
       await axios.delete(
-        `${process.env.REACT_APP_BACKEND_URL}/posts/delete-post/${postToDelete}`,
+        `${import.meta.env.VITE_BACKEND_URL}/posts/delete-post/${postToDelete}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -131,6 +135,28 @@ const ServiceProviderProfile = () => {
 
     return (
       <div key={post._id} className="bg-blue-100 rounded-lg p-4 text-black">
+        {post.mediaUrl && post.mediaType === "image" && (
+          <img
+            src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
+            alt="Post"
+            className="w-full h-48 object-cover rounded-lg mb-2"
+          />
+        )}
+        {post.mediaUrl && post.mediaType === "video" && (
+          <video
+            controls
+            src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
+            className="w-full h-48 object-cover rounded-lg mb-2"
+          />
+        )}
+        {post.mediaUrl && post.mediaType === "audio" && (
+          <audio
+            controls
+            src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
+            className="w-full object-cover rounded-lg mb-2"
+          />
+        )}
+
         <p>
           {isExpanded ? post.content : truncateText(post.content, contentLimit)}
           {post.content.length > contentLimit && (
@@ -142,6 +168,7 @@ const ServiceProviderProfile = () => {
             </button>
           )}
         </p>
+
         <p className="text-sm text-emerald-900">
           Posted on: {new Date(post.timestamp).toLocaleString()}
         </p>
@@ -162,7 +189,9 @@ const ServiceProviderProfile = () => {
           <div className="flex flex-col md:flex-row gap-10 items-center">
             <div className="flex flex-col items-center">
               <img
-                src={`${process.env.REACT_APP_BACKEND_URL}${profile.profilePicture}`}
+                src={`${import.meta.env.VITE_BACKEND_URL}${
+                  profile.profilePicture
+                }`}
                 alt="Profile"
                 className="w-48 h-44 rounded-full mb-4"
               />

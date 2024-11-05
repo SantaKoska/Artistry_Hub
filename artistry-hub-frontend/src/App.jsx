@@ -43,7 +43,7 @@ function App() {
         {/* Routes */}
         <Routes>
           <Route path="/" element={<LoginRegisterBase />}>
-            <Route path="login" element={<Login />} />
+            <Route path="/" element={<Login />} />
             <Route path="register" element={<Register />} />
           </Route>
           <Route path="login/forgotpassword" element={<ForgotPassword />} />
@@ -124,7 +124,7 @@ function App() {
           </Route>
 
           <Route path="reset-password/:token" element={<ResetPassword />} />
-          <Route path="/" element={<Navigate replace to="login" />} />
+          <Route path="/login" element={<Navigate replace to="/" />} />
         </Routes>
       </div>
     </>

@@ -26,7 +26,7 @@ const StudentProfile = () => {
   const fetchProfile = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/student/student-profile`, // Adjusted to student profile route
+        `${import.meta.env.VITE_BACKEND_URL}/student/student-profile`, // Adjusted to student profile route
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -75,7 +75,7 @@ const StudentProfile = () => {
 
     try {
       await axios.put(
-        `${process.env.REACT_APP_BACKEND_URL}/student/student-editprofile`, // Adjusted to student edit profile route
+        `${import.meta.env.VITE_BACKEND_URL}/student/student-editprofile`, // Adjusted to student edit profile route
         formDataToSend,
         {
           headers: {
@@ -96,7 +96,7 @@ const StudentProfile = () => {
   const handleDeletePost = async () => {
     try {
       await axios.delete(
-        `${process.env.REACT_APP_BACKEND_URL}/posts/delete-post/${postToDelete}`,
+        `${import.meta.env.VITE_BACKEND_URL}/posts/delete-post/${postToDelete}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -134,7 +134,7 @@ const StudentProfile = () => {
       <div key={post._id} className="bg-blue-100 rounded-lg p-4 text-black">
         {post.mediaUrl && post.mediaType === "image" && (
           <img
-            src={`${process.env.REACT_APP_BACKEND_URL}${post.mediaUrl}`}
+            src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
             alt="Post"
             className="w-full h-48 object-cover rounded-lg mb-2"
           />
@@ -142,14 +142,14 @@ const StudentProfile = () => {
         {post.mediaUrl && post.mediaType === "video" && (
           <video
             controls
-            src={`${process.env.REACT_APP_BACKEND_URL}${post.mediaUrl}`}
+            src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
             className="w-full h-48 object-cover rounded-lg mb-2"
           />
         )}
         {post.mediaUrl && post.mediaType === "audio" && (
           <audio
             controls
-            src={`${process.env.REACT_APP_BACKEND_URL}${post.mediaUrl}`}
+            src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
             className="w-full object-cover rounded-lg mb-2"
           />
         )}
@@ -186,7 +186,9 @@ const StudentProfile = () => {
           <div className="flex flex-col md:flex-row gap-10 items-center">
             <div className="flex flex-col items-center">
               <img
-                src={`${process.env.REACT_APP_BACKEND_URL}${profile.profilePicture}`}
+                src={`${import.meta.env.VITE_BACKEND_URL}${
+                  profile.profilePicture
+                }`}
                 alt="Profile"
                 className="w-48 h-44 rounded-full mb-4"
               />

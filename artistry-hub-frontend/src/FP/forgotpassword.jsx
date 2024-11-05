@@ -12,7 +12,7 @@ const ForgotPassword = () => {
     try {
       setIsLoading(true);
       await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/auth/forgot-password`,
+        `${import.meta.env.VITE_BACKEND_URL}/auth/forgot-password`,
         { email }
       );
       toast.success("Reset link sent to your email!");

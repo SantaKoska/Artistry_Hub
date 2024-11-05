@@ -21,7 +21,9 @@ const CourseDetails = ({
   const checkCompletionStatus = async () => {
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/student/check-completion/${course._id}`,
+        `${import.meta.env.VITE_BACKEND_URL}/student/check-completion/${
+          course._id
+        }`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -43,7 +45,7 @@ const CourseDetails = ({
     setIsProcessing(true);
     try {
       await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/student/enroll/${course._id}`,
+        `${import.meta.env.VITE_BACKEND_URL}/student/enroll/${course._id}`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -63,7 +65,7 @@ const CourseDetails = ({
     setIsProcessing(true);
     try {
       await axios.delete(
-        `${process.env.REACT_APP_BACKEND_URL}/student/unenroll/${course._id}`,
+        `${import.meta.env.VITE_BACKEND_URL}/student/unenroll/${course._id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -86,7 +88,9 @@ const CourseDetails = ({
         : prompt("Enter your name for the certificate:");
       if (!name) return; // Cancel if no name provided
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/student/generate-certificate/${course._id}`,
+        `${import.meta.env.VITE_BACKEND_URL}/student/generate-certificate/${
+          course._id
+        }`,
         { certificateName: name },
         {
           headers: { Authorization: `Bearer ${token}` },

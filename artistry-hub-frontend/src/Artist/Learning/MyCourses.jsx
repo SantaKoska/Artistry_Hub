@@ -23,7 +23,7 @@ const MyCourses = () => {
 
       // Make API call to delete the course
       await axios.delete(
-        `${process.env.REACT_APP_BACKEND_URL}/artist/delete-course/${courseId}`,
+        `${import.meta.env.VITE_BACKEND_URL}/artist/delete-course/${courseId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -40,7 +40,7 @@ const MyCourses = () => {
     const fetchCourses = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/artist/my-courses`,
+          `${import.meta.env.VITE_BACKEND_URL}/artist/my-courses`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

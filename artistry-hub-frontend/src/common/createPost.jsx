@@ -48,7 +48,7 @@ const CreatePost = ({ onClose }) => {
 
     try {
       await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/posts/create-post`,
+        `${import.meta.env.VITE_BACKEND_URL}/posts/create-post`,
         formData,
         {
           headers: {

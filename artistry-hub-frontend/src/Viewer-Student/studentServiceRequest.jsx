@@ -15,7 +15,7 @@ const StudentCreateServiceRequest = () => {
     const fetchServiceRequests = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/student/my-service-requests`,
+          `${import.meta.env.VITE_BACKEND_URL}/student/my-service-requests`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -53,7 +53,9 @@ const StudentCreateServiceRequest = () => {
       if (editingRequest) {
         // Handle Edit
         const response = await axios.put(
-          `${process.env.REACT_APP_BACKEND_URL}/student/service-requests/${editingRequest._id}`,
+          `${import.meta.env.VITE_BACKEND_URL}/student/service-requests/${
+            editingRequest._id
+          }`,
           formData,
           {
             headers: {
@@ -71,7 +73,7 @@ const StudentCreateServiceRequest = () => {
       } else {
         // Handle Create
         const response = await axios.post(
-          `${process.env.REACT_APP_BACKEND_URL}/student/create-service-request`, // Changed endpoint for students
+          `${import.meta.env.VITE_BACKEND_URL}/student/create-service-request`, // Changed endpoint for students
           formData,
           {
             headers: {
@@ -94,7 +96,7 @@ const StudentCreateServiceRequest = () => {
     setEditingRequest(request);
     setDescription(request.description);
     setImagePreviews(
-      request.images.map((img) => `${process.env.REACT_APP_BACKEND_URL}${img}`)
+      request.images.map((img) => `${import.meta.env.VITE_BACKEND_URL}${img}`)
     );
     setShowCreateRequest(true);
   };
@@ -102,7 +104,7 @@ const StudentCreateServiceRequest = () => {
   const handleDelete = async (id) => {
     try {
       await axios.delete(
-        `${process.env.REACT_APP_BACKEND_URL}/student/service-requests/${id}`, // Changed endpoint for students
+        `${import.meta.env.VITE_BACKEND_URL}/student/service-requests/${id}`, // Changed endpoint for students
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
@@ -159,7 +161,7 @@ const StudentCreateServiceRequest = () => {
                   {request.images.map((img, index) => (
                     <img
                       key={index}
-                      src={`${process.env.REACT_APP_BACKEND_URL}${img}`}
+                      src={`${import.meta.env.VITE_BACKEND_URL}${img}`}
                       alt={`request image ${index}`}
                       className="w-20 h-20 object-cover border border-gray-300 rounded-md"
                     />

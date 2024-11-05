@@ -19,7 +19,7 @@ const StudentBase = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/common-things/usericon`,
+          `${import.meta.env.VITE_BACKEND_URL}/common-things/usericon`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -64,7 +64,9 @@ const StudentBase = () => {
               className="text-white hover:text-yellow-400 transition-colors duration-300"
             >
               <img
-                src={`${process.env.REACT_APP_BACKEND_URL}${userData.profilePicture}`}
+                src={`${import.meta.env.VITE_BACKEND_URL}${
+                  userData.profilePicture
+                }`}
                 className="w-10 h-10 rounded-full" // Ensure it's styled as a circle
               />
             </Link>

@@ -15,7 +15,7 @@ const ServiceProviderHome = () => {
   const fetchRequests = async () => {
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/service/requests`,
+        `${import.meta.env.VITE_BACKEND_URL}/service/requests`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -48,7 +48,9 @@ const ServiceProviderHome = () => {
       if (userArtForm) {
         try {
           const response = await axios.get(
-            `${process.env.REACT_APP_BACKEND_URL}/common-things/specializations/${userArtForm}`
+            `${
+              import.meta.env.VITE_BACKEND_URL
+            }/common-things/specializations/${userArtForm}`
           );
           setSpecializations(response.data);
         } catch (error) {
@@ -63,7 +65,9 @@ const ServiceProviderHome = () => {
   const handleAccept = async (requestId) => {
     try {
       await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/service/requests/${requestId}/accept`,
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/service/requests/${requestId}/accept`,
         {},
         {
           headers: {
@@ -82,7 +86,9 @@ const ServiceProviderHome = () => {
   const handleIgnore = async (requestId) => {
     try {
       await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/service/requests/${requestId}/ignore`,
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/service/requests/${requestId}/ignore`,
         {},
         {
           headers: {
@@ -140,7 +146,9 @@ const ServiceProviderHome = () => {
             >
               <div className="flex items-center mb-4">
                 <img
-                  src={`${process.env.REACT_APP_BACKEND_URL}${request.userId.profilePicture}`}
+                  src={`${import.meta.env.VITE_BACKEND_URL}${
+                    request.userId.profilePicture
+                  }`}
                   alt={request.userId.userName}
                   className="w-12 h-12 rounded-full object-cover border-2 border-yellow-500"
                 />
@@ -161,7 +169,7 @@ const ServiceProviderHome = () => {
                   {request.images.map((image, index) => (
                     <img
                       key={index}
-                      src={`${process.env.REACT_APP_BACKEND_URL}${image}`}
+                      src={`${import.meta.env.VITE_BACKEND_URL}${image}`}
                       alt="Request"
                       className="w-full h-64 object-cover rounded-md border border-gray-600"
                     />

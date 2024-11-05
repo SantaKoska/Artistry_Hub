@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 //Sending otp api calling
 export const sendOtp = async (email, setOtpSent) => {
   try {
-    await axios.post(`${process.env.REACT_APP_BACKEND_URL}/auth/sendotp`, {
+    await axios.post(`${import.meta.env.VITE_BACKEND_URL}/auth/sendotp`, {
       email,
     });
 
@@ -31,7 +31,7 @@ export const sendOtp = async (email, setOtpSent) => {
 export const verifyOtp = async (email, otp, setOtpVerified, setError) => {
   try {
     const response = await axios.post(
-      "${process.env.REACT_APP_BACKEND_URL}/auth/verifyotp",
+      `${import.meta.env.VITE_BACKEND_URL}/auth/verifyotp`,
       {
         email,
         otp,

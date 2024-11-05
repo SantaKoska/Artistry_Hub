@@ -13,7 +13,7 @@ const StudentHome = () => {
     const fetchPosts = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/student/homeposts`,
+          `${import.meta.env.VITE_BACKEND_URL}/student/homeposts`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -40,7 +40,7 @@ const StudentHome = () => {
   const handleLike = async (postId) => {
     try {
       await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/posts/${postId}/toggle-like`,
+        `${import.meta.env.VITE_BACKEND_URL}/posts/${postId}/toggle-like`,
         {},
         {
           headers: {
@@ -51,7 +51,7 @@ const StudentHome = () => {
 
       // Refetch posts to update the like count and liked posts
       const updatedPosts = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/student/homeposts`,
+        `${import.meta.env.VITE_BACKEND_URL}/student/homeposts`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -128,7 +128,9 @@ const StudentHome = () => {
               {/* Profile Info */}
               <div className="flex items-center mb-4">
                 <img
-                  src={`${process.env.REACT_APP_BACKEND_URL}${post.user.profilePicture}`}
+                  src={`${import.meta.env.VITE_BACKEND_URL}${
+                    post.user.profilePicture
+                  }`}
                   alt={post.user.userName}
                   className="w-12 h-12 rounded-full object-cover"
                 />
@@ -146,7 +148,7 @@ const StudentHome = () => {
 
               {post.mediaUrl && post.mediaType === "image" && (
                 <img
-                  src={`${process.env.REACT_APP_BACKEND_URL}${post.mediaUrl}`}
+                  src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
                   alt="Post media"
                   className="w-full h-64 object-cover rounded-md mb-4"
                 />
@@ -154,14 +156,14 @@ const StudentHome = () => {
               {post.mediaUrl && post.mediaType === "video" && (
                 <video
                   controls
-                  src={`${process.env.REACT_APP_BACKEND_URL}${post.mediaUrl}`}
+                  src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
                   className="w-full h-64 object-cover rounded-md mb-4"
                 />
               )}
               {post.mediaUrl && post.mediaType === "audio" && (
                 <audio
                   controls
-                  src={`${process.env.REACT_APP_BACKEND_URL}${post.mediaUrl}`}
+                  src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
                   className="w-full mb-4"
                 />
               )}

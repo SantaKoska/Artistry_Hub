@@ -13,7 +13,9 @@ const LessonDetails = ({ lesson, courseId, chapterId, onBack, onComplete }) => {
   const markLessonAsComplete = async () => {
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/student/complete-lesson/${courseId}/${chapterId}/${lesson._id}`,
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/student/complete-lesson/${courseId}/${chapterId}/${lesson._id}`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -57,7 +59,9 @@ const LessonDetails = ({ lesson, courseId, chapterId, onBack, onComplete }) => {
     const checkLessonCompletion = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/student/course-progress/${courseId}`,
+          `${
+            import.meta.env.VITE_BACKEND_URL
+          }/student/course-progress/${courseId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -90,14 +94,14 @@ const LessonDetails = ({ lesson, courseId, chapterId, onBack, onComplete }) => {
         <h3 className="text-2xl font-semibold text-emerald-500 mb-2">Video</h3>
         {lesson.mediaUrl ? (
           <video
-            src={`${process.env.REACT_APP_BACKEND_URL}${lesson.mediaUrl}`}
+            src={`${import.meta.env.VITE_BACKEND_URL}${lesson.mediaUrl}`}
             controls
             className="w-full rounded-lg shadow-lg"
             onEnded={handleVideoEnded}
             ref={videoRef}
           >
             <source
-              src={`${process.env.REACT_APP_BACKEND_URL}${lesson.mediaUrl}`}
+              src={`${import.meta.env.VITE_BACKEND_URL}${lesson.mediaUrl}`}
               type="video/mp4"
             />
             Your browser does not support the video tag.
@@ -112,7 +116,7 @@ const LessonDetails = ({ lesson, courseId, chapterId, onBack, onComplete }) => {
         <h3 className="text-2xl font-semibold text-emerald-500 mb-2">Notes</h3>
         {lesson.noteUrl ? (
           <a
-            href={`${process.env.REACT_APP_BACKEND_URL}${lesson.noteUrl}`}
+            href={`${import.meta.env.VITE_BACKEND_URL}${lesson.noteUrl}`}
             className="text-emerald-400 hover:text-emerald-300"
             target="_blank"
             rel="noopener noreferrer"
