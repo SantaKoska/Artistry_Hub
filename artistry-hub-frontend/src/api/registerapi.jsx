@@ -100,7 +100,7 @@ const registerUser = async (userData, navigate) => {
 
   try {
     const response = await axios.post(
-      "http://localhost:8000/auth/register",
+      `${process.env.REACT_APP_BACKEND_URL}/auth/register`,
       dataToSend
     );
 

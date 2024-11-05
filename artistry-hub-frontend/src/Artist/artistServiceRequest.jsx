@@ -26,7 +26,7 @@ const ArtistCreateServiceRequest = () => {
     const fetchServiceRequests = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8000/artist/my-service-requests",
+          `${process.env.REACT_APP_BACKEND_URL}/artist/my-service-requests`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -49,7 +49,7 @@ const ArtistCreateServiceRequest = () => {
       const fetchSpecializations = async () => {
         try {
           const response = await axios.get(
-            `http://localhost:8000/common-things/specializations/${userArtForm}`
+            `${process.env.REACT_APP_BACKEND_URL}/common-things/specializations/${userArtForm}`
           );
           setSpecializationOptions(response.data);
         } catch (error) {
@@ -84,7 +84,7 @@ const ArtistCreateServiceRequest = () => {
     try {
       if (editingRequest) {
         const response = await axios.put(
-          `http://localhost:8000/artist/service-requests/${editingRequest._id}`,
+          `${process.env.REACT_APP_BACKEND_URL}/artist/service-requests/${editingRequest._id}`,
           formData,
           {
             headers: {
@@ -100,7 +100,7 @@ const ArtistCreateServiceRequest = () => {
         setEditingRequest(null);
       } else {
         const response = await axios.post(
-          "http://localhost:8000/artist/create-service-request",
+          `${process.env.REACT_APP_BACKEND_URL}/artist/create-service-request`,
           formData,
           {
             headers: {
@@ -122,7 +122,7 @@ const ArtistCreateServiceRequest = () => {
     setDescription(request.description);
     setSelectedSpecialization(request.specialization);
     setImagePreviews(
-      request.images.map((img) => `http://localhost:8000${img}`)
+      request.images.map((img) => `${process.env.REACT_APP_BACKEND_URL}${img}`)
     );
     setShowModal(true);
   };
@@ -130,10 +130,13 @@ const ArtistCreateServiceRequest = () => {
   const handleImageDelete = async (imagePath) => {
     if (!editingRequest) return;
     try {
-      const relativeImagePath = imagePath.replace("http://localhost:8000", "");
+      const relativeImagePath = imagePath.replace(
+        `${process.env.REACT_APP_BACKEND_URL}`,
+        ""
+      );
 
       const response = await axios.delete(
-        `http://localhost:8000/artist/service-requests/${editingRequest._id}/images`,
+        `${process.env.REACT_APP_BACKEND_URL}/artist/service-requests/${editingRequest._id}/images`,
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
           data: { imagePath: relativeImagePath },
@@ -142,7 +145,9 @@ const ArtistCreateServiceRequest = () => {
 
       setImages(response.data.images);
       setImagePreviews(
-        response.data.images.map((img) => `http://localhost:8000${img}`)
+        response.data.images.map(
+          (img) => `${process.env.REACT_APP_BACKEND_URL}${img}`
+        )
       );
       toast.success("Image removed successfully.");
     } catch (error) {
@@ -153,7 +158,7 @@ const ArtistCreateServiceRequest = () => {
   const handleDelete = async (id) => {
     try {
       await axios.delete(
-        `http://localhost:8000/artist/service-requests/${id}`,
+        `${process.env.REACT_APP_BACKEND_URL}/artist/service-requests/${id}`,
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
@@ -193,7 +198,7 @@ const ArtistCreateServiceRequest = () => {
 
     try {
       await axios.put(
-        `http://localhost:8000/artist/service-requests/${selectedRequestId}/select-provider`,
+        `${process.env.REACT_APP_BACKEND_URL}/artist/service-requests/${selectedRequestId}/select-provider`,
         { serviceProviderId: selectedProvider },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -213,7 +218,7 @@ const ArtistCreateServiceRequest = () => {
   const handleFetchProviders = async (requestId) => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/artist/service-requests/${requestId}/service-providers`,
+        `${process.env.REACT_APP_BACKEND_URL}/artist/service-requests/${requestId}/service-providers`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -256,7 +261,7 @@ const ArtistCreateServiceRequest = () => {
                   {request.images.map((img, index) => (
                     <div key={index} className="relative">
                       <img
-                        src={`http://localhost:8000${img}`}
+                        src={`${process.env.REACT_APP_BACKEND_URL}${img}`}
                         alt={`request image ${index}`}
                         className="w-20 h-20 object-cover border border-gray-300 rounded-md"
                       />
@@ -304,7 +309,7 @@ const ArtistCreateServiceRequest = () => {
                             >
                               <div className="flex items-center mb-4">
                                 <img
-                                  src={`http://localhost:8000${provider.profilePicture}`}
+                                  src={`${process.env.REACT_APP_BACKEND_URL}${provider.profilePicture}`}
                                   alt={provider.userName}
                                   className="w-12 h-12 rounded-full object-cover border-2 border-yellow-500"
                                 />

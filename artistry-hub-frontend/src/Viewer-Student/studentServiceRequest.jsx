@@ -15,7 +15,7 @@ const StudentCreateServiceRequest = () => {
     const fetchServiceRequests = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8000/student/my-service-requests",
+          `${process.env.REACT_APP_BACKEND_URL}/student/my-service-requests`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -53,7 +53,7 @@ const StudentCreateServiceRequest = () => {
       if (editingRequest) {
         // Handle Edit
         const response = await axios.put(
-          `http://localhost:8000/student/service-requests/${editingRequest._id}`,
+          `${process.env.REACT_APP_BACKEND_URL}/student/service-requests/${editingRequest._id}`,
           formData,
           {
             headers: {
@@ -71,7 +71,7 @@ const StudentCreateServiceRequest = () => {
       } else {
         // Handle Create
         const response = await axios.post(
-          "http://localhost:8000/student/create-service-request", // Changed endpoint for students
+          `${process.env.REACT_APP_BACKEND_URL}/student/create-service-request`, // Changed endpoint for students
           formData,
           {
             headers: {
@@ -94,7 +94,7 @@ const StudentCreateServiceRequest = () => {
     setEditingRequest(request);
     setDescription(request.description);
     setImagePreviews(
-      request.images.map((img) => `http://localhost:8000${img}`)
+      request.images.map((img) => `${process.env.REACT_APP_BACKEND_URL}${img}`)
     );
     setShowCreateRequest(true);
   };
@@ -102,7 +102,7 @@ const StudentCreateServiceRequest = () => {
   const handleDelete = async (id) => {
     try {
       await axios.delete(
-        `http://localhost:8000/student/service-requests/${id}`, // Changed endpoint for students
+        `${process.env.REACT_APP_BACKEND_URL}/student/service-requests/${id}`, // Changed endpoint for students
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
@@ -159,7 +159,7 @@ const StudentCreateServiceRequest = () => {
                   {request.images.map((img, index) => (
                     <img
                       key={index}
-                      src={`http://localhost:8000${img}`}
+                      src={`${process.env.REACT_APP_BACKEND_URL}${img}`}
                       alt={`request image ${index}`}
                       className="w-20 h-20 object-cover border border-gray-300 rounded-md"
                     />

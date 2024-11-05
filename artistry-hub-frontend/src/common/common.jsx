@@ -19,7 +19,7 @@ const CommonProfile = () => {
     const fetchProfile = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/common-things/profile/${username}`,
+          `${process.env.REACT_APP_BACKEND_URL}/common-things/profile/${username}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -38,7 +38,7 @@ const CommonProfile = () => {
   const handleFollowToggle = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:8000/common-things/profile/${username}/follow`,
+        `${process.env.REACT_APP_BACKEND_URL}/common-things/profile/${username}/follow`,
         {},
         {
           headers: {
@@ -70,7 +70,7 @@ const CommonProfile = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:8000/posts/${selectedPost._id}/toggle-like`, // Updated endpoint
+        `${process.env.REACT_APP_BACKEND_URL}/posts/${selectedPost._id}/toggle-like`, // Updated endpoint
         {},
         {
           headers: {
@@ -152,7 +152,7 @@ const CommonProfile = () => {
             <div className="flex flex-col md:flex-row gap-10 items-center justify-between">
               <div className="flex flex-col items-center">
                 <img
-                  src={`http://localhost:8000${profile.profilePicture}`}
+                  src={`${process.env.REACT_APP_BACKEND_URL}${profile.profilePicture}`}
                   alt="Profile"
                   className="w-48 h-44 rounded-full mb-4 shadow-xl"
                 />
@@ -253,7 +253,7 @@ const CommonProfile = () => {
                     >
                       {post.mediaUrl && post.mediaType === "image" && (
                         <img
-                          src={`http://localhost:8000${post.mediaUrl}`}
+                          src={`${process.env.REACT_APP_BACKEND_URL}${post.mediaUrl}`}
                           alt="Post media"
                           className="w-full h-48 object-cover rounded-lg mb-2 shadow-md"
                         />
@@ -261,14 +261,14 @@ const CommonProfile = () => {
                       {post.mediaUrl && post.mediaType === "video" && (
                         <video
                           controls
-                          src={`http://localhost:8000${post.mediaUrl}`}
+                          src={`${process.env.REACT_APP_BACKEND_URL}${post.mediaUrl}`}
                           className="w-full h-48 object-cover rounded-lg mb-2 shadow-md"
                         />
                       )}
                       {post.mediaUrl && post.mediaType === "audio" && (
                         <audio
                           controls
-                          src={`http://localhost:8000${post.mediaUrl}`}
+                          src={`${process.env.REACT_APP_BACKEND_URL}${post.mediaUrl}`}
                           className="w-full mb-2"
                         />
                       )}
@@ -299,7 +299,7 @@ const CommonProfile = () => {
               <p className="text-2xl text-white mb-4">{selectedPost.content}</p>
               {selectedPost.mediaUrl && selectedPost.mediaType === "image" && (
                 <img
-                  src={`http://localhost:8000${selectedPost.mediaUrl}`}
+                  src={`${process.env.REACT_APP_BACKEND_URL}${selectedPost.mediaUrl}`}
                   alt="Post media"
                   className="w-full h-48 object-cover rounded-lg mb-2 shadow-md"
                 />
@@ -307,14 +307,14 @@ const CommonProfile = () => {
               {selectedPost.mediaUrl && selectedPost.mediaType === "video" && (
                 <video
                   controls
-                  src={`http://localhost:8000${selectedPost.mediaUrl}`}
+                  src={`${process.env.REACT_APP_BACKEND_URL}${selectedPost.mediaUrl}`}
                   className="w-full h-48 object-cover rounded-lg mb-2 shadow-md"
                 />
               )}
               {selectedPost.mediaUrl && selectedPost.mediaType === "audio" && (
                 <audio
                   controls
-                  src={`http://localhost:8000${selectedPost.mediaUrl}`}
+                  src={`${process.env.REACT_APP_BACKEND_URL}${selectedPost.mediaUrl}`}
                   className="w-full mb-2"
                 />
               )}

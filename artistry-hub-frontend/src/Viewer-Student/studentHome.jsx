@@ -13,7 +13,7 @@ const StudentHome = () => {
     const fetchPosts = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8000/student/homeposts",
+          `${process.env.REACT_APP_BACKEND_URL}/student/homeposts`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -40,7 +40,7 @@ const StudentHome = () => {
   const handleLike = async (postId) => {
     try {
       await axios.post(
-        `http://localhost:8000/posts/${postId}/toggle-like`,
+        `${process.env.REACT_APP_BACKEND_URL}/posts/${postId}/toggle-like`,
         {},
         {
           headers: {
@@ -51,7 +51,7 @@ const StudentHome = () => {
 
       // Refetch posts to update the like count and liked posts
       const updatedPosts = await axios.get(
-        "http://localhost:8000/student/homeposts",
+        `${process.env.REACT_APP_BACKEND_URL}/student/homeposts`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -128,7 +128,7 @@ const StudentHome = () => {
               {/* Profile Info */}
               <div className="flex items-center mb-4">
                 <img
-                  src={`http://localhost:8000${post.user.profilePicture}`}
+                  src={`${process.env.REACT_APP_BACKEND_URL}${post.user.profilePicture}`}
                   alt={post.user.userName}
                   className="w-12 h-12 rounded-full object-cover"
                 />
@@ -146,7 +146,7 @@ const StudentHome = () => {
 
               {post.mediaUrl && post.mediaType === "image" && (
                 <img
-                  src={`http://localhost:8000${post.mediaUrl}`}
+                  src={`${process.env.REACT_APP_BACKEND_URL}${post.mediaUrl}`}
                   alt="Post media"
                   className="w-full h-64 object-cover rounded-md mb-4"
                 />
@@ -154,14 +154,14 @@ const StudentHome = () => {
               {post.mediaUrl && post.mediaType === "video" && (
                 <video
                   controls
-                  src={`http://localhost:8000${post.mediaUrl}`}
+                  src={`${process.env.REACT_APP_BACKEND_URL}${post.mediaUrl}`}
                   className="w-full h-64 object-cover rounded-md mb-4"
                 />
               )}
               {post.mediaUrl && post.mediaType === "audio" && (
                 <audio
                   controls
-                  src={`http://localhost:8000${post.mediaUrl}`}
+                  src={`${process.env.REACT_APP_BACKEND_URL}${post.mediaUrl}`}
                   className="w-full mb-4"
                 />
               )}

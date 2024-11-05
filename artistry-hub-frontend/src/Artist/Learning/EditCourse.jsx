@@ -47,7 +47,7 @@ const EditCourse = ({ selectedCourse }) => {
   const handleEditCourse = async () => {
     try {
       const res = await axios.put(
-        `http://localhost:8000/artist/edit-course/${courseData._id}`,
+        `${process.env.REACT_APP_BACKEND_URL}/artist/edit-course/${courseData._id}`,
         editedCourse,
         {
           headers: {
@@ -71,7 +71,7 @@ const EditCourse = ({ selectedCourse }) => {
     // console.log(newChapter);
     try {
       const res = await axios.post(
-        `http://localhost:8000/artist/add-chapter/${courseData._id}`,
+        `${process.env.REACT_APP_BACKEND_URL}/artist/add-chapter/${courseData._id}`,
         newChapter,
         {
           headers: {
@@ -90,7 +90,7 @@ const EditCourse = ({ selectedCourse }) => {
   const handleDeleteChapter = async (chapterId) => {
     try {
       const res = await axios.delete(
-        `http://localhost:8000/artist/delete-chapter/${courseData._id}/${chapterId}`,
+        `${process.env.REACT_APP_BACKEND_URL}/artist/delete-chapter/${courseData._id}/${chapterId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -111,7 +111,7 @@ const EditCourse = ({ selectedCourse }) => {
   ) => {
     try {
       const res = await axios.put(
-        `http://localhost:8000/artist/edit-chapter/${courseData._id}/${chapterId}`,
+        `${process.env.REACT_APP_BACKEND_URL}/artist/edit-chapter/${courseData._id}/${chapterId}`,
         {
           title: updatedTitle,
           description: updatedDescription,
@@ -138,7 +138,7 @@ const EditCourse = ({ selectedCourse }) => {
 
     try {
       const res = await axios.post(
-        `http://localhost:8000/artist/add-lesson/${courseData._id}/${chapterId}`,
+        `${process.env.REACT_APP_BACKEND_URL}/artist/add-lesson/${courseData._id}/${chapterId}`,
         formData,
         {
           headers: {
@@ -163,7 +163,7 @@ const EditCourse = ({ selectedCourse }) => {
   const handleDeleteLesson = async (chapterId, lessonId) => {
     try {
       const res = await axios.delete(
-        `http://localhost:8000/artist/delete-lesson/${courseData._id}/${chapterId}/${lessonId}`,
+        `${process.env.REACT_APP_BACKEND_URL}/artist/delete-lesson/${courseData._id}/${chapterId}/${lessonId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -189,7 +189,7 @@ const EditCourse = ({ selectedCourse }) => {
 
     try {
       const res = await axios.put(
-        `http://localhost:8000/artist/edit-lesson/${courseData._id}/${chapterId}/${lessonId}`,
+        `${process.env.REACT_APP_BACKEND_URL}/artist/edit-lesson/${courseData._id}/${chapterId}/${lessonId}`,
         formData,
         {
           headers: {
@@ -392,7 +392,7 @@ const EditCourse = ({ selectedCourse }) => {
                           <div className="mb-2">
                             <video
                               controls
-                              src={`http://localhost:8000${lesson.mediaUrl}`}
+                              src={`${process.env.REACT_APP_BACKEND_URL}${lesson.mediaUrl}`}
                               className="w-full max-w-sm h-auto rounded-md"
                             >
                               Your browser does not support the video tag.
@@ -406,7 +406,7 @@ const EditCourse = ({ selectedCourse }) => {
                         {lesson.noteUrl && (
                           <div className="mb-2">
                             <iframe
-                              src={`http://localhost:8000${lesson.noteUrl}`}
+                              src={`${process.env.REACT_APP_BACKEND_URL}${lesson.noteUrl}`}
                               className="w-full max-w-sm h-64 border rounded-md"
                             ></iframe>
                           </div>

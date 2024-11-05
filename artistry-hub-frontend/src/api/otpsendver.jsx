@@ -5,7 +5,9 @@ import "react-toastify/dist/ReactToastify.css";
 //Sending otp api calling
 export const sendOtp = async (email, setOtpSent) => {
   try {
-    await axios.post("http://localhost:8000/auth/sendotp", { email });
+    await axios.post(`${process.env.REACT_APP_BACKEND_URL}/auth/sendotp`, {
+      email,
+    });
 
     setOtpSent(true);
     toast.success("OTP sent to your email.", {
@@ -28,10 +30,13 @@ export const sendOtp = async (email, setOtpSent) => {
 
 export const verifyOtp = async (email, otp, setOtpVerified, setError) => {
   try {
-    const response = await axios.post("http://localhost:8000/auth/verifyotp", {
-      email,
-      otp,
-    });
+    const response = await axios.post(
+      "${process.env.REACT_APP_BACKEND_URL}/auth/verifyotp",
+      {
+        email,
+        otp,
+      }
+    );
 
     if (response.status === 200) {
       setOtpVerified(true);

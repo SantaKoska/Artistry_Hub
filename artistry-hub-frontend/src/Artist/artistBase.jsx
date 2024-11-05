@@ -19,7 +19,7 @@ const ArtistBase = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          "http://localhost:8000/common-things/usericon",
+          `${process.env.REACT_APP_BACKEND_URL}/common-things/usericon`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -65,7 +65,7 @@ const ArtistBase = () => {
               className="text-white hover:text-yellow-400 transition-colors duration-300"
             >
               <img
-                src={`http://localhost:8000${userData.profilePicture}`}
+                src={`${process.env.REACT_APP_BACKEND_URL}${userData.profilePicture}`}
                 className="w-10 h-10 rounded-full" // Ensure it's styled as a circle
               />
             </Link>

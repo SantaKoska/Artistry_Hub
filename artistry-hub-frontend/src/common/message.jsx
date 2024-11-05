@@ -48,7 +48,7 @@ const MessagePage = () => {
   const fetchUserDetails = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/message/profile",
+        `${process.env.REACT_APP_BACKEND_URL}/message/profile`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -62,7 +62,7 @@ const MessagePage = () => {
   const fetchChatList = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/message/chat-list",
+        `${process.env.REACT_APP_BACKEND_URL}/message/chat-list`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -76,7 +76,7 @@ const MessagePage = () => {
   const fetchRequests = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/message/pending-requests",
+        `${process.env.REACT_APP_BACKEND_URL}/message/pending-requests`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -99,7 +99,7 @@ const MessagePage = () => {
   const handleAcceptRequest = async (requesterId) => {
     try {
       await axios.post(
-        "http://localhost:8000/message/accept-request",
+        `${process.env.REACT_APP_BACKEND_URL}/message/accept-request`,
         { requesterId },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -118,7 +118,7 @@ const MessagePage = () => {
     if (!chatId) return;
     try {
       const response = await axios.get(
-        `http://localhost:8000/message/message-history/${chatId}`,
+        `${process.env.REACT_APP_BACKEND_URL}/message/message-history/${chatId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -151,7 +151,7 @@ const MessagePage = () => {
 
     try {
       await axios.post(
-        "http://localhost:8000/message/send-message",
+        `${process.env.REACT_APP_BACKEND_URL}/message/send-message`,
         messageData,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -176,7 +176,7 @@ const MessagePage = () => {
   const handleDeleteMessage = async (messageId) => {
     try {
       await axios.delete(
-        `http://localhost:8000/message/delete-message/${messageId}`,
+        `${process.env.REACT_APP_BACKEND_URL}/message/delete-message/${messageId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -195,7 +195,7 @@ const MessagePage = () => {
 
     try {
       await axios.delete(
-        `http://localhost:8000/message/clear-chat/${currentChat._id}`,
+        `${process.env.REACT_APP_BACKEND_URL}/message/clear-chat/${currentChat._id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -213,7 +213,7 @@ const MessagePage = () => {
     }
     try {
       const response = await axios.get(
-        `http://localhost:8000/message/search?query=${searchTerm}`,
+        `${process.env.REACT_APP_BACKEND_URL}/message/search?query=${searchTerm}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -248,7 +248,7 @@ const MessagePage = () => {
                 onClick={() => handleSearchUserClick(result)}
               >
                 <img
-                  src={`http://localhost:8000${result.profilePicture}`}
+                  src={`${process.env.REACT_APP_BACKEND_URL}${result.profilePicture}`}
                   className="w-10 h-10 rounded-full"
                   alt={result.userName}
                 />
@@ -269,7 +269,7 @@ const MessagePage = () => {
               onClick={() => handleChatClick(chat)}
             >
               <img
-                src={`http://localhost:8000${chat.profilePicture}`}
+                src={`${process.env.REACT_APP_BACKEND_URL}${chat.profilePicture}`}
                 alt={chat.userName}
                 className="w-10 h-10 rounded-full"
               />
@@ -286,7 +286,7 @@ const MessagePage = () => {
             className="flex items-center p-2 bg-gray-200 mb-2 rounded-md"
           >
             <img
-              src={`http://localhost:8000${request.sender.profilePicture}`}
+              src={`${process.env.REACT_APP_BACKEND_URL}${request.sender.profilePicture}`}
               alt={request.sender.userName}
               className="w-10 h-10 rounded-full"
             />
@@ -306,7 +306,7 @@ const MessagePage = () => {
           <>
             <div className="flex items-center p-2 bg-slate-500 rounded-lg">
               <img
-                src={`http://localhost:8000${currentChat.profilePicture}`}
+                src={`${process.env.REACT_APP_BACKEND_URL}${currentChat.profilePicture}`}
                 alt={currentChat.userName}
                 className="w-12 h-12 rounded-full"
               />

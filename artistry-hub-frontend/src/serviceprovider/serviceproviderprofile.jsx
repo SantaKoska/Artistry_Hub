@@ -26,7 +26,7 @@ const ServiceProviderProfile = () => {
     const fetchProfile = async () => {
       try {
         const { data } = await axios.get(
-          "http://localhost:8000/service/service-provider-profile",
+          `${process.env.REACT_APP_BACKEND_URL}/service/service-provider-profile`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -75,7 +75,7 @@ const ServiceProviderProfile = () => {
 
     try {
       const response = await axios.put(
-        "http://localhost:8000/service/service-provider-editprofile",
+        `${process.env.REACT_APP_BACKEND_URL}/service/service-provider-editprofile`,
         formDataToSend,
         {
           headers: {
@@ -95,7 +95,7 @@ const ServiceProviderProfile = () => {
   const handleDeletePost = async () => {
     try {
       await axios.delete(
-        `http://localhost:8000/posts/delete-post/${postToDelete}`,
+        `${process.env.REACT_APP_BACKEND_URL}/posts/delete-post/${postToDelete}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -162,7 +162,7 @@ const ServiceProviderProfile = () => {
           <div className="flex flex-col md:flex-row gap-10 items-center">
             <div className="flex flex-col items-center">
               <img
-                src={`http://localhost:8000${profile.profilePicture}`}
+                src={`${process.env.REACT_APP_BACKEND_URL}${profile.profilePicture}`}
                 alt="Profile"
                 className="w-48 h-44 rounded-full mb-4"
               />

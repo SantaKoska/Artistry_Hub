@@ -7,7 +7,7 @@ import { Navigate } from "react-router-dom";
 const loginUser = async (credentials, navigate) => {
   try {
     const response = await axios.post(
-      "http://localhost:8000/auth/login",
+      `${process.env.REACT_APP_BACKEND_URL}/auth/login`,
       credentials
     );
 

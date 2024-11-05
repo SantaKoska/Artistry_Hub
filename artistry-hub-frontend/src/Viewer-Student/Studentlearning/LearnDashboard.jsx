@@ -14,7 +14,7 @@ const StudentDashboard = () => {
   const fetchAvailableCourses = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/student/available-courses",
+        `${process.env.REACT_APP_BACKEND_URL}/student/available-courses`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -29,7 +29,7 @@ const StudentDashboard = () => {
   const fetchEnrolledCourses = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/student/my-courses",
+        `${process.env.REACT_APP_BACKEND_URL}/student/my-courses`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -39,7 +39,7 @@ const StudentDashboard = () => {
       // Fetch progress for each enrolled course
       response.data.forEach(async (course) => {
         const progressRes = await axios.get(
-          `http://localhost:8000/student/check-completion/${course._id}`,
+          `${process.env.REACT_APP_BACKEND_URL}/student/check-completion/${course._id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

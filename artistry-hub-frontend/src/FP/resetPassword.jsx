@@ -38,9 +38,12 @@ const ResetPassword = () => {
     }
 
     try {
-      await axios.post(`http://localhost:8000/auth/reset-password/${token}`, {
-        newPassword: newPassword,
-      });
+      await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/auth/reset-password/${token}`,
+        {
+          newPassword: newPassword,
+        }
+      );
       toast.success("Password has been reset!");
       navigate("/login");
     } catch (err) {

@@ -40,7 +40,7 @@ const AddCourse = () => {
 
     try {
       const createCourseResponse = await axios.post(
-        "http://localhost:8000/artist/create-course",
+        `${process.env.REACT_APP_BACKEND_URL}/artist/create-course`,
         { courseName, level },
         {
           headers: {
@@ -76,7 +76,7 @@ const AddCourse = () => {
 
     try {
       const addChapterResponse = await axios.post(
-        `http://localhost:8000/artist/add-chapter/${courseId}`,
+        `${process.env.REACT_APP_BACKEND_URL}/artist/add-chapter/${courseId}`,
         { title: newChapter.title, description: newChapter.description },
         {
           headers: {
@@ -132,7 +132,7 @@ const AddCourse = () => {
 
     try {
       await axios.post(
-        `http://localhost:8000/artist/add-lesson/${courseId}/${chapter.id}`,
+        `${process.env.REACT_APP_BACKEND_URL}/artist/add-lesson/${courseId}/${chapter.id}`,
         formData,
         {
           headers: {

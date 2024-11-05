@@ -47,12 +47,16 @@ const CreatePost = ({ onClose }) => {
     }
 
     try {
-      await axios.post("http://localhost:8000/posts/create-post", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/posts/create-post`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       toast.success("Post created successfully!");
       setContent("");
       setMediaFile(null);
