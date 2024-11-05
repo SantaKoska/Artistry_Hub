@@ -1,5 +1,5 @@
 import Login from "./login";
-import Register from "./register";
+import Register from "./Register";
 import ResetPassword from "./FP/resetPassword";
 import ForgotPassword from "./FP/forgotpassword";
 import { Route, Navigate } from "react-router-dom";
