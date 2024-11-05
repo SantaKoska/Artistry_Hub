@@ -15,20 +15,19 @@ const ServiceProviderSchema = new mongoose.Schema({
     type: String,
     required: true,
     set: (input) => {
-      //this line code will help to remove the non alphabet and unwanded space
-      let cleanedartform = input
+      // this line of code will help to remove the non-alphabet and unwanted spaces
+      let cleanedArtForm = input
         .replace(/[^a-zA-Z\s]/g, "")
         .trim()
-        .replace(/\s/g, "");
+        .replace(/\s+/g, " "); // Replaces multiple spaces with a single space
 
-      //now we need to update the data by convertimg the 1st letter to cap and remaining to lower case
+      // now we need to update the data by converting the 1st letter to capital and the remaining to lower case
       return (
-        cleanedartform.charAt(0).toUpperCase() +
-        cleanedartform.slice(1).toLowerCase()
+        cleanedArtForm.charAt(0).toUpperCase() +
+        cleanedArtForm.slice(1).toLowerCase()
       );
     },
   },
-
   location: {
     address: {
       type: String,
@@ -50,6 +49,10 @@ const ServiceProviderSchema = new mongoose.Schema({
       type: String,
       trim: true,
     },
+  },
+  ignoredServiceRequests: {
+    type: [mongoose.Schema.Types.ObjectId], // Assuming it's an array of ObjectIds referencing service requests
+    ref: "ServiceRequest", // Reference to the service request model
   },
 });
 

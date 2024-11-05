@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { toast } from "react-toastify";
-import Modal from "react-modal";
 import { useNavigate } from "react-router-dom";
+import Modal from "react-modal";
+import { toast } from "react-toastify";
 
-Modal.setAppElement("#root");
-
-const ArtistProfile = () => {
+const ServiceProviderProfile = () => {
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -15,8 +13,8 @@ const ArtistProfile = () => {
   const [logoutModalIsOpen, setLogoutModalIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     description: "",
-    artForm: "",
-    specialisation: "",
+    expertise: "",
+    ownerName: "",
     userName: "",
     profilePicture: null,
   });
@@ -28,7 +26,7 @@ const ArtistProfile = () => {
     const fetchProfile = async () => {
       try {
         const { data } = await axios.get(
-          "http://localhost:8000/artist/artist-profile",
+          "http://localhost:8000/service/service-provider-profile",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -36,11 +34,11 @@ const ArtistProfile = () => {
         setProfile(data);
         setFormData({
           description: data.description,
-          artForm: data.artForm,
-          specialisation: data.specialisation,
+          expertise: data.expertise,
+          ownerName: data.ownerName,
           userName: data.userName,
         });
-        setPosts(data.postsinfo || []);
+        setPosts(data.postsInfo || []);
       } catch (error) {
         toast.error(`Error fetching profile: ${error.response?.data?.err}`);
       }
@@ -76,8 +74,8 @@ const ArtistProfile = () => {
     });
 
     try {
-      await axios.put(
-        "http://localhost:8000/artist/artist-editprofile",
+      const response = await axios.put(
+        "http://localhost:8000/service/service-provider-editprofile",
         formDataToSend,
         {
           headers: {
@@ -86,7 +84,7 @@ const ArtistProfile = () => {
           },
         }
       );
-      toast.success("Profile updated successfully");
+      toast.success(response.data.success || "Profile updated successfully");
       handleCloseModal();
       fetchProfile();
     } catch (error) {
@@ -125,7 +123,7 @@ const ArtistProfile = () => {
 
   const Post = ({ post }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const contentLimit = 100; // Define character limit for truncation
+    const contentLimit = 100;
 
     const toggleReadMore = () => {
       setIsExpanded((prev) => !prev);
@@ -133,28 +131,6 @@ const ArtistProfile = () => {
 
     return (
       <div key={post._id} className="bg-blue-100 rounded-lg p-4 text-black">
-        {post.mediaUrl && post.mediaType === "image" && (
-          <img
-            src={`http://localhost:8000${post.mediaUrl}`}
-            alt="Post"
-            className="w-full h-48 object-cover rounded-lg mb-2"
-          />
-        )}
-        {post.mediaUrl && post.mediaType === "video" && (
-          <video
-            controls
-            src={`http://localhost:8000${post.mediaUrl}`}
-            className="w-full h-48 object-cover rounded-lg mb-2"
-          />
-        )}
-        {post.mediaUrl && post.mediaType === "audio" && (
-          <audio
-            controls
-            src={`http://localhost:8000${post.mediaUrl}`}
-            className="w-full object-cover rounded-lg mb-2"
-          />
-        )}
-
         <p>
           {isExpanded ? post.content : truncateText(post.content, contentLimit)}
           {post.content.length > contentLimit && (
@@ -166,7 +142,6 @@ const ArtistProfile = () => {
             </button>
           )}
         </p>
-
         <p className="text-sm text-emerald-900">
           Posted on: {new Date(post.timestamp).toLocaleString()}
         </p>
@@ -212,10 +187,10 @@ const ArtistProfile = () => {
                 Description: {profile.description}
               </p>
               <p className="text-xl font-semibold">
-                Art Form: {profile.artForm}
+                Expertise: {profile.expertise}
               </p>
               <p className="text-xl font-semibold">
-                Specialization: {profile.specialisation}
+                Owner Name: {profile.ownerName}
               </p>
               <div className="flex flex-col gap-4">
                 <button
@@ -245,56 +220,7 @@ const ArtistProfile = () => {
             </div>
           </div>
 
-          <Modal
-            isOpen={confirmationModalIsOpen}
-            onRequestClose={handleCloseConfirmationModal}
-            className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-blur-md w-full md:w-1/3 mx-auto"
-            overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
-          >
-            <h2 className="text-white text-2xl mb-4">Confirm Deletion</h2>
-            <p className="text-white">
-              Are you sure you want to delete this post?
-            </p>
-            <div className="flex justify-between mt-4">
-              <button
-                onClick={handleCloseConfirmationModal}
-                className="bg-gray-500 text-white rounded px-4 py-2"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeletePost}
-                className="bg-red-500 text-white rounded px-4 py-2"
-              >
-                Delete
-              </button>
-            </div>
-          </Modal>
-
-          <Modal
-            isOpen={logoutModalIsOpen}
-            onRequestClose={handleCloseLogoutModal}
-            className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-blur-md w-full md:w-1/3 mx-auto"
-            overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
-          >
-            <h2 className="text-white text-2xl mb-4">Confirm Logout</h2>
-            <p className="text-white">Are you sure you want to logout?</p>
-            <div className="flex justify-between mt-4">
-              <button
-                onClick={handleCloseLogoutModal}
-                className="bg-gray-500 text-white rounded px-4 py-2"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 text-white rounded px-4 py-2"
-              >
-                Logout
-              </button>
-            </div>
-          </Modal>
-
+          {/* Edit Profile Modal */}
           <Modal
             isOpen={modalIsOpen}
             onRequestClose={handleCloseModal}
@@ -305,7 +231,7 @@ const ArtistProfile = () => {
             <form onSubmit={handleSave} className="space-y-4">
               <div className="flex flex-col">
                 <label htmlFor="userName" className="text-white">
-                  Username
+                  User Name
                 </label>
                 <input
                   id="userName"
@@ -333,31 +259,31 @@ const ArtistProfile = () => {
               </div>
 
               <div className="flex flex-col">
-                <label htmlFor="artForm" className="text-white">
-                  Art Form
+                <label htmlFor="expertise" className="text-white">
+                  Expertise
                 </label>
                 <input
-                  id="artForm"
+                  id="expertise"
                   type="text"
                   className="bg-gray-700 rounded p-2 text-white"
-                  value={formData.artForm}
+                  value={formData.expertise}
                   onChange={(e) =>
-                    setFormData({ ...formData, artForm: e.target.value })
+                    setFormData({ ...formData, expertise: e.target.value })
                   }
                 />
               </div>
 
               <div className="flex flex-col">
-                <label htmlFor="specialisation" className="text-white">
-                  Specialization
+                <label htmlFor="ownerName" className="text-white">
+                  Owner Name
                 </label>
                 <input
-                  id="specialisation"
+                  id="ownerName"
                   type="text"
                   className="bg-gray-700 rounded p-2 text-white"
-                  value={formData.specialisation}
+                  value={formData.ownerName}
                   onChange={(e) =>
-                    setFormData({ ...formData, specialisation: e.target.value })
+                    setFormData({ ...formData, ownerName: e.target.value })
                   }
                 />
               </div>
@@ -392,10 +318,62 @@ const ArtistProfile = () => {
               </div>
             </form>
           </Modal>
+
+          {/* Confirmation Modal for Delete Post */}
+          <Modal
+            isOpen={confirmationModalIsOpen}
+            onRequestClose={handleCloseConfirmationModal}
+            className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-blur-md w-full md:w-1/3 mx-auto"
+            overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
+          >
+            <h2 className="text-white text-2xl mb-4">Confirm Deletion</h2>
+            <p className="text-white">
+              Are you sure you want to delete this post?
+            </p>
+            <div className="flex justify-between mt-4">
+              <button
+                onClick={handleCloseConfirmationModal}
+                className="bg-gray-500 text-white rounded px-4 py-2"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeletePost}
+                className="bg-red-500 text-white rounded px-4 py-2"
+              >
+                Delete
+              </button>
+            </div>
+          </Modal>
+
+          {/* Logout Confirmation Modal */}
+          <Modal
+            isOpen={logoutModalIsOpen}
+            onRequestClose={handleCloseLogoutModal}
+            className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-blur-md w-full md:w-1/3 mx-auto"
+            overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
+          >
+            <h2 className="text-white text-2xl mb-4">Confirm Logout</h2>
+            <p className="text-white">Are you sure you want to logout?</p>
+            <div className="flex justify-between mt-4">
+              <button
+                onClick={handleCloseLogoutModal}
+                className="bg-gray-500 text-white rounded px-4 py-2"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 text-white rounded px-4 py-2"
+              >
+                Logout
+              </button>
+            </div>
+          </Modal>
         </>
       )}
     </div>
   );
 };
 
-export default ArtistProfile;
+export default ServiceProviderProfile;

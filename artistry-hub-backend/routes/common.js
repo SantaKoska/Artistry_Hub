@@ -71,9 +71,13 @@ router.get("/profile/:username", verifyToken, async (req, res) => {
           userId: user._id,
         });
         additionalData = {
-          serviceType: serviceProviderData.serviceType,
-          clientsServed: serviceProviderData.clientsServed,
-          // Add other service provider-specific fields here
+          ownerName: serviceProviderData.ownerName,
+          expertise: serviceProviderData.expertise,
+          location: serviceProviderData.location.address,
+          district: serviceProviderData.location.district,
+          state: serviceProviderData.location.state,
+          country: serviceProviderData.location.country,
+          postalCode: serviceProviderData.location.postalCode,
         };
         break;
 

@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ServiceProviderHome = () => {
   const [requests, setRequests] = useState([]);
@@ -9,34 +12,34 @@ const ServiceProviderHome = () => {
   const token = localStorage.getItem("token");
   const [userArtForm, setUserArtForm] = useState(null);
 
-  useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:8000/service/requests",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            params: {
-              specialization,
-            },
-          }
-        );
-
-        setRequests(response.data.requests); // Access requests from the response object
-        setFilteredRequests(response.data.requests);
-
-        // Set userArtForm based on the first request, if available
-        if (response.data.requests.length > 0) {
-          const artForm = response.data.artform; // Get artForm from the response
-          setUserArtForm(artForm);
+  const fetchRequests = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8000/service/requests",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: {
+            specialization,
+          },
         }
-      } catch (error) {
-        console.error("Error fetching service requests:", error);
-      }
-    };
+      );
 
+      setRequests(response.data.requests); // Access requests from the response object
+      setFilteredRequests(response.data.requests);
+
+      // Set userArtForm based on the first request, if available
+      if (response.data.requests.length > 0) {
+        const artForm = response.data.artform; // Get artForm from the response
+        setUserArtForm(artForm);
+      }
+    } catch (error) {
+      console.error("Error fetching service requests:", error);
+    }
+  };
+
+  useEffect(() => {
     fetchRequests();
   }, [specialization, token]);
 
@@ -68,11 +71,11 @@ const ServiceProviderHome = () => {
           },
         }
       );
-      setRequests((prevRequests) =>
-        prevRequests.filter((request) => request._id !== requestId)
-      );
+      toast.success("Request accepted!");
+      fetchRequests(); // Refresh requests after accepting
     } catch (error) {
       console.error("Error accepting request:", error);
+      toast.error("Failed to accept request.");
     }
   };
 
@@ -87,11 +90,11 @@ const ServiceProviderHome = () => {
           },
         }
       );
-      setRequests((prevRequests) =>
-        prevRequests.filter((request) => request._id !== requestId)
-      );
+      toast.info("Request ignored.");
+      fetchRequests(); // Refresh requests after ignoring
     } catch (error) {
       console.error("Error ignoring request:", error);
+      toast.error("Failed to ignore request.");
     }
   };
 
@@ -101,6 +104,9 @@ const ServiceProviderHome = () => {
 
   return (
     <div className="p-8">
+      {/* Toast Container */}
+      <ToastContainer position="top-center" autoClose={3000} hideProgressBar />
+
       {/* Filter Section */}
       <div className="flex justify-between items-center mb-6 p-6 bg-gray-800 rounded-lg shadow-lg backdrop-filter backdrop-blur-lg bg-opacity-30">
         <label
@@ -113,8 +119,7 @@ const ServiceProviderHome = () => {
           id="specialization"
           value={specialization}
           onChange={handleSpecializationChange}
-          className="ml-4 p-3 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-transparent text-black
-         transition"
+          className="ml-4 p-3 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-transparent text-black transition"
         >
           <option value="All">All</option>
           {specializations.map((spec) => (
@@ -140,9 +145,13 @@ const ServiceProviderHome = () => {
                   className="w-12 h-12 rounded-full object-cover border-2 border-yellow-500"
                 />
                 <div className="ml-4">
-                  <p className="font-bold text-lg text-yellow-400">
-                    {request.userId.userName}
-                  </p>
+                  <Link
+                    to={`/Service-Provider-home/profile-service/${request.userId.userName}`}
+                  >
+                    <p className="font-bold text-lg text-emerald-900 hover:underline">
+                      {request.userId.userName}
+                    </p>
+                  </Link>
                 </div>
               </div>
 

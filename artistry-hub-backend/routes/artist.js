@@ -654,7 +654,6 @@ router.put(
       }
 
       // Update the service provider and status
-      request.serviceProviderId = serviceProviderId;
       request.status = "Accepted"; // Change status to Accepted
 
       await request.save();

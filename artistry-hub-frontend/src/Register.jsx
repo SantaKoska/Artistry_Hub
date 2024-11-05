@@ -562,7 +562,7 @@ const Register = () => {
               <option value="Artist">Artist</option>
               <option value="Viewer/Student">Viewer/Student</option>
               <option value="Service Provider">Service Provider</option>
-              <option value="Institution">Institution</option>
+              {/* <option value="Institution">Institution</option> */}
             </select>
             <label className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6">
               Role
@@ -776,7 +776,7 @@ const Register = () => {
           )}
 
           {/* if selected Institution */}
-          {formData.role === "Institution" && (
+          {/* {formData.role === "Institution" && (
             <>
               <div className="relative my-4 mt-8">
                 <input
@@ -887,7 +887,7 @@ const Register = () => {
                 </label>
               </div>
             </>
-          )}
+          )} */}
 
           <button
             type="submit"

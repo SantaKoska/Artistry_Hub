@@ -17,9 +17,10 @@ const ArtistCreateServiceRequest = () => {
   const [acceptedProviders, setAcceptedProviders] = useState([]);
   const [userArtForm, setUserArtForm] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [confirmSelection, setConfirmSelection] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState(null);
+  const [selectedRequestId, setSelectedRequestId] = useState(null);
   const navigate = useNavigate();
-
-  // console.log(editingRequest);
 
   useEffect(() => {
     const fetchServiceRequests = async () => {
@@ -112,7 +113,6 @@ const ArtistCreateServiceRequest = () => {
       resetForm();
       setShowModal(false);
     } catch (error) {
-      // console.error("Error creating/updating service request:", error);
       toast.error(error.response?.data?.message);
     }
   };
@@ -130,24 +130,22 @@ const ArtistCreateServiceRequest = () => {
   const handleImageDelete = async (imagePath) => {
     if (!editingRequest) return;
     try {
-      // Extract relative path from the full URL
       const relativeImagePath = imagePath.replace("http://localhost:8000", "");
 
       const response = await axios.delete(
         `http://localhost:8000/artist/service-requests/${editingRequest._id}/images`,
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-          data: { imagePath: relativeImagePath }, // Send only the relative path
+          data: { imagePath: relativeImagePath },
         }
       );
 
-      setImages(response.data.images); // Update images state after deletion
+      setImages(response.data.images);
       setImagePreviews(
-        response.data.images.map((img) => `http://localhost:8000${img}`) // Update the full URL for previews
+        response.data.images.map((img) => `http://localhost:8000${img}`)
       );
       toast.success("Image removed successfully.");
     } catch (error) {
-      console.error("Error removing image:", error);
       toast.error("Failed to remove image. Please try again.");
     }
   };
@@ -162,7 +160,6 @@ const ArtistCreateServiceRequest = () => {
       );
       setServiceRequests(serviceRequests.filter((req) => req._id !== id));
     } catch (error) {
-      console.error("Error deleting service request:", error);
       toast.error("Failed to delete service request. Please try again.");
     }
   };
@@ -185,11 +182,19 @@ const ArtistCreateServiceRequest = () => {
     setShowModal(true);
   };
 
-  const handleSelectProvider = async (requestId, providerId) => {
+  const handleConfirmSelection = (requestId, providerId) => {
+    setSelectedProvider(providerId);
+    setSelectedRequestId(requestId);
+    setConfirmSelection(true);
+  };
+
+  const handleSelectProvider = async () => {
+    if (!selectedRequestId || !selectedProvider) return;
+
     try {
       await axios.put(
-        `http://localhost:8000/artist/service-requests/${requestId}/select-provider`,
-        { serviceProviderId: providerId },
+        `http://localhost:8000/artist/service-requests/${selectedRequestId}/select-provider`,
+        { serviceProviderId: selectedProvider },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
@@ -197,8 +202,11 @@ const ArtistCreateServiceRequest = () => {
       toast.success("Search for the service provider's name and connect.");
       navigate("/artist-Home/Message");
     } catch (error) {
-      console.error("Error selecting service provider:", error);
       toast.error("Error selecting service provider. Please try again.");
+    } finally {
+      setConfirmSelection(false);
+      setSelectedProvider(null);
+      setSelectedRequestId(null);
     }
   };
 
@@ -214,8 +222,7 @@ const ArtistCreateServiceRequest = () => {
       );
 
       setAcceptedProviders(response.data);
-      console.log(response.data);
-      setViewProviders(true); // Trigger view once data is fetched
+      setViewProviders(true);
     } catch (error) {
       console.error("Error fetching providers:", error);
     }
@@ -283,7 +290,7 @@ const ArtistCreateServiceRequest = () => {
                 </button>
 
                 {viewProviders && ( // Only display the providers if the view state is set to true
-                  <div className="mt-2  text-yellow-500">
+                  <div className="mt-2 text-yellow-500">
                     {acceptedProviders.length > 0 ? (
                       <>
                         <h3 className="text-lg font-medium text-yellow-500">
@@ -309,17 +316,19 @@ const ArtistCreateServiceRequest = () => {
                                   </Link>
                                 </div>
                               </div>
-                              <button
-                                onClick={() =>
-                                  handleSelectProvider(
-                                    request._id,
-                                    provider._id
-                                  )
-                                }
-                                className="text-white bg-emerald-600 px-4 py-2 rounded-lg font-medium shadow-md hover:bg-emerald-700 hover:shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-1"
-                              >
-                                Select
-                              </button>
+                              {request.status !== "Accepted" && ( // Disable select if request is accepted
+                                <button
+                                  onClick={() =>
+                                    handleConfirmSelection(
+                                      request._id,
+                                      provider._id
+                                    )
+                                  }
+                                  className="text-white bg-emerald-600 px-4 py-2 rounded-lg font-medium shadow-md hover:bg-emerald-700 hover:shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-1"
+                                >
+                                  Select
+                                </button>
+                              )}
                             </li>
                           ))}
                         </ul>
@@ -335,6 +344,33 @@ const ArtistCreateServiceRequest = () => {
             </li>
           ))}
         </ul>
+      )}
+
+      {confirmSelection && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-8 rounded-lg w-full max-w-md">
+            <h2 className="text-xl font-semibold mb-4">Confirm Selection</h2>
+            <p className="mb-4">
+              Are you sure you want to select this service provider? After
+              selecting, your request will be retrieved and you cannot select
+              any other service providers.
+            </p>
+            <div className="flex justify-between">
+              <button
+                onClick={handleSelectProvider}
+                className="bg-emerald-600 text-white py-2 px-4 rounded-md hover:bg-emerald-700"
+              >
+                Yes, Select
+              </button>
+              <button
+                onClick={() => setConfirmSelection(false)}
+                className="bg-gray-400 text-white py-2 px-4 rounded-md hover:bg-gray-500"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {showModal && (

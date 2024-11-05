@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import { FaHeart, FaArrowLeft } from "react-icons/fa"; // For like button
+import { FaHeart } from "react-icons/fa"; // For like button
 import Modal from "react-modal"; // For modal functionality
 
-const CommonProfile = () => {
+const Commonprofileservice = () => {
   const { username } = useParams();
-  const [profile, setProfile] = useState([]);
+  const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [expandedPosts, setExpandedPosts] = useState(new Set()); // Track expanded posts
   const [selectedPost, setSelectedPost] = useState(null); // For modal post
@@ -143,9 +143,9 @@ const CommonProfile = () => {
       <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 w-full max-w-screen-lg mx-auto mt-72">
         <button
           onClick={() => navigate(-1)} // This will navigate back to the previous page
-          className="text-black bg-white hover:bg-black hover:text-emerald-800 hover:underline rounded-md p-2 transition-all duration-300"
+          className="text-black bg-white hover:bg-black hover:text-emerald-800 hover:underline rounded-md p-4 transition-all duration-300"
         >
-          <FaArrowLeft style={{ marginRight: "8px" }} />
+          Back
         </button>
         {profile && (
           <>
@@ -178,8 +178,6 @@ const CommonProfile = () => {
                     Description: {profile.description}
                   </p>
                 </div>
-
-                {/* Rendering additional profile data based on role */}
                 {profile.artForm && (
                   <p className="font-semibold text-xl">
                     Art Form: {profile.artForm}
@@ -195,48 +193,17 @@ const CommonProfile = () => {
                     Institution Name: {profile.institutionName}
                   </p>
                 )}
-                {profile.ownerName && (
+                {profile.serviceType && (
                   <p className="font-semibold text-xl">
-                    Owner Name: {profile.ownerName}
+                    Service Type: {profile.serviceType}
                   </p>
                 )}
-                {profile.expertise && (
-                  <p className="font-semibold text-xl">
-                    Expertise: {profile.expertise}
-                  </p>
-                )}
-                {profile.location && (
-                  <p className="font-semibold text-xl">
-                    Location: {profile.location}
-                  </p>
-                )}
-                {profile.district && (
-                  <p className="font-semibold text-xl">
-                    District: {profile.district}
-                  </p>
-                )}
-                {profile.state && (
-                  <p className="font-semibold text-xl">
-                    State: {profile.state}
-                  </p>
-                )}
-                {profile.country && (
-                  <p className="font-semibold text-xl">
-                    Country: {profile.country}
-                  </p>
-                )}
-                {profile.postalCode && (
-                  <p className="font-semibold text-xl">
-                    Postal Code: {profile.postalCode}
-                  </p>
-                )}
-
-                <button
+                {/* <button
                   onClick={handleFollowToggle}
                   className="w-full md:w-64 text-[18px] font-semibold rounded-full bg-yellow-500 text-white hover:bg-yellow-600 py-2 shadow-lg hover:shadow-xl transition-all duration-400"
                 >
                   {profile.following ? "Unfollow" : "Follow"}
-                </button>
+                </button> */}
               </div>
             </div>
 
@@ -286,29 +253,29 @@ const CommonProfile = () => {
           </>
         )}
 
-        {/* Modal for selected post */}
+        {/* Modal for expanded post */}
         <Modal
           isOpen={isModalOpen}
           onRequestClose={closeModal}
-          contentLabel="Post Details"
           className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 w-full md:w-1/3 mx-auto"
           overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
         >
           {selectedPost && (
             <div className="bg-white p-5 rounded-lg shadow-xl">
-              <p className="text-2xl text-white mb-4">{selectedPost.content}</p>
+              <h2 className="text-2xl font-bold mb-4">Expanded Post</h2>
+              <p className="mb-4">{selectedPost.content}</p>
               {selectedPost.mediaUrl && selectedPost.mediaType === "image" && (
                 <img
                   src={`http://localhost:8000${selectedPost.mediaUrl}`}
-                  alt="Post media"
-                  className="w-full h-48 object-cover rounded-lg mb-2 shadow-md"
+                  alt="Expanded post media"
+                  className="w-full mb-2"
                 />
               )}
               {selectedPost.mediaUrl && selectedPost.mediaType === "video" && (
                 <video
                   controls
                   src={`http://localhost:8000${selectedPost.mediaUrl}`}
-                  className="w-full h-48 object-cover rounded-lg mb-2 shadow-md"
+                  className="w-full mb-2"
                 />
               )}
               {selectedPost.mediaUrl && selectedPost.mediaType === "audio" && (
@@ -318,20 +285,21 @@ const CommonProfile = () => {
                   className="w-full mb-2"
                 />
               )}
-              <p className="text-white mb-4">{selectedPost.content}</p>
-              <button
-                onClick={handleLikeToggle}
-                className="text-yellow-500 border border-yellow-500 rounded-md px-4 py-2 hover:bg-yellow-500 hover:text-white transition-all duration-300"
-              >
-                {selectedPost.liked ? <FaHeart /> : "Like  "}
-                {selectedPost.likes} Likes
-              </button>
-              <button
-                onClick={closeModal}
-                className="ml-2 text-red-500 border border-red-500 rounded-md px-4 py-2 hover:bg-red-500 hover:text-white transition-all duration-300"
-              >
-                Close
-              </button>
+              <div className="flex justify-between">
+                <button
+                  onClick={handleLikeToggle}
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 shadow-lg transition-all duration-300"
+                >
+                  {selectedPost.liked ? "Unlike" : "Like"} ({selectedPost.likes}
+                  )
+                </button>
+                <button
+                  onClick={closeModal}
+                  className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 shadow-lg transition-all duration-300"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           )}
         </Modal>
@@ -340,4 +308,4 @@ const CommonProfile = () => {
   );
 };
 
-export default CommonProfile;
+export default Commonprofileservice;

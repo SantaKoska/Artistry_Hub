@@ -107,13 +107,20 @@ const ArtistBase = () => {
                   <FaPlus
                     size={20}
                     onClick={() => setShowCreatePostModal(true)} // Show modal on click
-                    className="cursor-pointer"
+                    id="create-post-button"
                   />
                 ),
               },
               {
                 to: "/artist-Home/Service-Request",
-                icon: <span className="text-xl font-bold leading-none">S</span>,
+                icon: (
+                  <span
+                    id="service-request"
+                    className="text-xl font-bold leading-none"
+                  >
+                    S
+                  </span>
+                ),
               },
             ].map(({ to, icon }, index) => (
               <div

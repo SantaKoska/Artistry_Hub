@@ -59,7 +59,7 @@ const CreatePost = ({ onClose }) => {
       setMediaType("");
       setPreviewUrl(null);
       onClose(); // Close modal after successful submission
-      navigate("/artist-Home");
+      navigate(-1);
     } catch (error) {
       toast.error(`Failed to create post: ${error.response?.data?.error}`);
     }
@@ -123,7 +123,7 @@ const CreatePost = ({ onClose }) => {
           type="submit"
           className="w-full text-[20px] font-semibold mt-6 rounded-full bg-yellow-400 text-black hover:bg-emerald-900 hover:text-white py-3 transition-colors duration-400 transform hover:scale-105"
         >
-          Create Post
+          Create
         </button>
       </form>
     </div>

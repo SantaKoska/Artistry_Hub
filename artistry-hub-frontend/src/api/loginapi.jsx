@@ -31,10 +31,6 @@ const loginUser = async (credentials, navigate) => {
         navigate("/viewer-student-home");
         break;
 
-      case "Institution":
-        navigate("/home");
-        break;
-
       case "Service Provider":
         navigate("/Service-Provider-home");
         break;

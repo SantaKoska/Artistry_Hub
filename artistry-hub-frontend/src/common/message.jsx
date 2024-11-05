@@ -9,7 +9,7 @@ import {
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Link } from "react-router-dom";
-import moment from "moment"; // Add moment for formatting timestamps
+import moment from "moment";
 
 const MessagePage = () => {
   const [chats, setChats] = useState([]);

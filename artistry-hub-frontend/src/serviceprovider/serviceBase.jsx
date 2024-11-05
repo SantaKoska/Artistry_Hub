@@ -60,7 +60,7 @@ const ServiceProviderBase = () => {
               <span className="text-gray-400 text-sm">{userData.role}</span>
             </div>
             <Link
-              to="/service-provider/profile"
+              to="/Service-Provider-home/serviceproviderprofile"
               className="text-white hover:text-yellow-400 transition-colors duration-300"
             >
               <img

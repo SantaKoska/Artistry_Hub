@@ -27,6 +27,8 @@ import ArtistCreateServiceRequest from "./Artist/artistServiceRequest";
 import StudentDashboard from "./Viewer-Student/Studentlearning/LearnDashboard";
 import ServiceProviderBase from "./serviceprovider/serviceBase";
 import ServiceProviderHome from "./serviceprovider/servicehome";
+import Commonprofileservice from "./serviceprovider/profileservice";
+import ServiceProviderProfile from "./serviceprovider/serviceproviderprofile";
 
 function App() {
   return (
@@ -111,6 +113,14 @@ function App() {
           >
             <Route index element={<ServiceProviderHome />} />
             <Route path="Message" element={<MessagePage />} />
+            <Route
+              path="profile-service/:username"
+              element={<Commonprofileservice />}
+            />
+            <Route
+              path="serviceproviderprofile"
+              element={<ServiceProviderProfile />}
+            />
           </Route>
 
           <Route path="reset-password/:token" element={<ResetPassword />} />
