@@ -124,7 +124,7 @@ function App() {
           </Route>
 
           <Route path="reset-password/:token" element={<ResetPassword />} />
-          <Route path="/" element={<Navigate replace to="/login" />} />
+          <Route path="/" element={<Navigate replace to="login" />} />
         </Routes>
       </div>
     </>
