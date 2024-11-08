@@ -32,7 +32,6 @@ const EditCourse = ({ selectedCourse }) => {
     newNoteUrl: "",
   });
 
-  // For editing course name and level
   const [editingCourse, setEditingCourse] = useState(false);
   const [editedCourse, setEditedCourse] = useState({
     courseName: courseData.courseName,
@@ -43,7 +42,10 @@ const EditCourse = ({ selectedCourse }) => {
     setCourseData(selectedCourse);
   }, [selectedCourse]);
 
-  // Update course name and level
+  const showToast = (message) => {
+    alert(message);
+  };
+
   const handleEditCourse = async () => {
     try {
       const res = await axios.put(
@@ -57,20 +59,18 @@ const EditCourse = ({ selectedCourse }) => {
           },
         }
       );
-      setCourseData(res.data); // Update course data after editing
-      setEditingCourse(false); // Exit edit mode
+      setCourseData(res.data);
+      setEditingCourse(false);
     } catch (error) {
       console.error("Error editing course", error);
     }
   };
 
-  // Add a new chapter
   const handleAddChapter = async () => {
     if (!newChapter.title || !newChapter.description) {
-      alert("Please fill out the chapter title and description.");
+      showToast("Please fill out the chapter title and description.");
       return;
     }
-    // console.log(newChapter);
     try {
       const res = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/artist/add-chapter/${
@@ -83,15 +83,18 @@ const EditCourse = ({ selectedCourse }) => {
           },
         }
       );
-      setCourseData(res.data); // Update the course data with the new chapter
-      setNewChapter({ title: "", description: "" }); // Reset input fields
+      setCourseData(res.data);
+      setNewChapter({ title: "", description: "" });
+      showToast("Chapter added successfully!");
+      setCourseData(res.data); // Reload component data to refresh preview
     } catch (error) {
       console.error("Error adding chapter", error);
     }
   };
 
-  // Delete a chapter
   const handleDeleteChapter = async (chapterId) => {
+    if (!window.confirm("Are you sure you want to delete this chapter?"))
+      return;
     try {
       const res = await axios.delete(
         `${import.meta.env.VITE_BACKEND_URL}/artist/delete-chapter/${
@@ -103,13 +106,12 @@ const EditCourse = ({ selectedCourse }) => {
           },
         }
       );
-      setCourseData(res.data); // Update course data after deleting the chapter
+      setCourseData(res.data);
     } catch (error) {
       console.error("Error deleting chapter", error);
     }
   };
 
-  // Edit a chapter
   const handleEditChapter = async (
     chapterId,
     updatedTitle,
@@ -130,18 +132,33 @@ const EditCourse = ({ selectedCourse }) => {
           },
         }
       );
-      setCourseData(res.data); // Update course data after editing
+      setCourseData(res.data);
+      showToast("Edited successfully!"); // Show success toast
     } catch (error) {
       console.error("Error editing chapter", error);
     }
   };
 
-  // Add a new lesson
   const handleAddLesson = async (chapterId) => {
     const formData = new FormData();
     formData.append("title", newLesson.title);
     formData.append("description", newLesson.description);
+
+    // Check if media file is video
+    if (
+      newLesson.mediaUrl &&
+      newLesson.mediaUrl.type.split("/")[0] !== "video"
+    ) {
+      showToast("Only video files are allowed for media.");
+      return;
+    }
     if (newLesson.mediaUrl) formData.append("video", newLesson.mediaUrl);
+
+    // Check if note file is PDF
+    if (newLesson.noteUrl && newLesson.noteUrl.type !== "application/pdf") {
+      showToast("Only PDF files are allowed for notes.");
+      return;
+    }
     if (newLesson.noteUrl) formData.append("note", newLesson.noteUrl);
 
     try {
@@ -157,20 +174,22 @@ const EditCourse = ({ selectedCourse }) => {
           },
         }
       );
-      setCourseData(res.data); // Update course data after adding the lesson
+      setCourseData(res.data);
       setNewLesson({
         title: "",
         description: "",
         mediaUrl: null,
         noteUrl: null,
       });
+      showToast("Lesson added successfully!");
+      setCourseData(res.data); // Reload component data to refresh preview
     } catch (error) {
       console.error("Error adding lesson", error);
     }
   };
 
-  // Delete a lesson
   const handleDeleteLesson = async (chapterId, lessonId) => {
+    if (!window.confirm("Are you sure you want to delete this lesson?")) return;
     try {
       const res = await axios.delete(
         `${import.meta.env.VITE_BACKEND_URL}/artist/delete-lesson/${
@@ -182,21 +201,37 @@ const EditCourse = ({ selectedCourse }) => {
           },
         }
       );
-      setCourseData(res.data); // Update course data after deleting the lesson
+      setCourseData(res.data);
     } catch (error) {
       console.error("Error deleting lesson", error);
     }
   };
 
-  // Edit a lesson
   const handleEditLesson = async (chapterId, lessonId, updatedLesson) => {
-    console.log(updatedLesson);
     const formData = new FormData();
     formData.append("title", updatedLesson.title);
     formData.append("description", updatedLesson.description);
-    if (updatedLesson.mediaUrl)
+
+    // Check if new media file is video
+    if (
+      updatedLesson.newMediaUrl &&
+      updatedLesson.newMediaUrl.type.split("/")[0] !== "video"
+    ) {
+      showToast("Only video files are allowed for media.");
+      return;
+    }
+    if (updatedLesson.newMediaUrl)
       formData.append("video", updatedLesson.newMediaUrl);
-    if (updatedLesson.noteUrl)
+
+    // Check if new note file is PDF
+    if (
+      updatedLesson.newNoteUrl &&
+      updatedLesson.newNoteUrl.type !== "application/pdf"
+    ) {
+      showToast("Only PDF files are allowed for notes.");
+      return;
+    }
+    if (updatedLesson.newNoteUrl)
       formData.append("note", updatedLesson.newNoteUrl);
 
     try {
@@ -213,8 +248,9 @@ const EditCourse = ({ selectedCourse }) => {
         }
       );
       setCourseData(res.data);
-      setNewVideoPreview();
-      setNewNotePreview(); // Update course data after editing the lesson
+      setNewVideoPreview(null);
+      setNewNotePreview(null);
+      showToast("Edited successfully!"); // Show success toast
     } catch (error) {
       console.error("Error editing lesson", error);
     }
@@ -410,9 +446,7 @@ const EditCourse = ({ selectedCourse }) => {
                                 lesson.mediaUrl
                               }`}
                               className="w-full max-w-sm h-auto rounded-md"
-                            >
-                              Your browser does not support the video tag.
-                            </video>
+                            ></video>
                           </div>
                         )}
 

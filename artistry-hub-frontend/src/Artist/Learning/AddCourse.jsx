@@ -52,7 +52,7 @@ const AddCourse = () => {
 
       const createdCourseId = createCourseResponse.data._id;
       setCourseId(createdCourseId);
-      toast.success("The Course is created Successfully");
+      toast.success("Course created successfully!");
       setCourseCreated(true); // Allow adding chapters
     } catch (err) {
       setError(
@@ -92,9 +92,9 @@ const AddCourse = () => {
         ];
 
       const chapterId = addedChapter._id;
-      console.log(chapterId);
       setChapters([...chapters, { ...newChapter, id: chapterId, lessons: [] }]);
       setNewChapter({ title: "", description: "", lessons: [] });
+      toast.success("Chapter added successfully!");
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -111,13 +111,22 @@ const AddCourse = () => {
   // Function to add a lesson
   const addLesson = async (chapterIndex) => {
     const chapter = chapters[chapterIndex];
-    console.log(chapter);
     if (!newLesson.title || !newLesson.description) {
       alert("Please provide both title and description for the lesson.");
       return;
     }
     if (chapter.lessons.length >= 10) {
       alert("Cannot add more than 10 lessons to this chapter.");
+      return;
+    }
+
+    // File type validation
+    if (newLesson.video && newLesson.video.type.split("/")[0] !== "video") {
+      toast.error("Only video files are allowed for media.");
+      return;
+    }
+    if (newLesson.note && newLesson.note.type !== "application/pdf") {
+      toast.error("Only PDF files are allowed for notes.");
       return;
     }
 
@@ -151,6 +160,8 @@ const AddCourse = () => {
 
       if (videoInputRef.current) videoInputRef.current.value = "";
       if (noteInputRef.current) noteInputRef.current.value = "";
+
+      toast.success("Lesson added successfully!");
     } catch (err) {
       toast.error(
         err.response?.data?.message ||

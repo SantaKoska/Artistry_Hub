@@ -193,13 +193,15 @@ const CourseDetails = ({
                     }`}
                     onClick={() => {
                       if (isEnrolled) {
-                        setSelectedLesson(lesson); // Set the selected lesson
+                        setSelectedLesson(lesson);
                         setSelectedChapterId(chapter._id); // Set the selected chapter ID
                       }
                     }}
                   >
                     <div className="flex justify-between items-center">
-                      <span>{lesson.title}</span>
+                      <span>
+                        Lesson {idx + 1}: {lesson.title}
+                      </span>
                       {enrolledCourseDetails?.tickedLessons?.includes(
                         lesson._id
                       ) && (

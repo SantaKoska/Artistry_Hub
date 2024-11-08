@@ -26,12 +26,11 @@ const ServiceProviderHome = () => {
         }
       );
 
-      setRequests(response.data.requests); // Access requests from the response object
+      setRequests(response.data.requests);
       setFilteredRequests(response.data.requests);
 
-      // Set userArtForm based on the first request, if available
       if (response.data.requests.length > 0) {
-        const artForm = response.data.artform; // Get artForm from the response
+        const artForm = response.data.artform;
         setUserArtForm(artForm);
       }
     } catch (error) {
@@ -76,7 +75,7 @@ const ServiceProviderHome = () => {
         }
       );
       toast.success("Request accepted!");
-      fetchRequests(); // Refresh requests after accepting
+      fetchRequests();
     } catch (error) {
       console.error("Error accepting request:", error);
       toast.error("Failed to accept request.");
@@ -97,7 +96,7 @@ const ServiceProviderHome = () => {
         }
       );
       toast.info("Request ignored.");
-      fetchRequests(); // Refresh requests after ignoring
+      fetchRequests();
     } catch (error) {
       console.error("Error ignoring request:", error);
       toast.error("Failed to ignore request.");
@@ -109,12 +108,11 @@ const ServiceProviderHome = () => {
   };
 
   return (
-    <div className="p-8">
-      {/* Toast Container */}
+    <div className="p-4">
       <ToastContainer position="top-center" autoClose={3000} hideProgressBar />
 
       {/* Filter Section */}
-      <div className="flex justify-between items-center mb-6 p-6 bg-gray-800 rounded-lg shadow-lg backdrop-filter backdrop-blur-lg bg-opacity-30">
+      <div className="flex justify-between items-center mb-4 p-4 bg-gray-800 rounded-lg shadow-lg">
         <label
           htmlFor="specialization"
           className="text-lg font-bold text-yellow-400"
@@ -125,7 +123,7 @@ const ServiceProviderHome = () => {
           id="specialization"
           value={specialization}
           onChange={handleSpecializationChange}
-          className="ml-4 p-3 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-transparent text-black transition"
+          className="ml-4 p-2 border border-gray-600 rounded-md bg-transparent text-black"
         >
           <option value="All">All</option>
           {specializations.map((spec) => (
@@ -136,15 +134,24 @@ const ServiceProviderHome = () => {
         </select>
       </div>
 
+      {/* Table Header */}
+      <div className="grid grid-cols-4 gap-4 text-yellow-400 font-bold text-lg mb-2 p-2 bg-gray-700 rounded-md">
+        <div>Profile</div>
+        <div>Description</div>
+        <div>Images</div>
+        <div>Actions</div>
+      </div>
+
       {/* Service Requests List */}
-      <div className="grid gap-10 mt-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {filteredRequests.length > 0 ? (
-          filteredRequests.map((request) => (
+      {filteredRequests.length > 0 ? (
+        <div className="space-y-2">
+          {filteredRequests.map((request) => (
             <div
               key={request._id}
-              className="bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-6 mb-8 transition-transform transform hover:scale-105"
+              className="grid grid-cols-4 gap-4 items-center p-2 bg-gray-800 border border-gray-700 rounded-md shadow-lg transition-transform transform hover:scale-105"
             >
-              <div className="flex items-center mb-4">
+              {/* Profile Picture and Name */}
+              <div className="flex items-center">
                 <img
                   src={`${import.meta.env.VITE_BACKEND_URL}${
                     request.userId.profilePicture
@@ -152,57 +159,52 @@ const ServiceProviderHome = () => {
                   alt={request.userId.userName}
                   className="w-12 h-12 rounded-full object-cover border-2 border-yellow-500"
                 />
-                <div className="ml-4">
-                  <Link
-                    to={`/Service-Provider-home/profile-service/${request.userId.userName}`}
-                  >
-                    <p className="font-bold text-lg text-emerald-900 hover:underline">
-                      {request.userId.userName}
-                    </p>
-                  </Link>
-                </div>
+                <Link
+                  to={`/Service-Provider-home/profile-service/${request.userId.userName}`}
+                  className="ml-3 font-bold text-emerald-900 hover:underline"
+                >
+                  {request.userId.userName}
+                </Link>
               </div>
 
-              {/* Request Images */}
-              {request.images.length > 0 && (
-                <div className="mb-4 grid grid-cols-1 gap-2">
-                  {request.images.map((image, index) => (
-                    <img
-                      key={index}
-                      src={`${import.meta.env.VITE_BACKEND_URL}${image}`}
-                      alt="Request"
-                      className="w-full h-64 object-cover rounded-md border border-gray-600"
-                    />
-                  ))}
-                </div>
-              )}
-
               {/* Request Description */}
-              <p className="text-gray-300 mb-4">{request.description}</p>
+              <p className="text-gray-300 text-sm">{request.description}</p>
+
+              {/* Display All Request Images in Grid */}
+              <div className="grid grid-cols-3 gap-2">
+                {request.images.map((image, index) => (
+                  <img
+                    key={index}
+                    src={`${import.meta.env.VITE_BACKEND_URL}${image}`}
+                    alt="Request"
+                    className="w-16 h-16 object-cover rounded-md border border-gray-600"
+                  />
+                ))}
+              </div>
 
               {/* Action Buttons */}
-              <div className="flex justify-between">
+              <div className="flex space-x-2">
                 <button
                   onClick={() => handleAccept(request._id)}
-                  className="bg-yellow-400 text-black px-4 py-2 rounded-full hover:bg-yellow-500 transition"
+                  className="bg-yellow-400 text-black px-3 py-1 rounded-full hover:bg-yellow-500 transition"
                 >
                   Accept
                 </button>
                 <button
                   onClick={() => handleIgnore(request._id)}
-                  className="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition"
+                  className="bg-red-500 text-white px-3 py-1 rounded-full hover:bg-red-600 transition"
                 >
                   Not Interested
                 </button>
               </div>
             </div>
-          ))
-        ) : (
-          <p className="text-center text-gray-400 col-span-full">
-            No service requests available.
-          </p>
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-center text-gray-400 mt-4">
+          No service requests available.
+        </p>
+      )}
     </div>
   );
 };

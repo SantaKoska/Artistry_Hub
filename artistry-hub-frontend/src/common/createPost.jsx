@@ -63,7 +63,6 @@ const CreatePost = ({ onClose }) => {
       setMediaType("");
       setPreviewUrl(null);
       onClose(); // Close modal after successful submission
-      navigate(-1);
     } catch (error) {
       toast.error(`Failed to create post: ${error.response?.data?.error}`);
     }

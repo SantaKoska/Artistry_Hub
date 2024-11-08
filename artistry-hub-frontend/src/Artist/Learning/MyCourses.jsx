@@ -87,18 +87,6 @@ const MyCourses = () => {
                 Add Course
               </button>
             </li>
-            <li>
-              <button
-                onClick={() => setActiveSection("statistics")}
-                className={`text-lg font-semibold text-center block w-full ${
-                  activeSection === "statistics"
-                    ? "text-yellow-400"
-                    : "text-gray-700 hover:text-emerald-900"
-                }`}
-              >
-                Enrollment Statistics
-              </button>
-            </li>
           </ul>
         </div>
 
@@ -163,16 +151,6 @@ const MyCourses = () => {
                   Edit Course: {selectedCourse.courseName}
                 </h1>
                 <EditCourse selectedCourse={selectedCourse} />
-              </div>
-            )}
-
-            {activeSection === "statistics" && (
-              <div>
-                <h1 className="text-4xl font-bold text-yellow-400 mb-6">
-                  Enrollment Statistics
-                </h1>
-                {/* Enrollment statistics content goes here */}
-                <p className="text-white">Coming Soon...</p>
               </div>
             )}
           </div>
