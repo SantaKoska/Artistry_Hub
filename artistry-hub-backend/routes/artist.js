@@ -563,7 +563,7 @@ router.post(
 
       const newServiceRequest = new ServiceRequest({
         userId,
-        artForm: artist.artForm, // Automatically set from the artist model
+        artForm: artist.artForm,
         specialization,
         description,
         images,

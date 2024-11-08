@@ -59,12 +59,11 @@ const LoginRegisterBase = () => {
               About ArtistryHub
             </h2>
             <p className="text-gray-700 text-center ">
-              ArtistryHub is a platform that connects artists, students,
-              institutions, and service providers. We provide tools for
-              learning, collaboration, and showcasing art. Whether you're
-              looking to view art, learn, collaborate, or offer services,
-              ArtistryHub brings the art community together in one seamless
-              space.
+              ArtistryHub is a platform that connects artists, students and
+              service providers. We provide tools forlearning, collaboration,
+              and showcasing art. Whether you're looking to view art, learn,
+              collaborate, or offer services, ArtistryHub brings the art
+              community together in one seamless space.
             </p>
           </div>
         </div>

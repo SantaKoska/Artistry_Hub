@@ -34,10 +34,18 @@ const StudentCreateServiceRequest = () => {
 
   const handleImageChange = (e) => {
     const selectedImages = Array.from(e.target.files);
-    setImages(selectedImages);
+    const validImages = selectedImages.filter((file) =>
+      file.type.startsWith("image/")
+    );
+
+    if (validImages.length !== selectedImages.length) {
+      alert("Only image files are allowed.");
+    }
+
+    setImages(validImages);
 
     // Create image previews
-    const previews = selectedImages.map((file) => URL.createObjectURL(file));
+    const previews = validImages.map((file) => URL.createObjectURL(file));
     setImagePreviews(previews);
   };
 
@@ -73,7 +81,7 @@ const StudentCreateServiceRequest = () => {
       } else {
         // Handle Create
         const response = await axios.post(
-          `${import.meta.env.VITE_BACKEND_URL}/student/create-service-request`, // Changed endpoint for students
+          `${import.meta.env.VITE_BACKEND_URL}/student/create-service-request`,
           formData,
           {
             headers: {
@@ -104,7 +112,7 @@ const StudentCreateServiceRequest = () => {
   const handleDelete = async (id) => {
     try {
       await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}/student/service-requests/${id}`, // Changed endpoint for students
+        `${import.meta.env.VITE_BACKEND_URL}/student/service-requests/${id}`,
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }

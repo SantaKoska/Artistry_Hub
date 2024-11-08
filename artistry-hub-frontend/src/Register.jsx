@@ -181,11 +181,6 @@ const Register = () => {
 
       let errorMsg = "";
       switch (fieldName) {
-        case "specialisation":
-          errorMsg = validateSpecialisation(value)
-            ? ""
-            : "Specialisation should only contain letters and spaces.";
-          break;
         case "ownerName":
           errorMsg = validateOwnerName(value)
             ? ""
@@ -281,7 +276,7 @@ const Register = () => {
   const requiredFields = (role) => {
     switch (role) {
       case "Artist":
-        return ["additionalData.artForm", "additionalData.specialisation"];
+        return ["additionalData.artForm"];
       case "Viewer/Student":
         return ["additionalData.artForm"];
       case "Institution":
@@ -633,6 +628,36 @@ const Register = () => {
                 </div>
               )}
             </>
+          )}
+
+          {/* if viewer/students is selected */}
+          {formData.role === "Viewer/Student" && (
+            <div className="relative my-4 mt-8">
+              <select
+                name="additionalData.artForm"
+                className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+                value={formData.additionalData.artForm || ""}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="" disabled>
+                  Select your artform
+                </option>
+                <option value="Painting">Painting</option>
+                <option value="Sculpturet">Sculpture</option>
+                <option value="Architecture">Architecture</option>
+                <option value="Literature">Literature</option>
+                <option value="Cinema">Cinema</option>
+                <option value="Theater">Theater</option>
+                <option value="Music">Music</option>
+              </select>
+              <label
+                htmlFor="additionalData.artForm"
+                className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6"
+              >
+                Favourite Art Form
+              </label>
+            </div>
           )}
 
           {/* if service provider is selected */}
