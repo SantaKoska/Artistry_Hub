@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaHeart } from "react-icons/fa";
-import { Link } from "react-router-dom"; // Import Link for navigation
+import { Link } from "react-router-dom";
 
 const StudentHome = () => {
   const [posts, setPosts] = useState([]);
   const [likedPosts, setLikedPosts] = useState(new Set());
-  const [expandedPosts, setExpandedPosts] = useState(new Set()); // State to track expanded posts
+  const [expandedPosts, setExpandedPosts] = useState(new Set());
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -49,7 +49,7 @@ const StudentHome = () => {
         }
       );
 
-      // Refetch posts to update the like count and liked posts
+      // Refetch posts to update state
       const updatedPosts = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/student/homeposts`,
         {
@@ -75,57 +75,27 @@ const StudentHome = () => {
   };
 
   const toggleReadMore = (postId) => {
-    const updatedExpandedPosts = new Set(expandedPosts);
-    if (expandedPosts.has(postId)) {
-      updatedExpandedPosts.delete(postId); // Collapse the post
-    } else {
-      updatedExpandedPosts.add(postId); // Expand the post
-    }
-    setExpandedPosts(updatedExpandedPosts);
-  };
-
-  const renderContent = (post) => {
-    const contentLimit = 100; // Limit to the number of characters before "Read More"
-
-    if (expandedPosts.has(post._id) || post.content.length <= contentLimit) {
-      return (
-        <>
-          {post.content}
-          {post.content.length > contentLimit && (
-            <span
-              className="text-blue-500 cursor-pointer ml-2"
-              onClick={() => toggleReadMore(post._id)}
-            >
-              Read Less
-            </span>
-          )}
-        </>
-      );
-    } else {
-      return (
-        <>
-          {post.content.slice(0, contentLimit)}...
-          <span
-            className="text-blue-500 cursor-pointer ml-2"
-            onClick={() => toggleReadMore(post._id)}
-          >
-            Read More
-          </span>
-        </>
-      );
-    }
+    setExpandedPosts((prev) => {
+      const newExpandedPosts = new Set(prev);
+      if (newExpandedPosts.has(postId)) {
+        newExpandedPosts.delete(postId);
+      } else {
+        newExpandedPosts.add(postId);
+      }
+      return newExpandedPosts;
+    });
   };
 
   return (
-    <div className="container mx-auto w-full max-w-screen-2xl pt-28 pb-20">
-      <div className="grid gap-10 mt-16 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+    <div className="container mx-auto w-full max-w-screen-2xl pb-20 flex justify-center">
+      <div className="grid gap-4 grid-cols-1 w-full max-w-3xl">
         {posts.length > 0 ? (
           posts.map((post) => (
             <div
               key={post._id}
-              className="bg-white border border-gray-200 rounded-lg shadow-lg mx-auto p-6 mb-8 hover:shadow-2xl transition-shadow duration-300"
+              className="bg-white border border-gray-200 rounded-lg shadow-lg p-6 mb-4 hover:shadow-2xl transition-shadow duration-300 w-full"
+              style={{ height: "500px" }}
             >
-              {/* Profile Info */}
               <div className="flex items-center mb-4">
                 <img
                   src={`${import.meta.env.VITE_BACKEND_URL}${
@@ -146,18 +116,19 @@ const StudentHome = () => {
                 </div>
               </div>
 
+              {/* Media Rendering */}
               {post.mediaUrl && post.mediaType === "image" && (
                 <img
                   src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
                   alt="Post media"
-                  className="w-full h-64 object-cover rounded-md mb-4"
+                  className="w-full h-64 object-contain rounded-md mb-4"
                 />
               )}
               {post.mediaUrl && post.mediaType === "video" && (
                 <video
                   controls
                   src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
-                  className="w-full h-64 object-cover rounded-md mb-4"
+                  className="w-full h-64 object-contain rounded-md mb-4"
                 />
               )}
               {post.mediaUrl && post.mediaType === "audio" && (
@@ -169,10 +140,22 @@ const StudentHome = () => {
               )}
 
               {/* Post Content */}
-              <p className="mb-4 text-gray-700">{renderContent(post)}</p>
+              <p className="mb-4 text-gray-700">
+                {expandedPosts.has(post._id)
+                  ? post.content
+                  : `${post.content.slice(0, 150)}...`}
+              </p>
+              {post.content.length > 150 && (
+                <button
+                  className="text-blue-500 hover:underline"
+                  onClick={() => toggleReadMore(post._id)}
+                >
+                  {expandedPosts.has(post._id) ? "Read Less" : "Read More"}
+                </button>
+              )}
 
               {/* Like Button */}
-              <div className="flex items-center">
+              <div className="flex items-center mt-4">
                 <button
                   className={`focus:outline-none ${
                     likedPosts.has(post._id)

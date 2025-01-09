@@ -3,7 +3,7 @@ import axios from "axios";
 import { FaHeart } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-const ArtistHome = () => {
+const InstitutionHome = () => {
   const [posts, setPosts] = useState([]);
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [expandedPosts, setExpandedPosts] = useState(new Set());
@@ -13,7 +13,9 @@ const ArtistHome = () => {
     const fetchPosts = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/artist/homeposts`,
+          `${
+            import.meta.env.VITE_BACKEND_URL
+          }/institution/institution-homeposts`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -50,7 +52,7 @@ const ArtistHome = () => {
       );
 
       const updatedPosts = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/artist/homeposts`,
+        `${import.meta.env.VITE_BACKEND_URL}/institution/institution-homeposts`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -105,7 +107,7 @@ const ArtistHome = () => {
                 />
                 <div className="ml-4">
                   <Link to={`/profile/${post.user.userName}`}>
-                    <p className="font-bold text-lg text-emerald-900 hover:underline">
+                    <p className="font-bold text-lg text-blue-900 hover:underline">
                       {post.user.userName}
                     </p>
                   </Link>
@@ -115,6 +117,7 @@ const ArtistHome = () => {
                 </div>
               </div>
 
+              {/* Render Media */}
               {post.mediaUrl && post.mediaType === "image" && (
                 <img
                   src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
@@ -137,6 +140,7 @@ const ArtistHome = () => {
                 />
               )}
 
+              {/* Post Content */}
               <p className="mb-4 text-gray-700">
                 {expandedPosts.has(post._id)
                   ? post.content
@@ -151,6 +155,7 @@ const ArtistHome = () => {
                 </button>
               )}
 
+              {/* Like Button */}
               <div className="flex items-center mt-4">
                 <button
                   className={`focus:outline-none ${
@@ -178,4 +183,4 @@ const ArtistHome = () => {
   );
 };
 
-export default ArtistHome;
+export default InstitutionHome;

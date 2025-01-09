@@ -170,7 +170,16 @@ router.post("/sendotp", async (req, res) => {
     from: process.env.Email_address,
     to: email,
     subject: "Your OTP Code",
-    text: `Your OTP code is ${otp}. It is valid for 10 min`,
+    html: `
+      <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
+        <img src="${process.env.LOGO_URL}" alt="Logo" style="width: 150px; height: auto;"/>
+        <h2 style="color: #333;">Your OTP Code</h2>
+        <p style="font-size: 16px; color: #555;">Dear User,</p>
+        <p style="font-size: 16px; color: #555;">Your OTP code is <strong style="font-size: 24px;">${otp}</strong>. It is valid for 10 minutes.</p>
+        <p style="font-size: 16px; color: #555;">Thank you for using our service!</p>
+        <p style="font-size: 16px; color: #555;">Best Regards,<br/>The Artistry Hub Team</p>
+      </div>
+    `,
   };
 
   try {
@@ -225,24 +234,33 @@ router.post("/forgot-password", async (req, res) => {
     return res.status(400).json({ message: "User not found" });
   }
 
-  // reset token which will expire
+  // Reset token which will expire
   const resetToken = crypto.randomBytes(32).toString("hex");
   const resetTokenExpiry = Date.now() + 3600000;
 
-  //-ing token in user module
+  // Saving token in user model
   user.resetToken = resetToken;
   user.resetTokenExpiry = resetTokenExpiry;
   await user.save();
 
-  // link and message to send
+  // Link and message to send
   const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
-  const message = `Click the link below to reset your password:\n\n${resetLink}`;
-
   const mailOptions = {
     from: process.env.Email_address,
     to: email,
-    subject: "Password Reset link for Artistry Hub",
-    text: message,
+    subject: "Password Reset Link for Artistry Hub",
+    html: `
+      <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
+        <img src="${process.env.LOGO_URL}" alt="Logo" style="width: 150px; height: auto;"/>
+        <h2 style="color: #333;">Password Reset Request</h2>
+        <p style="font-size: 16px; color: #555;">Dear User,</p>
+        <p style="font-size: 16px; color: #555;">We received a request to reset your password. Click the link below to reset it:</p>
+        <a href="${resetLink}" style="display: inline-block; margin: 20px 0; padding: 10px 20px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px;">Reset Password</a>
+        <p style="font-size: 16px; color: #555;">This link will expire in 1 hour.</p>
+        <p style="font-size: 16px; color: #555;">If you did not request a password reset, please ignore this email.</p>
+        <p style="font-size: 16px; color: #555;">Best Regards,<br/>The Artistry Hub Team</p>
+      </div>
+    `,
   };
 
   transporter.sendMail(mailOptions, (error, info) => {

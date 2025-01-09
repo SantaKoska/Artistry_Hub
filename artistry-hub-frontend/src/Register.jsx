@@ -398,7 +398,7 @@ const Register = () => {
               name="userName"
               className={`block w-96 py-2.4 px-0 text-base text-white font-semibold  border-0 border-b-2 ${
                 errors.userName ? "border-red-500" : "border-emerald-900"
-              } bg-transparent appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
+              } bg-transparent appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer`}
               placeholder=" "
               value={formData.userName || ""}
               onChange={handleInputChange}
@@ -421,7 +421,7 @@ const Register = () => {
               name="email"
               className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
                 errors.email ? "border-red-500" : "border-emerald-900"
-              } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
+              } appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer`}
               placeholder=" "
               value={formData.email || ""}
               onChange={handleInputChange}
@@ -460,7 +460,7 @@ const Register = () => {
                 name="otp"
                 className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
                   errors.otp ? "border-red-500" : "border-emerald-900"
-                } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
+                } appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer`}
                 placeholder=""
                 value={formData.otp || ""}
                 onChange={handleInputChange}
@@ -483,7 +483,7 @@ const Register = () => {
               name="password"
               className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
                 errors.password ? "border-red-500" : "border-emerald-900"
-              } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
+              } appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer`}
               placeholder=" "
               value={formData.password || ""}
               onChange={handleInputChange}
@@ -514,7 +514,7 @@ const Register = () => {
               name="confirmPassword"
               className={`block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 ${
                 errors.confirmPassword ? "border-red-500" : "border-emerald-900"
-              } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
+              } appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer`}
               placeholder=" "
               value={formData.confirmPassword || ""}
               onChange={handleInputChange}
@@ -547,7 +547,7 @@ const Register = () => {
 
           <div className="relative my-4 mt-8">
             <select
-              className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+              className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer"
               value={formData.role || ""}
               onChange={handleRoleChange}
             >
@@ -557,7 +557,7 @@ const Register = () => {
               <option value="Artist">Artist</option>
               <option value="Viewer/Student">Viewer/Student</option>
               <option value="Service Provider">Service Provider</option>
-              {/* <option value="Institution">Institution</option> */}
+              <option value="Institution">Institution</option>
             </select>
             <label className="absolute text-white text-lg duration-300 transform -translate-y-6 scale-75 top-0 -z-10 origin-[0] peer-focus:text-yellow-400 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1 peer-focus:scale-75 peer-focus:-translate-y-6">
               Role
@@ -572,7 +572,7 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <select
                   name="additionalData.artForm"
-                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer"
                   value={formData.additionalData.artForm || ""}
                   onChange={handleArtFormChange} // Handles the art form change
                 >
@@ -600,7 +600,7 @@ const Register = () => {
                 <div className="relative my-4 mt-8">
                   <select
                     name="additionalData.specialisation"
-                    className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+                    className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer"
                     value={formData.additionalData.specialisation || ""}
                     onChange={handleInputChange} // handleInputChange to manage form state for specialization
                   >
@@ -635,7 +635,7 @@ const Register = () => {
             <div className="relative my-4 mt-8">
               <select
                 name="additionalData.artForm"
-                className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+                className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer"
                 value={formData.additionalData.artForm || ""}
                 onChange={handleInputChange}
                 required
@@ -670,7 +670,7 @@ const Register = () => {
                     errors["additionalData.ownerName"]
                       ? "border-red-500"
                       : "border-emerald-900"
-                  } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
+                  } appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer`}
                   placeholder=" "
                   value={formData.additionalData.ownerName || ""}
                   onChange={handleInputChange}
@@ -690,7 +690,7 @@ const Register = () => {
               <div className="relative my-4 mt-8">
                 <select
                   name="additionalData.expertise"
-                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer"
                   value={formData.additionalData.expertise || ""}
                   onChange={handleInputChange}
                 >
@@ -721,7 +721,7 @@ const Register = () => {
                 <input
                   type="text"
                   name="additionalData.location.address"
-                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer"
                   placeholder=" "
                   value={formData.additionalData.location.address || ""}
                   onChange={handleInputChange}
@@ -737,7 +737,7 @@ const Register = () => {
                 <input
                   type="text"
                   name="additionalData.location.postalCode"
-                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer"
                   placeholder=" "
                   value={formData.additionalData.location.postalCode || ""}
                   onChange={handleInputChange}
@@ -753,7 +753,7 @@ const Register = () => {
                 <input
                   type="text"
                   name="additionalData.location.district"
-                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer"
                   placeholder=" "
                   value={formData.additionalData.location.district || ""}
                   readOnly
@@ -769,7 +769,7 @@ const Register = () => {
                 <input
                   type="text"
                   name="additionalData.location.state"
-                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer"
                   placeholder=" "
                   value={formData.additionalData.location.state || ""}
                   readOnly
@@ -785,7 +785,7 @@ const Register = () => {
                 <input
                   type="text"
                   name="additionalData.location.country"
-                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer"
                   placeholder=" "
                   value={formData.additionalData.location.country || ""}
                   readOnly
@@ -801,7 +801,7 @@ const Register = () => {
           )}
 
           {/* if selected Institution */}
-          {/* {formData.role === "Institution" && (
+          {formData.role === "Institution" && (
             <>
               <div className="relative my-4 mt-8">
                 <input
@@ -811,7 +811,7 @@ const Register = () => {
                     errors["additionalData.registeredUnder"]
                       ? "border-red-500"
                       : "border-emerald-900"
-                  } appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer`}
+                  } appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer`}
                   placeholder=" "
                   value={formData.additionalData.registeredUnder || ""}
                   onChange={handleInputChange}
@@ -832,7 +832,7 @@ const Register = () => {
                 <input
                   type="text"
                   name="additionalData.registrationID"
-                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer"
                   placeholder=" "
                   value={formData.additionalData.registrationID || ""}
                   onChange={handleInputChange}
@@ -848,7 +848,7 @@ const Register = () => {
                 <input
                   type="text"
                   name="additionalData.location.postalCode"
-                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer"
                   placeholder=" "
                   value={formData.additionalData.location.postalCode || ""}
                   onChange={handleInputChange}
@@ -864,7 +864,7 @@ const Register = () => {
                 <input
                   type="text"
                   name="additionalData.location.district"
-                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer"
                   placeholder=" "
                   value={formData.additionalData.location.district || ""}
                   onChange={handleInputChange}
@@ -881,7 +881,7 @@ const Register = () => {
                 <input
                   type="text"
                   name="additionalData.location.state"
-                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer"
                   placeholder=" "
                   value={formData.additionalData.location.state || ""}
                   onChange={handleInputChange}
@@ -898,7 +898,7 @@ const Register = () => {
                 <input
                   type="text"
                   name="additionalData.location.country"
-                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-black focus:border-yellow-500 peer"
+                  className="block w-96 py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:text-yellow-500 focus:border-yellow-500 peer"
                   placeholder=" "
                   value={formData.additionalData.location.country || ""}
                   onChange={handleInputChange}
@@ -912,14 +912,14 @@ const Register = () => {
                 </label>
               </div>
             </>
-          )} */}
+          )}
 
           <button
             type="submit"
             className={`w-full mb-4 text-[18px] font-semibold mt-6 rounded-full py-2 transition-colors duration-400 ${
               formvalidate()
-                ? "bg-white text-black hover:bg-emerald-900 hover:text-white"
-                : "bg-white text-black opacity-50 cursor-not-allowed"
+                ? "bg-white text-yellow-500 hover:bg-emerald-900 hover:text-white"
+                : "bg-white text-yellow-500 opacity-50 cursor-not-allowed"
             }`}
             disabled={!formvalidate()}
           >

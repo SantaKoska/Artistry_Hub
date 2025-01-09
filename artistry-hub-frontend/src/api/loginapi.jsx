@@ -35,6 +35,10 @@ const loginUser = async (credentials, navigate) => {
         navigate("/Service-Provider-home");
         break;
 
+      case "Institution":
+        navigate("/Institution-home");
+        break;
+
       default:
         throw new Error("Invalid role");
     }

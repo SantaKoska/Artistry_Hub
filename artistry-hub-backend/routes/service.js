@@ -5,6 +5,7 @@ const ServiceProvider = require("../models/ServiceProviderModels");
 const User = require("../models/UserModel");
 const Post = require("../models/PostModels");
 const multer = require("multer");
+const path = require("path");
 
 // Authentication
 const { verifyToken } = require("../utils/tokendec");

@@ -29,6 +29,9 @@ import ServiceProviderBase from "./serviceprovider/serviceBase";
 import ServiceProviderHome from "./serviceprovider/servicehome";
 import Commonprofileservice from "./serviceprovider/profileservice";
 import ServiceProviderProfile from "./serviceprovider/serviceproviderprofile";
+import InstitutionBase from "./institution/InstitutionBase";
+import InstitutionHome from "./institution/InstitutionHome";
+import InstitutionProfile from "./institution/InstitutionProfile";
 
 function App() {
   return (
@@ -121,6 +124,19 @@ function App() {
               path="serviceproviderprofile"
               element={<ServiceProviderProfile />}
             />
+          </Route>
+
+          <Route
+            path="/Institution-home"
+            element={
+              <PrivateRoute>
+                <InstitutionBase />
+              </PrivateRoute>
+            }
+          >
+            <Route index element={<InstitutionHome />} />
+            <Route path="institutionprofile" element={<InstitutionProfile />} />
+            <Route path="Message" element={<MessagePage />} />
           </Route>
 
           <Route path="reset-password/:token" element={<ResetPassword />} />
