@@ -10,54 +10,72 @@ const InstitutionProfile = () => {
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [logoutModalIsOpen, setLogoutModalIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     description: "",
-    type: "",
-    focusArea: "",
+    registeredUnder: "",
+    registrationID: "",
     userName: "",
+    district: "",
+    state: "",
+    country: "",
+    postalCode: "",
     profilePicture: null,
   });
+  const [postToDelete, setPostToDelete] = useState(null);
+  const [confirmationModalIsOpen, setConfirmationModalIsOpen] = useState(false);
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
-  // Fetch institution profile
-  const fetchProfile = async () => {
-    try {
-      const { data } = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/institution/institution-profile`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setProfile(data);
-      setFormData({
-        description: data.description || "",
-        type: data.type || "",
-        focusArea: data.focusArea || "",
-        userName: data.userName || "",
-      });
-      setPosts(data.postsinfo || []);
-    } catch (error) {
-      toast.error(`Error fetching profile: ${error.response?.data?.err}`);
-    }
-  };
-
   useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const { data } = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/institution/institution-profile`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setProfile(data);
+        setFormData({
+          description: data.description,
+          registeredUnder: data.registeredUnder,
+          registrationID: data.registrationID,
+          userName: data.userName,
+          district: data.location.district || "",
+          state: data.location.state || "",
+          country: data.location.country || "",
+          postalCode: data.location.postalCode || "",
+        });
+        setPosts(data.postsinfo || []);
+      } catch (error) {
+        toast.error(`Error fetching profile: ${error.response?.data?.err}`);
+      }
+    };
+
     fetchProfile();
   }, [token]);
 
-  // Handle file change for profile picture
+  const handleOpenModal = () => setModalIsOpen(true);
+  const handleCloseModal = () => setModalIsOpen(false);
+  const handleOpenLogoutModal = () => setLogoutModalIsOpen(true);
+  const handleCloseLogoutModal = () => setLogoutModalIsOpen(false);
+  const handleOpenConfirmationModal = (postId) => {
+    setPostToDelete(postId);
+    setConfirmationModalIsOpen(true);
+  };
+  const handleCloseConfirmationModal = () => setConfirmationModalIsOpen(false);
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file && file.type.startsWith("image/")) {
-      setFormData((prev) => ({ ...prev, profilePicture: file }));
+      setFormData((prevState) => ({ ...prevState, profilePicture: file }));
     } else {
       toast.error("Please upload a valid image file");
     }
   };
 
-  // Update institution profile
   const handleSave = async (e) => {
     e.preventDefault();
     const formDataToSend = new FormData();
@@ -79,10 +97,29 @@ const InstitutionProfile = () => {
         }
       );
       toast.success("Profile updated successfully");
-      setModalIsOpen(false);
+      handleCloseModal();
       fetchProfile();
     } catch (error) {
       toast.error(`Error updating profile: ${error.response?.data?.err}`);
+    }
+  };
+
+  const handleDeletePost = async () => {
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_BACKEND_URL}/posts/delete-post/${postToDelete}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      toast.success("Post deleted successfully");
+      setPosts((prevPosts) =>
+        prevPosts.filter((post) => post._id !== postToDelete)
+      );
+      handleCloseConfirmationModal();
+    } catch (error) {
+      toast.error(`Error deleting post: ${error.response?.data?.error}`);
+      handleCloseConfirmationModal();
     }
   };
 
@@ -91,47 +128,108 @@ const InstitutionProfile = () => {
     navigate("/login");
   };
 
+  const truncateText = (text, limit) => {
+    if (text.length <= limit) return text;
+    return text.substring(0, limit) + "...";
+  };
+
+  const Post = ({ post }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const contentLimit = 100;
+
+    const toggleReadMore = () => {
+      setIsExpanded((prev) => !prev);
+    };
+
+    return (
+      <div key={post._id} className="bg-blue-100 rounded-lg p-4 text-black">
+        {post.mediaUrl && post.mediaType === "image" && (
+          <img
+            src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
+            alt="Post"
+            className="w-full h-48 object-cover rounded-lg mb-2"
+          />
+        )}
+        {post.mediaUrl && post.mediaType === "video" && (
+          <video
+            controls
+            src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
+            className="w-full h-48 object-cover rounded-lg mb-2"
+          />
+        )}
+        {post.mediaUrl && post.mediaType === "audio" && (
+          <audio
+            controls
+            src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
+            className="w-full object-cover rounded-lg mb-2"
+          />
+        )}
+        <p>
+          {isExpanded ? post.content : truncateText(post.content, contentLimit)}
+          {post.content.length > contentLimit && (
+            <button
+              onClick={toggleReadMore}
+              className="text-blue-600 font-semibold ml-2"
+            >
+              {isExpanded ? "Read Less" : "Read More"}
+            </button>
+          )}
+        </p>
+        <p className="text-sm text-emerald-900">
+          {/* Additional post details can be displayed here */}
+        </p>
+      </div>
+    );
+  };
+
   return (
-    <div className="bg-gray-800 rounded-md p-8 shadow-lg backdrop-blur-md bg-opacity-30 max-w-screen-lg mx-auto">
+    <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-blur-md bg-opacity-30 max-w-screen-lg mx-auto">
       {profile && (
         <>
           <div className="flex flex-col md:flex-row gap-10 items-center">
-            {/* Profile Picture */}
             <div className="flex flex-col items-center">
               <img
                 src={`${import.meta.env.VITE_BACKEND_URL}${
                   profile.profilePicture
                 }`}
                 alt="Institution Logo"
-                className="w-48 h-48 rounded-full mb-4"
+                className="w-48 h-44 rounded-full mb-4"
               />
               <h1 className="text-5xl font-semibold text-yellow-400 mt-4">
                 {profile.userName}
               </h1>
             </div>
-
-            {/* Profile Details */}
             <div className="text-white space-y-6 w-full">
+              <div className="flex justify-between md:justify-start gap-10">
+                <div className="text-center">
+                  <p className="text-3xl font-bold text-yellow-400">
+                    Followers
+                  </p>
+                  <p>{profile.followerCount || 0}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-3xl font-bold text-yellow-400">Posts</p>
+                  <p>{posts.length}</p>
+                </div>
+              </div>
               <p className="text-xl font-semibold">
                 Description: {profile.description}
               </p>
-              <p className="text-xl font-semibold">Type: {profile.type}</p>
               <p className="text-xl font-semibold">
-                Focus Area: {profile.focusArea}
+                Registered Under: {profile.registeredUnder}
               </p>
               <p className="text-xl font-semibold">
-                Followers: {profile.followerCount}
+                Registration ID: {profile.registrationID}
               </p>
-
               <div className="flex flex-col gap-4">
                 <button
-                  onClick={() => setModalIsOpen(true)}
-                  className="w-full md:w-64 text-lg font-semibold bg-white text-black hover:bg-blue-500 hover:text-white py-2 rounded-full transition-colors duration-400"
+                  onClick={handleOpenModal}
+                  className="w-full md:w-64 text-lg font-semibold bg-white text-black hover:bg-emerald-900 hover:text-white py-2 rounded-full transition-colors duration-400"
                 >
                   Edit Profile
                 </button>
                 <button
-                  onClick={handleLogout}
+                  onClick={handleOpenLogoutModal}
                   className="w-full md:w-64 text-lg font-semibold bg-red-500 text-white hover:bg-red-600 py-2 rounded-full transition-colors duration-400"
                 >
                   Logout
@@ -140,82 +238,97 @@ const InstitutionProfile = () => {
             </div>
           </div>
 
-          {/* Posts Section */}
           <div className="mt-10">
-            <h2 className="text-3xl text-yellow-400 mb-4 font-semibold">
-              Posts
-            </h2>
+            <h2 className="text-3xl text-white mb-4">Posts</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {posts.map((post) => (
-                <div key={post._id} className="bg-gray-700 p-4 rounded-lg">
-                  <p className="text-white">
-                    {post.content.length > 100
-                      ? post.content.substring(0, 100) + "..."
-                      : post.content}
-                  </p>
-                  <p className="text-sm text-gray-300 mt-2">
-                    Posted on: {new Date(post.timestamp).toLocaleString()}
-                  </p>
-                </div>
-              ))}
+              {posts.length > 0 ? (
+                posts.map((post) => <Post key={post._id} post={post} />)
+              ) : (
+                <p className="text-white">No posts available.</p>
+              )}
             </div>
           </div>
 
-          {/* Edit Profile Modal */}
+          <Modal
+            isOpen={confirmationModalIsOpen}
+            onRequestClose={handleCloseConfirmationModal}
+            className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-blur-md w-full md:w-1/3 mx-auto"
+            overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
+          >
+            <h2 className="text-white text-2xl mb-4">Confirm Deletion</h2>
+            <p className="text-white">
+              Are you sure you want to delete this post?
+            </p>
+            <div className="flex justify-between mt-4">
+              <button
+                onClick={handleCloseConfirmationModal}
+                className="bg-gray-500 text-white rounded px-4 py-2"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeletePost}
+                className="bg-red-500 text-white rounded px-4 py-2"
+              >
+                Delete
+              </button>
+            </div>
+          </Modal>
+
           <Modal
             isOpen={modalIsOpen}
-            onRequestClose={() => setModalIsOpen(false)}
-            className="modal-content"
-            overlayClassName="modal-overlay"
+            onRequestClose={handleCloseModal}
+            className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-blur-md w-full md:w-2/3 mx-auto"
+            overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
           >
-            <h2 className="text-2xl font-bold mb-4">Edit Profile</h2>
-            <form onSubmit={handleSave} className="space-y-4">
-              <input
-                type="text"
-                placeholder="Username"
-                value={formData.userName}
-                onChange={(e) =>
-                  setFormData({ ...formData, userName: e.target.value })
-                }
-                className="w-full p-2 border rounded"
-              />
-              <textarea
-                placeholder="Description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                className="w-full p-2 border rounded"
-              />
-              <input
-                type="text"
-                placeholder="Type"
-                value={formData.type}
-                onChange={(e) =>
-                  setFormData({ ...formData, type: e.target.value })
-                }
-                className="w-full p-2 border rounded"
-              />
-              <input
-                type="text"
-                placeholder="Focus Area"
-                value={formData.focusArea}
-                onChange={(e) =>
-                  setFormData({ ...formData, focusArea: e.target.value })
-                }
-                className="w-full p-2 border rounded"
-              />
-              <input
-                type="file"
-                onChange={handleFileChange}
-                className="w-full p-2"
-              />
-              <button
-                type="submit"
-                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-              >
-                Save Changes
-              </button>
+            <h2 className="text-white text-2xl mb-4">Edit Profile</h2>
+            <form
+              onSubmit={handleSave}
+              className="space-y-4 overflow-y-auto max-h-[80vh]"
+            >
+              <div className="flex flex-col">
+                <label htmlFor="userName" className="text-white">
+                  Institution Name
+                </label>
+                <input
+                  id="userName"
+                  type="text"
+                  className="bg-gray-700 rounded p-2 text-white"
+                  value={formData.userName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, userName: e.target.value })
+                  }
+                />
+              </div>
+              <div className="flex flex-col">
+                <label htmlFor="description" className="text-white">
+                  Description
+                </label>
+                <textarea
+                  id="description"
+                  className="bg-gray-700 rounded p-2 text-white"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                />
+              </div>
+              {/* Add other fields as necessary */}
+              <div className="flex justify-between mt-4">
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="bg-gray-500 text-white rounded px-4 py-2"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-emerald-900 text-white rounded px-4 py-2"
+                >
+                  Save Changes
+                </button>
+              </div>
             </form>
           </Modal>
         </>

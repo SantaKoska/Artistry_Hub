@@ -10,7 +10,7 @@ const ArtistBase = () => {
   const [userData, setUserData] = useState({
     userName: "",
     role: "",
-    profilePicture: "", // Add profile picture
+    profilePicture: "",
   });
 
   // Fetch user data on component mount

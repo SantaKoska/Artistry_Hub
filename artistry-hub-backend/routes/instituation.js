@@ -37,6 +37,7 @@ router.get("/institution-profile", verifyToken, async (req, res) => {
 
     res.json({
       userName: profile.userName,
+      profilePicture: profile.profilePicture,
       followerCount,
       postsinfo,
       registeredUnder: institution.registeredUnder,
