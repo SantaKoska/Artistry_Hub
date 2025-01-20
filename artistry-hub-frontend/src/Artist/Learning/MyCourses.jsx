@@ -55,11 +55,11 @@ const MyCourses = () => {
   }, [token]);
 
   return (
-    <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 max-w-screen-xl w-full mx-auto">
+    <div className="bg-black text-white rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 max-w-screen-xl w-full mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-10 items-start">
         {/* Sidebar */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-emerald-900 text-2xl font-semibold mb-6 text-center">
+        <div className="bg-gray-800 rounded-lg shadow-lg p-6">
+          <h2 className="text-yellow-500 text-2xl font-semibold mb-6 text-center">
             Dashboard
           </h2>
           <ul className="space-y-6">
@@ -69,7 +69,7 @@ const MyCourses = () => {
                 className={`text-lg font-semibold text-center block w-full ${
                   activeSection === "myCourses"
                     ? "text-yellow-400"
-                    : "text-gray-700 hover:text-emerald-900"
+                    : "text-gray-300 hover:text-yellow-500"
                 }`}
               >
                 My Courses
@@ -81,7 +81,7 @@ const MyCourses = () => {
                 className={`text-lg font-semibold text-center block w-full ${
                   activeSection === "addCourse"
                     ? "text-yellow-400"
-                    : "text-gray-700 hover:text-emerald-900"
+                    : "text-gray-300 hover:text-yellow-500"
                 }`}
               >
                 Add Course
@@ -92,7 +92,7 @@ const MyCourses = () => {
 
         {/* Main Dashboard Content */}
         <div className="lg:col-span-3">
-          <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30">
+          <div className="bg-gray-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30">
             {activeSection === "myCourses" && (
               <div>
                 <h1 className="text-4xl font-bold text-yellow-400 mb-6">
@@ -103,17 +103,17 @@ const MyCourses = () => {
                     {courses.map((course) => (
                       <div
                         key={course._id}
-                        className="bg-white p-6 rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300"
+                        className="bg-gray-700 p-6 rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300"
                       >
-                        <h2 className="text-xl font-bold text-emerald-900 mb-2">
+                        <h2 className="text-xl font-bold text-yellow-500 mb-2">
                           {course.courseName}
                         </h2>
-                        <p className="text-gray-700 mb-4">
+                        <p className="text-gray-300 mb-4">
                           Level: {course.level}
                         </p>
                         <div className="flex justify-between items-center">
                           <button
-                            className="bg-emerald-900 text-white p-2 rounded-lg hover:bg-emerald-800 transition-colors duration-200"
+                            className="bg-yellow-500 text-black p-2 rounded-lg hover:bg-yellow-400 transition-colors duration-200"
                             onClick={() => handleEditClick(course)}
                           >
                             <BiEdit className="w-5 h-5" /> {/* Edit icon */}

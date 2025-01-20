@@ -142,51 +142,51 @@ const CommonProfile = () => {
   }
 
   return (
-    <div className="h-screen overflow-y-auto bg-gray-950 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-      <div className="container mx-auto px-4 py-6 max-w-6xl">
-        <div className="bg-gray-900 rounded-lg p-4 md:p-6 shadow-xl border border-gray-800">
+    <div className="min-h-screen bg-black text-white flex flex-col">
+      <div className="flex-grow container mx-auto px-4 md:px-6 py-6 max-w-full overflow-hidden">
+        <div className="bg-gray-900 rounded-lg p-6 shadow-xl border border-gray-800 max-h-[90vh] overflow-y-auto">
           <button
             onClick={() => navigate(-1)}
-            className="mb-4 text-gray-300 hover:text-purple-400 bg-gray-800 hover:bg-gray-700 rounded-md p-2 transition-all duration-300 flex items-center gap-2"
+            className="mb-4 text-white hover:text-yellow-400 bg-gray-800 hover:bg-gray-700 rounded-md p-2 transition-all duration-300 flex items-center gap-2"
           >
             <FaArrowLeft /> Back
           </button>
 
           {profile && (
             <div className="space-y-6">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex flex-col items-center md:w-1/3">
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="flex flex-col items-center md:w-1/4">
                   <img
                     src={`${import.meta.env.VITE_BACKEND_URL}${
                       profile.profilePicture
                     }`}
                     alt="Profile"
-                    className="w-24 h-24 md:w-32 md:h-32 rounded-full shadow-xl object-cover border-2 border-purple-500"
+                    className="w-32 h-32 rounded-full shadow-xl object-cover border-4 border-yellow-500"
                   />
-                  <h1 className="text-xl md:text-2xl font-semibold text-purple-400 mt-2">
+                  <h1 className="text-3xl font-semibold text-yellow-400 mt-2 text-center md:text-left">
                     {profile.userName}
                   </h1>
                 </div>
 
-                <div className="flex flex-col text-gray-200 space-y-3 md:w-2/3">
-                  <div className="flex gap-4 justify-center md:justify-start">
-                    <div className="text-center bg-gray-800 p-2 rounded-lg">
-                      <p className="font-bold text-lg text-purple-400">
+                <div className="flex flex-col text-gray-200 space-y-4 md:w-3/4">
+                  <div className="flex flex-wrap gap-6 justify-center md:justify-start">
+                    <div className="text-center bg-gray-800 p-4 rounded-lg shadow-md flex-1 min-w-[150px]">
+                      <p className="font-bold text-lg text-yellow-400">
                         Followers
                       </p>
                       <p className="text-gray-300">{profile.followerCount}</p>
                     </div>
-                    <div className="text-center bg-gray-800 p-2 rounded-lg">
-                      <p className="font-bold text-lg text-purple-400">Posts</p>
+                    <div className="text-center bg-gray-800 p-4 rounded-lg shadow-md flex-1 min-w-[150px]">
+                      <p className="font-bold text-lg text-yellow-400">Posts</p>
                       <p className="text-gray-300">{profile.numberOfPosts}</p>
                     </div>
                   </div>
 
-                  <div className="space-y-2 text-sm bg-gray-800 p-3 rounded-lg max-h-48 overflow-y-auto">
+                  <div className="space-y-2 text-sm bg-gray-800 p-4 rounded-lg max-h-48 overflow-y-auto shadow-md">
                     {profile.description && (
                       <p className="font-semibold text-gray-300">
                         Description:{" "}
-                        <span className="text-purple-300">
+                        <span className="text-yellow-400">
                           {profile.description}
                         </span>
                       </p>
@@ -194,7 +194,7 @@ const CommonProfile = () => {
                     {profile.artForm && (
                       <p className="font-semibold text-gray-300">
                         Art Form:{" "}
-                        <span className="text-purple-300">
+                        <span className="text-yellow-400">
                           {profile.artForm}
                         </span>
                       </p>
@@ -203,25 +203,25 @@ const CommonProfile = () => {
 
                   <button
                     onClick={handleFollowToggle}
-                    className="w-full md:w-40 text-sm font-semibold rounded-full bg-purple-600 text-white hover:bg-purple-700 py-2 transition-all duration-300"
+                    className="w-full md:w-40 text-sm font-semibold rounded-full bg-yellow-600 text-black hover:bg-yellow-700 py-3 transition-all duration-300 shadow-md"
                   >
                     {profile.following ? "Unfollow" : "Follow"}
                   </button>
                 </div>
               </div>
 
-              <div className="mt-4">
-                <h2 className="text-xl text-purple-400 mb-3">Posts</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="mt-6">
+                <h2 className="text-2xl text-yellow-400 mb-4">Posts</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {posts.length > 0 ? (
                     posts.map((post) => (
                       <div
                         key={post._id}
-                        className="bg-gray-800 rounded-lg p-3 text-gray-200 hover:border-purple-500 transition-all duration-300 overflow-hidden"
+                        className="bg-gray-800 rounded-lg p-4 text-gray-200 hover:border-yellow-500 transition-all duration-300 overflow-hidden shadow-md"
                         onClick={() => openModal(post)}
                       >
                         {post.mediaUrl && (
-                          <div className="h-32 mb-2">
+                          <div className="h-40 mb-2">
                             {post.mediaType === "image" && (
                               <img
                                 src={`${import.meta.env.VITE_BACKEND_URL}${
@@ -234,7 +234,7 @@ const CommonProfile = () => {
                           </div>
                         )}
                         <p className="text-sm line-clamp-3">{post.content}</p>
-                        <p className="text-xs text-purple-400 mt-2">
+                        <p className="text-xs text-yellow-400 mt-2">
                           {new Date(post.timestamp).toLocaleString()}
                         </p>
                       </div>
@@ -253,7 +253,7 @@ const CommonProfile = () => {
               closeModal();
               setExpandedContent(false); // Reset expanded state when closing modal
             }}
-            className="modal fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-slate-800 w-[95%] md:w-[1000px] h-[90vh] rounded-md shadow-2xl backdrop-filter backdrop-blur-md bg-opacity-30 border border-emerald-900/30 overflow-hidden"
+            className="modal fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black w-[95%] md:w-[1000px] h-[90vh] rounded-md shadow-2xl backdrop-filter backdrop-blur-md bg-opacity-90 border border-yellow-500 overflow-hidden"
             overlayClassName="overlay fixed inset-0 bg-black/75 backdrop-blur-sm z-50"
           >
             {selectedPost && (
@@ -281,23 +281,23 @@ const CommonProfile = () => {
                       )}
                     </div>
                   ) : (
-                    <div className="h-full flex items-center justify-center p-8 bg-emerald-900/20">
+                    <div className="h-full flex items-center justify-center p-8 bg-yellow-900/20">
                       {renderPostContent(selectedPost.content)}
                     </div>
                   )}
                 </div>
 
                 {/* Right side - Info and Other Posts */}
-                <div className="md:w-[40%] h-full flex flex-col bg-slate-800/50">
+                <div className="md:w-[40%] h-full flex flex-col bg-gray-800/50">
                   {/* Post Info */}
-                  <div className="p-4 border-b border-emerald-900/30">
+                  <div className="p-4 border-b border-yellow-500">
                     <div className="flex items-center gap-3 mb-4">
                       <img
                         src={`${import.meta.env.VITE_BACKEND_URL}${
                           profile.profilePicture
                         }`}
                         alt="Profile"
-                        className="w-10 h-10 rounded-full object-cover border border-emerald-900/50"
+                        className="w-10 h-10 rounded-full object-cover border border-yellow-500"
                       />
                       <div>
                         <h3 className="text-yellow-400 font-semibold">
@@ -336,7 +336,7 @@ const CommonProfile = () => {
 
                   {/* Other Posts Grid */}
                   <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    <h4 className="text-yellow-400 text-sm font-medium p-3 border-b border-emerald-900/30">
+                    <h4 className="text-yellow-400 text-sm font-medium p-3 border-b border-yellow-500">
                       More posts
                     </h4>
                     <div className="grid grid-cols-2 gap-1 p-1">
@@ -376,7 +376,7 @@ const CommonProfile = () => {
                                 </div>
                               </>
                             ) : (
-                              <div className="w-full h-full bg-emerald-900/20 p-2 flex items-center justify-center group-hover:bg-emerald-900/40 transition-colors duration-300">
+                              <div className="w-full h-full bg-yellow-900/20 p-2 flex items-center justify-center group-hover:bg-yellow-900/40 transition-colors duration-300">
                                 <p className="text-white text-xs line-clamp-4 text-center">
                                   {post.content}
                                 </p>

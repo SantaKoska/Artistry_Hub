@@ -146,10 +146,10 @@ const Commonprofileservice = () => {
 
   return (
     <>
-      <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 w-full max-w-screen-lg mx-auto mt-72">
+      <div className="bg-black text-white rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-80 w-full max-w-screen-lg mx-auto mt-72">
         <button
-          onClick={() => navigate(-1)} // This will navigate back to the previous page
-          className="text-black bg-white hover:bg-black hover:text-emerald-800 hover:underline rounded-md p-4 transition-all duration-300"
+          onClick={() => navigate(-1)}
+          className="text-black bg-yellow-500 hover:bg-yellow-600 hover:text-white rounded-md p-4 transition-all duration-300"
         >
           Back
         </button>
@@ -162,7 +162,7 @@ const Commonprofileservice = () => {
                     profile.profilePicture
                   }`}
                   alt="Profile"
-                  className="w-48 h-44 rounded-full mb-4 shadow-xl"
+                  className="w-48 h-48 rounded-full mb-4 shadow-xl border-4 border-yellow-500"
                 />
                 <h1 className="text-5xl font-semibold text-yellow-400 mt-4 text-center">
                   {profile.userName}
@@ -217,13 +217,13 @@ const Commonprofileservice = () => {
 
             {/* Posts Section */}
             <div className="mt-10">
-              <h2 className="text-3xl text-white mb-4">Posts</h2>
+              <h2 className="text-3xl text-yellow-400 mb-4">Posts</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {posts.length > 0 ? (
                   posts.map((post) => (
                     <div
                       key={post._id}
-                      className="bg-blue-100 rounded-lg p-4 text-black hover:shadow-xl hover:bg-blue-200 transition-all duration-200"
+                      className="bg-gray-800 rounded-lg p-4 text-white hover:shadow-xl hover:bg-gray-700 transition-all duration-200"
                       onClick={() => openModal(post)}
                     >
                       {post.mediaUrl && post.mediaType === "image" && (
@@ -254,13 +254,13 @@ const Commonprofileservice = () => {
                         />
                       )}
                       {renderPostContent(post)}{" "}
-                      <p className="text-sm text-emerald-900">
+                      <p className="text-sm text-yellow-400">
                         Posted on: {new Date(post.timestamp).toLocaleString()}
                       </p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-white">No posts available.</p>
+                  <p className="text-yellow-400">No posts available.</p>
                 )}
               </div>
             </div>
@@ -271,12 +271,14 @@ const Commonprofileservice = () => {
         <Modal
           isOpen={isModalOpen}
           onRequestClose={closeModal}
-          className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 w-full md:w-1/3 mx-auto"
+          className="modal bg-black rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-80 w-full md:w-1/3 mx-auto"
           overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
         >
           {selectedPost && (
-            <div className="bg-white p-5 rounded-lg shadow-xl">
-              <h2 className="text-2xl font-bold mb-4">Expanded Post</h2>
+            <div className="bg-gray-900 p-5 rounded-lg shadow-xl">
+              <h2 className="text-2xl font-bold mb-4 text-yellow-400">
+                Expanded Post
+              </h2>
               <p className="mb-4">{selectedPost.content}</p>
               {selectedPost.mediaUrl && selectedPost.mediaType === "image" && (
                 <img
@@ -308,7 +310,7 @@ const Commonprofileservice = () => {
               <div className="flex justify-between">
                 <button
                   onClick={handleLikeToggle}
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 shadow-lg transition-all duration-300"
+                  className="bg-yellow-500 text-black px-4 py-2 rounded hover:bg-yellow-600 shadow-lg transition-all duration-300"
                 >
                   {selectedPost.liked ? "Unlike" : "Like"} ({selectedPost.likes}
                   )

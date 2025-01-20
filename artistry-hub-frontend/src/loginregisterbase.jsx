@@ -9,7 +9,7 @@ const LoginRegisterBase = () => {
   return (
     <>
       {/* Header */}
-      <div className="bg-slate-800 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 fixed top-0 w-full z-50">
+      <div className="bg-black shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 fixed top-0 w-full z-50">
         <header className="flex justify-between items-center p-4">
           {/* Left section with About and Contact */}
           <nav className="flex space-x-6">
@@ -58,9 +58,9 @@ const LoginRegisterBase = () => {
             <h2 className="text-2xl font-bold mb-4 text-center text-emerald-900">
               About ArtistryHub
             </h2>
-            <p className="text-gray-700 text-center ">
-              ArtistryHub is a platform that connects artists, students and
-              service providers. We provide tools forlearning, collaboration,
+            <p className="text-gray-700 text-center">
+              ArtistryHub is a platform that connects artists, students, and
+              service providers. We provide tools for learning, collaboration,
               and showcasing art. Whether you're looking to view art, learn,
               collaborate, or offer services, ArtistryHub brings the art
               community together in one seamless space.
@@ -94,7 +94,7 @@ const LoginRegisterBase = () => {
       )}
 
       {/* Footer */}
-      <div className="bg-slate-800 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 fixed bottom-0 w-full z-50">
+      <div className="bg-black shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 fixed bottom-0 w-full z-50">
         <footer className="text-center p-4 text-white">
           <p>
             &copy; {new Date().getFullYear()} ArtistryHub. All rights reserved.

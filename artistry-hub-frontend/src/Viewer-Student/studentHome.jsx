@@ -87,95 +87,106 @@ const StudentHome = () => {
   };
 
   return (
-    <div className="container mx-auto w-full max-w-screen-2xl pb-20 flex justify-center">
-      <div className="grid gap-4 grid-cols-1 w-full max-w-3xl">
+    <div className="container mx-auto w-full max-w-screen-2xl pb-20 px-4">
+      <div className="grid gap-6 grid-cols-1 w-full max-w-3xl mx-auto">
         {posts.length > 0 ? (
           posts.map((post) => (
             <div
               key={post._id}
-              className="bg-white border border-gray-200 rounded-lg shadow-lg p-6 mb-4 hover:shadow-2xl transition-shadow duration-300 w-full"
-              style={{ height: "500px" }}
+              className="bg-zinc-900 border border-yellow-500/20 rounded-xl shadow-xl p-6 mb-4 
+                hover:border-yellow-500/40 transition-all duration-300 w-full"
             >
-              <div className="flex items-center mb-4">
+              {/* User Info Section */}
+              <div className="flex items-center mb-6">
                 <img
                   src={`${import.meta.env.VITE_BACKEND_URL}${
                     post.user.profilePicture
                   }`}
                   alt={post.user.userName}
-                  className="w-12 h-12 rounded-full object-cover"
+                  className="w-12 h-12 rounded-full object-cover border-2 border-yellow-500/30"
                 />
                 <div className="ml-4">
                   <Link to={`/profile/${post.user.userName}`}>
-                    <p className="font-bold text-lg text-emerald-900 hover:underline">
+                    <p className="font-semibold text-lg text-yellow-400 hover:text-yellow-300 transition-colors">
                       {post.user.userName}
                     </p>
                   </Link>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-400">
                     {new Date(post.timestamp).toLocaleString()}
                   </p>
                 </div>
               </div>
 
-              {/* Media Rendering */}
+              {/* Media Section */}
               {post.mediaUrl && post.mediaType === "image" && (
-                <img
-                  src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
-                  alt="Post media"
-                  className="w-full h-64 object-contain rounded-md mb-4"
-                />
+                <div className="mb-6 rounded-lg overflow-hidden border border-zinc-800">
+                  <img
+                    src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
+                    alt="Post media"
+                    className="w-full h-64 object-contain bg-zinc-950"
+                  />
+                </div>
               )}
               {post.mediaUrl && post.mediaType === "video" && (
-                <video
-                  controls
-                  src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
-                  className="w-full h-64 object-contain rounded-md mb-4"
-                />
+                <div className="mb-6 rounded-lg overflow-hidden border border-zinc-800">
+                  <video
+                    controls
+                    src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
+                    className="w-full h-64 object-contain bg-zinc-950"
+                  />
+                </div>
               )}
               {post.mediaUrl && post.mediaType === "audio" && (
-                <audio
-                  controls
-                  src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
-                  className="w-full mb-4"
-                />
+                <div className="mb-6 p-4 rounded-lg bg-zinc-950 border border-zinc-800">
+                  <audio
+                    controls
+                    src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
+                    className="w-full"
+                  />
+                </div>
               )}
 
-              {/* Post Content */}
-              <p className="mb-4 text-gray-700">
-                {expandedPosts.has(post._id)
-                  ? post.content
-                  : `${post.content.slice(0, 150)}...`}
-              </p>
-              {post.content.length > 150 && (
-                <button
-                  className="text-blue-500 hover:underline"
-                  onClick={() => toggleReadMore(post._id)}
-                >
-                  {expandedPosts.has(post._id) ? "Read Less" : "Read More"}
-                </button>
-              )}
+              {/* Content Section */}
+              <div className="mb-4">
+                <p className="text-gray-300 leading-relaxed">
+                  {expandedPosts.has(post._id)
+                    ? post.content
+                    : `${post.content.slice(0, 150)}...`}
+                </p>
+                {post.content.length > 150 && (
+                  <button
+                    className="text-yellow-400 hover:text-yellow-300 text-sm mt-2 transition-colors"
+                    onClick={() => toggleReadMore(post._id)}
+                  >
+                    {expandedPosts.has(post._id) ? "Show Less" : "Read More"}
+                  </button>
+                )}
+              </div>
 
-              {/* Like Button */}
-              <div className="flex items-center mt-4">
+              {/* Like Section */}
+              <div className="flex items-center mt-4 pt-4 border-t border-zinc-800">
                 <button
-                  className={`focus:outline-none ${
+                  className={`focus:outline-none transition-all duration-300 transform hover:scale-110 ${
                     likedPosts.has(post._id)
-                      ? "text-red-500"
-                      : "text-gray-500 hover:text-red-500"
-                  } transition-colors duration-300`}
+                      ? "text-yellow-400"
+                      : "text-gray-400 hover:text-yellow-400"
+                  }`}
                   onClick={() => handleLike(post._id)}
                 >
-                  <FaHeart size={24} />
+                  <FaHeart size={20} />
                 </button>
-                <span className="ml-2 text-gray-700 text-sm">
+                <span className="ml-2 text-gray-400 text-sm">
                   {post.likes} {post.likes === 1 ? "Like" : "Likes"}
                 </span>
               </div>
             </div>
           ))
         ) : (
-          <p className="text-center text-gray-600 col-span-full">
-            No posts available
-          </p>
+          <div className="text-center py-20">
+            <p className="text-gray-400 text-lg">
+              No posts available at the moment
+            </p>
+          </div>
         )}
       </div>
     </div>

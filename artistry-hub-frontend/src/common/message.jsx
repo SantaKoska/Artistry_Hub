@@ -231,26 +231,26 @@ const MessagePage = () => {
   };
 
   return (
-    <div className="flex h-full bg-slate-800 rounded-md shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 p-6 pb-10 mb-8 text-black">
-      <div className="w-full md:w-1/3 bg-white rounded-md p-4 shadow-md mr-10 relative">
+    <div className="flex h-full bg-black rounded-md shadow-lg p-6 pb-10 mb-8 text-black">
+      <div className="w-full md:w-1/3 bg-gray-800 rounded-md p-4 shadow-md mr-10 relative">
         <input
           type="text"
           placeholder="Search users..."
-          className="w-full p-2 mb-4 border border-gray-300 rounded-md pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full p-2 mb-4 border border-yellow-400 rounded-md pl-10 focus:outline-none focus:ring-2 focus:ring-yellow-500"
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
             fetchSearchResults(e.target.value);
           }}
         />
-        <BiSearch className="absolute left-9 top-7 text-gray-400" />
+        <BiSearch className="absolute left-9 top-7 text-yellow-400" />
 
         {searchResults.length > 0 && (
-          <div className="absolute bg-white border mt-2 max-h-40 overflow-y-auto w-full z-10 rounded-md shadow-lg">
+          <div className="absolute bg-gray-700 border mt-2 max-h-40 overflow-y-auto w-full z-10 rounded-md shadow-lg">
             {searchResults.map((result) => (
               <div
                 key={result._id}
-                className="flex p-2 hover:bg-gray-200 cursor-pointer transition-colors duration-200"
+                className="flex p-2 hover:bg-gray-600 cursor-pointer transition-colors duration-200"
                 onClick={() => handleSearchUserClick(result)}
               >
                 <img
@@ -260,7 +260,7 @@ const MessagePage = () => {
                   className="w-10 h-10 rounded-full"
                   alt={result.userName}
                 />
-                <p className="ml-2 text-black font-semibold">
+                <p className="ml-2 text-white font-semibold">
                   {result.userName}
                 </p>
               </div>
@@ -269,11 +269,11 @@ const MessagePage = () => {
         )}
 
         <div className="mt-4">
-          <h3 className="font-semibold mb-2 text-black">Chats</h3>
+          <h3 className="font-semibold mb-2 text-yellow-400">Chats</h3>
           {chats.map((chat) => (
             <div
               key={chat.id}
-              className="flex items-center p-2 hover:bg-gray-200 cursor-pointer transition-colors duration-200"
+              className="flex items-center p-2 hover:bg-gray-600 cursor-pointer transition-colors duration-200"
               onClick={() => handleChatClick(chat)}
             >
               <img
@@ -283,17 +283,17 @@ const MessagePage = () => {
                 alt={chat.userName}
                 className="w-10 h-10 rounded-full"
               />
-              <p className="ml-2 text-black font-semibold">{chat.userName}</p>
-              <AiOutlineMessage className="ml-auto text-gray-400" />
+              <p className="ml-2 text-white font-semibold">{chat.userName}</p>
+              <AiOutlineMessage className="ml-auto text-yellow-400" />
             </div>
           ))}
         </div>
 
-        <h2 className="font-semibold mt-4 text-black">Message Requests</h2>
+        <h2 className="font-semibold mt-4 text-yellow-400">Message Requests</h2>
         {requests.map((request) => (
           <div
             key={request.sender._id}
-            className="flex items-center p-2 bg-gray-200 mb-2 rounded-md"
+            className="flex items-center p-2 bg-gray-700 mb-2 rounded-md"
           >
             <img
               src={`${import.meta.env.VITE_BACKEND_URL}${
@@ -302,9 +302,9 @@ const MessagePage = () => {
               alt={request.sender.userName}
               className="w-10 h-10 rounded-full"
             />
-            <p className="ml-2 text-black">{request.sender.userName}</p>
+            <p className="ml-2 text-white">{request.sender.userName}</p>
             <button
-              className="ml-auto px-3 py-1 bg-blue-500 text-white rounded-md"
+              className="ml-auto px-3 py-1 bg-yellow-400 text-black rounded-md hover:bg-yellow-500 transition"
               onClick={() => handleAcceptRequest(request.sender._id)}
             >
               Accept
@@ -313,10 +313,10 @@ const MessagePage = () => {
         ))}
       </div>
 
-      <div className="w-full md:w-2/3 bg-white rounded-md p-4 shadow-md relative">
+      <div className="w-full md:w-2/3 bg-gray-800 rounded-md p-4 shadow-md relative">
         {currentChat ? (
           <>
-            <div className="flex items-center p-2 bg-slate-500 rounded-lg">
+            <div className="flex items-center p-2 bg-gray-700 rounded-lg">
               <img
                 src={`${import.meta.env.VITE_BACKEND_URL}${
                   currentChat.profilePicture
@@ -325,7 +325,7 @@ const MessagePage = () => {
                 className="w-12 h-12 rounded-full"
               />
               <Link to={`/profile/${currentChat.userName}`}>
-                <p className="font-bold text-lg text-white hover:underline pl-4">
+                <p className="font-bold text-lg text-yellow-400 hover:underline pl-4">
                   {currentChat.userName}
                 </p>
               </Link>
@@ -343,12 +343,11 @@ const MessagePage = () => {
                     <div
                       className={`p-3 pr-10 rounded-lg mb-2 max-w-[80%] relative ${
                         message.sender === user._id
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-200 text-black"
+                          ? "bg-yellow-400 text-black"
+                          : "bg-gray-600 text-white"
                       }`}
                     >
                       <p>{message.content}</p>
-                      {/* Delete Button for User's Messages */}
                       {message.sender === user._id && (
                         <button
                           className="absolute top-0 right-0 mt-1 mr-1 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-all"
@@ -361,7 +360,6 @@ const MessagePage = () => {
                         </button>
                       )}
                     </div>
-                    {/* Timestamp */}
                     <p className="text-gray-400 text-xs mt-1">
                       {moment(message.createdAt).format("MMM DD, YYYY, h:mm A")}
                     </p>
@@ -375,10 +373,10 @@ const MessagePage = () => {
             {isModalOpen && (
               <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
                 <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-                  <h2 className="text-lg font-semibold mb-4">
+                  <h2 className="text-lg font-semibold mb-4 text-black">
                     Confirm Deletion
                   </h2>
-                  <p className="mb-4">
+                  <p className="mb-4 text-black">
                     Are you sure you want to delete this message?
                   </p>
                   <div className="flex justify-center space-x-4">
@@ -407,13 +405,13 @@ const MessagePage = () => {
                 <input
                   type="text"
                   placeholder="Type a message..."
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-2 border border-yellow-400 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                 />
                 <button
-                  className="p-2 bg-blue-500 text-white rounded-md"
+                  className="p-2 bg-yellow-400 text-black rounded-md hover:bg-yellow-500 transition"
                   onClick={sendMessage}
                 >
                   <AiOutlineSend />

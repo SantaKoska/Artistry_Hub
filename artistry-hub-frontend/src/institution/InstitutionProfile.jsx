@@ -11,6 +11,8 @@ const InstitutionProfile = () => {
   const [posts, setPosts] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [logoutModalIsOpen, setLogoutModalIsOpen] = useState(false);
+  const [confirmationModalIsOpen, setConfirmationModalIsOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState(null);
   const [formData, setFormData] = useState({
     description: "",
     registeredUnder: "",
@@ -22,8 +24,6 @@ const InstitutionProfile = () => {
     postalCode: "",
     profilePicture: null,
   });
-  const [postToDelete, setPostToDelete] = useState(null);
-  const [confirmationModalIsOpen, setConfirmationModalIsOpen] = useState(false);
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
@@ -66,6 +66,11 @@ const InstitutionProfile = () => {
     setConfirmationModalIsOpen(true);
   };
   const handleCloseConfirmationModal = () => setConfirmationModalIsOpen(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -123,30 +128,13 @@ const InstitutionProfile = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
-
-  const truncateText = (text, limit) => {
-    if (text.length <= limit) return text;
-    return text.substring(0, limit) + "...";
-  };
-
   const Post = ({ post }) => {
-    const [isExpanded, setIsExpanded] = useState(false);
-    const contentLimit = 100;
-
-    const toggleReadMore = () => {
-      setIsExpanded((prev) => !prev);
-    };
-
     return (
       <div key={post._id} className="bg-blue-100 rounded-lg p-4 text-black">
         {post.mediaUrl && post.mediaType === "image" && (
           <img
             src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
-            alt="Post"
+            alt="Post media"
             className="w-full h-48 object-cover rounded-lg mb-2"
           />
         )}
@@ -161,23 +149,16 @@ const InstitutionProfile = () => {
           <audio
             controls
             src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
-            className="w-full object-cover rounded-lg mb-2"
+            className="w-full mb-2"
           />
         )}
-        <p>
-          {isExpanded ? post.content : truncateText(post.content, contentLimit)}
-          {post.content.length > contentLimit && (
-            <button
-              onClick={toggleReadMore}
-              className="text-blue-600 font-semibold ml-2"
-            >
-              {isExpanded ? "Read Less" : "Read More"}
-            </button>
-          )}
-        </p>
-        <p className="text-sm text-emerald-900">
-          {/* Additional post details can be displayed here */}
-        </p>
+        <p>{post.content}</p>
+        <button
+          onClick={() => handleOpenConfirmationModal(post._id)}
+          className="mt-2 text-red-500 font-semibold rounded-full bg-white hover:bg-red-500 hover:text-white py-2 px-4 transition-colors duration-400"
+        >
+          Delete Post
+        </button>
       </div>
     );
   };
@@ -193,7 +174,7 @@ const InstitutionProfile = () => {
                   profile.profilePicture
                 }`}
                 alt="Institution Logo"
-                className="w-48 h-44 rounded-full mb-4"
+                className="w-60 h-48 rounded-full mb-4"
               />
               <h1 className="text-5xl font-semibold text-yellow-400 mt-4">
                 {profile.userName}
@@ -276,19 +257,40 @@ const InstitutionProfile = () => {
           </Modal>
 
           <Modal
+            isOpen={logoutModalIsOpen}
+            onRequestClose={handleCloseLogoutModal}
+            className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-blur-md w-full md:w-1/3 mx-auto"
+            overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
+          >
+            <h2 className="text-white text-2xl mb-4">Confirm Logout</h2>
+            <p className="text-white">Are you sure you want to logout?</p>
+            <div className="flex justify-between mt-4">
+              <button
+                onClick={handleCloseLogoutModal}
+                className="bg-gray-500 text-white rounded px-4 py-2"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 text-white rounded px-4 py-2"
+              >
+                Logout
+              </button>
+            </div>
+          </Modal>
+
+          <Modal
             isOpen={modalIsOpen}
             onRequestClose={handleCloseModal}
             className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-blur-md w-full md:w-2/3 mx-auto"
             overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
           >
             <h2 className="text-white text-2xl mb-4">Edit Profile</h2>
-            <form
-              onSubmit={handleSave}
-              className="space-y-4 overflow-y-auto max-h-[80vh]"
-            >
+            <form onSubmit={handleSave} className="space-y-4">
               <div className="flex flex-col">
                 <label htmlFor="userName" className="text-white">
-                  Institution Name
+                  Username
                 </label>
                 <input
                   id="userName"
@@ -300,6 +302,7 @@ const InstitutionProfile = () => {
                   }
                 />
               </div>
+
               <div className="flex flex-col">
                 <label htmlFor="description" className="text-white">
                   Description
@@ -313,7 +316,100 @@ const InstitutionProfile = () => {
                   }
                 />
               </div>
-              {/* Add other fields as necessary */}
+
+              <div className="flex flex-col">
+                <label htmlFor="registeredUnder" className="text-white">
+                  Registered Under
+                </label>
+                <input
+                  id="registeredUnder"
+                  type="text"
+                  className="bg-gray-700 rounded p-2 text-white"
+                  value={formData.registeredUnder}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      registeredUnder: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label htmlFor="registrationID" className="text-white">
+                  Registration ID
+                </label>
+                <input
+                  id="registrationID"
+                  type="text"
+                  className="bg-gray-700 rounded p-2 text-white"
+                  value={formData.registrationID}
+                  onChange={(e) =>
+                    setFormData({ ...formData, registrationID: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label htmlFor="district" className="text-white">
+                  District
+                </label>
+                <input
+                  id="district"
+                  type="text"
+                  className="bg-gray-700 rounded p-2 text-white"
+                  value={formData.district}
+                  onChange={(e) =>
+                    setFormData({ ...formData, district: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label htmlFor="state" className="text-white">
+                  State
+                </label>
+                <input
+                  id="state"
+                  type="text"
+                  className="bg-gray-700 rounded p-2 text-white"
+                  value={formData.state}
+                  onChange={(e) =>
+                    setFormData({ ...formData, state: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label htmlFor="country" className="text-white">
+                  Country
+                </label>
+                <input
+                  id="country"
+                  type="text"
+                  className="bg-gray-700 rounded p-2 text-white"
+                  value={formData.country}
+                  onChange={(e) =>
+                    setFormData({ ...formData, country: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label htmlFor="postalCode" className="text-white">
+                  Postal Code
+                </label>
+                <input
+                  id="postalCode"
+                  type="text"
+                  className="bg-gray-700 rounded p-2 text-white"
+                  value={formData.postalCode}
+                  onChange={(e) =>
+                    setFormData({ ...formData, postalCode: e.target.value })
+                  }
+                />
+              </div>
+
               <div className="flex justify-between mt-4">
                 <button
                   type="button"

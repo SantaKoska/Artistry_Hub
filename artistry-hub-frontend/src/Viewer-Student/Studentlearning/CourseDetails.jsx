@@ -124,34 +124,44 @@ const CourseDetails = ({
   }
 
   return (
-    <div className="bg-slate-800 rounded-md p-8 shadow-xl backdrop-filter backdrop-blur-md bg-opacity-40 max-w-4xl mx-auto">
-      <h1 className="text-4xl font-bold text-yellow-400 mb-4">
-        {course.courseName}
-      </h1>
-      <p className="text-xl text-gray-300 mb-6">
-        Level: <span className="font-semibold">{course.level}</span>
-      </p>
+    <div className="bg-zinc-900 rounded-xl shadow-2xl p-8 border border-zinc-800">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-4xl font-bold text-yellow-400">
+          {course.courseName}
+        </h1>
+        <button
+          onClick={onBack}
+          className="text-gray-400 hover:text-yellow-400 transition-colors duration-300"
+        >
+          <span className="text-2xl">←</span> Back
+        </button>
+      </div>
 
-      {/* Enroll or Unenroll button based on the enrolled status */}
-      <div className="mb-6">
+      <div className="flex items-center gap-4 mb-8">
+        <span className="px-4 py-2 bg-zinc-800 rounded-lg text-gray-300 border border-zinc-700">
+          Level:{" "}
+          <span className="text-yellow-400 font-semibold">{course.level}</span>
+        </span>
+
+        {/* Enroll/Unenroll/Certificate buttons */}
         {!isEnrolled ? (
           <button
-            className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-transform transform hover:scale-105 duration-200"
+            className="bg-yellow-500 text-black px-6 py-2 rounded-lg font-semibold hover:bg-yellow-400 transition-all duration-300 disabled:opacity-50"
             onClick={handleEnroll}
             disabled={isProcessing}
           >
-            {isProcessing ? "Enrolling..." : "Enroll"}
+            {isProcessing ? "Enrolling..." : "Enroll Now"}
           </button>
         ) : isCertificateReady ? (
           <button
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-500 transition-transform transform hover:scale-105 duration-200"
+            className="bg-yellow-500 text-black px-6 py-2 rounded-lg font-semibold hover:bg-yellow-400 transition-all duration-300"
             onClick={handleGenerateCertificate}
           >
             Generate Certificate
           </button>
         ) : (
           <button
-            className="bg-red-700 text-white px-4 py-2 rounded-lg hover:bg-red-800 transition-transform transform hover:scale-105 duration-200"
+            className="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700 transition-all duration-300 disabled:opacity-50"
             onClick={handleUnenroll}
             disabled={isProcessing}
           >
@@ -160,65 +170,79 @@ const CourseDetails = ({
         )}
       </div>
 
-      <h2 className="text-3xl font-bold text-emerald-300 mt-8 mb-4">
-        Chapters
-      </h2>
+      <div className="space-y-6">
+        <h2 className="text-3xl font-bold text-yellow-400 mb-6">
+          Course Content
+        </h2>
 
-      {course.chapters.length > 0 ? (
-        <div className="space-y-6">
-          {course.chapters.map((chapter, idx) => (
-            <div key={idx} className="p-6 bg-slate-700 rounded-lg shadow-md">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="text-2xl font-semibold text-emerald-300">
-                  Chapter {idx + 1}: {chapter.title}
-                </h3>
-                {enrolledCourseDetails?.tickedChapters?.includes(
-                  chapter._id
-                ) && (
-                  <span className="text-green-400 font-bold text-lg">
-                    ✔ Completed
-                  </span>
-                )}
-              </div>
-              <p className="text-gray-400 mb-4">{chapter.description}</p>
+        {course.chapters.length > 0 ? (
+          <div className="space-y-6">
+            {course.chapters.map((chapter, idx) => (
+              <div
+                key={idx}
+                className="bg-zinc-800 rounded-xl p-6 border border-zinc-700"
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-2xl font-semibold text-white">
+                    Chapter {idx + 1}: {chapter.title}
+                  </h3>
+                  {enrolledCourseDetails?.tickedChapters?.includes(
+                    chapter._id
+                  ) && (
+                    <span className="text-green-400 bg-green-400/10 px-3 py-1 rounded-full text-sm font-medium">
+                      ✓ Completed
+                    </span>
+                  )}
+                </div>
 
-              <ul className="space-y-3">
-                {chapter.lessons.map((lesson, lessonIdx) => (
-                  <li
-                    key={lessonIdx}
-                    className={`text-lg ${
-                      isEnrolled
-                        ? "text-emerald-400 cursor-pointer hover:text-emerald-300 transition-colors"
-                        : "text-gray-500"
-                    }`}
-                    onClick={() => {
-                      if (isEnrolled) {
-                        setSelectedLesson(lesson);
-                        setSelectedChapterId(chapter._id); // Set the selected chapter ID
-                      }
-                    }}
-                  >
-                    <div className="flex justify-between items-center">
-                      <span>
-                        Lesson {idx + 1}: {lesson.title}
-                      </span>
-                      {enrolledCourseDetails?.tickedLessons?.includes(
-                        lesson._id
-                      ) && (
-                        <span className="text-green-400 font-semibold">
-                          ✔ Completed
+                <p className="text-gray-400 mb-4">{chapter.description}</p>
+
+                <div className="space-y-3">
+                  {chapter.lessons.map((lesson, lessonIdx) => (
+                    <div
+                      key={lessonIdx}
+                      className={`p-4 rounded-lg border border-zinc-700 ${
+                        isEnrolled
+                          ? "bg-zinc-700/50 hover:bg-zinc-700 cursor-pointer"
+                          : "bg-zinc-800 opacity-50"
+                      } transition-all duration-300`}
+                      onClick={() => {
+                        if (isEnrolled) {
+                          setSelectedLesson(lesson);
+                          setSelectedChapterId(chapter._id);
+                        }
+                      }}
+                    >
+                      <div className="flex justify-between items-center">
+                        <span
+                          className={`text-lg ${
+                            isEnrolled ? "text-white" : "text-gray-500"
+                          }`}
+                        >
+                          Lesson {lessonIdx + 1}: {lesson.title}
                         </span>
-                      )}
+                        {enrolledCourseDetails?.tickedLessons?.includes(
+                          lesson._id
+                        ) && (
+                          <span className="text-green-400 bg-green-400/10 px-3 py-1 rounded-full text-sm font-medium">
+                            ✓ Completed
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-gray-500 mt-4">No chapters available.</p>
-      )}
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-400">
+              No chapters available for this course yet.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

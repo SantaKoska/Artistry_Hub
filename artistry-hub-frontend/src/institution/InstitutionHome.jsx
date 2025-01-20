@@ -88,13 +88,13 @@ const InstitutionHome = () => {
   };
 
   return (
-    <div className="container mx-auto w-full max-w-screen-2xl pb-20 flex justify-center">
+    <div className="container mx-auto w-full max-w-screen-2xl pb-20 flex justify-center text-white">
       <div className="grid gap-4 grid-cols-1 w-full max-w-3xl">
         {posts.length > 0 ? (
           posts.map((post) => (
             <div
               key={post._id}
-              className="bg-white border border-gray-200 rounded-lg shadow-lg p-6 mb-4 hover:shadow-2xl transition-shadow duration-300 w-full"
+              className="bg-gray-800 border border-gray-700 rounded-lg shadow-lg p-6 mb-4 hover:shadow-2xl transition-shadow duration-300 w-full"
               style={{ height: "500px" }}
             >
               <div className="flex items-center mb-4">
@@ -107,11 +107,11 @@ const InstitutionHome = () => {
                 />
                 <div className="ml-4">
                   <Link to={`/profile/${post.user.userName}`}>
-                    <p className="font-bold text-lg text-blue-900 hover:underline">
+                    <p className="font-bold text-lg text-yellow-400 hover:underline">
                       {post.user.userName}
                     </p>
                   </Link>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-400">
                     {new Date(post.timestamp).toLocaleString()}
                   </p>
                 </div>
@@ -141,14 +141,14 @@ const InstitutionHome = () => {
               )}
 
               {/* Post Content */}
-              <p className="mb-4 text-gray-700">
+              <p className="mb-4 text-gray-300">
                 {expandedPosts.has(post._id)
                   ? post.content
                   : `${post.content.slice(0, 150)}...`}
               </p>
               {post.content.length > 150 && (
                 <button
-                  className="text-blue-500 hover:underline"
+                  className="text-yellow-400 hover:underline"
                   onClick={() => toggleReadMore(post._id)}
                 >
                   {expandedPosts.has(post._id) ? "Read Less" : "Read More"}
@@ -167,14 +167,14 @@ const InstitutionHome = () => {
                 >
                   <FaHeart size={24} />
                 </button>
-                <span className="ml-2 text-gray-700 text-sm">
+                <span className="ml-2 text-gray-300 text-sm">
                   {post.likes} {post.likes === 1 ? "Like" : "Likes"}
                 </span>
               </div>
             </div>
           ))
         ) : (
-          <p className="text-center text-gray-600 col-span-full">
+          <p className="text-center text-gray-400 col-span-full">
             No posts available
           </p>
         )}

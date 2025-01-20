@@ -173,10 +173,12 @@ const AddCourse = () => {
   };
 
   return (
-    <div className="container mx-auto p-8 bg-white rounded-lg shadow-lg text-black">
-      <h1 className="text-3xl font-extrabold mb-6 text-gray-800">
-        Add New Course
-      </h1>
+    <div className="bg-black text-white rounded-lg shadow-lg p-10 w-96 mx-auto">
+      <div className="flex justify-center mb-6">
+        <h1 className="text-4xl font-bold text-center mb-6 text-yellow-500">
+          Add New Course
+        </h1>
+      </div>
 
       {/* Display error if any */}
       {error && (
@@ -192,21 +194,21 @@ const AddCourse = () => {
         <>
           {/* Course Details */}
           <div className="mb-8">
-            <label className="block text-lg font-semibold text-gray-700 mb-2">
+            <label className="block text-lg font-semibold text-gray-300 mb-2">
               Course Name
             </label>
             <input
               type="text"
               value={courseName}
               onChange={(e) => setCourseName(e.target.value)}
-              className="border border-gray-300 p-3 rounded-lg w-full focus:outline-none focus:border-indigo-500"
+              className="block w-full py-3 px-4 text-base text-black border border-yellow-500 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500"
               placeholder="Enter course name"
               required
             />
           </div>
 
           <div className="mb-8">
-            <label className="block text-lg font-semibold text-gray-700 mb-2">
+            <label className="block text-lg font-semibold text-gray-300 mb-2">
               Level
             </label>
             <div className="flex space-x-4">
@@ -247,11 +249,9 @@ const AddCourse = () => {
 
           <button
             onClick={handleCourseSubmit}
-            className={`bg-purple-500 text-white px-6 py-3 rounded ${
-              isSubmittingCourse
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:bg-purple-600"
-            } transition`}
+            className={`w-full mb-4 text-lg font-semibold rounded bg-yellow-500 text-black hover:bg-yellow-600 py-3 transition-colors duration-300 ${
+              isSubmittingCourse ? "opacity-50 cursor-not-allowed" : ""
+            }`}
             disabled={isSubmittingCourse}
           >
             {isSubmittingCourse ? "Creating Course..." : "Create Course"}
@@ -259,23 +259,23 @@ const AddCourse = () => {
         </>
       ) : (
         <>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Chapters</h2>
+          <h2 className="text-2xl font-bold text-yellow-500 mb-4">Chapters</h2>
           {chapters.map((chapter, chapterIndex) => (
             <div
               key={chapterIndex}
-              className="border border-gray-300 p-5 rounded-lg mb-6 bg-gray-50 shadow-sm"
+              className="bg-gray-800 border border-gray-600 p-5 rounded-lg mb-6 shadow-lg hover:shadow-2xl transition-shadow duration-300"
             >
-              <h3 className="text-xl font-semibold text-gray-700 mb-4">
+              <h3 className="text-xl font-semibold text-yellow-400 mb-4">
                 Chapter {chapterIndex + 1}: {chapter.title}
               </h3>
 
               {/* Lesson Section */}
-              <h4 className="text-lg font-semibold text-gray-800 mb-4">
+              <h4 className="text-lg font-semibold text-gray-300 mb-4">
                 Add New Lesson
               </h4>
 
               <div className="mb-4">
-                <label className="block text-md font-medium text-gray-700 mb-1">
+                <label className="block text-md font-medium text-gray-300 mb-1">
                   Lesson Title
                 </label>
                 <input
@@ -284,13 +284,13 @@ const AddCourse = () => {
                   onChange={(e) =>
                     setNewLesson({ ...newLesson, title: e.target.value })
                   }
-                  className="border border-gray-300 p-2 rounded-lg w-full"
+                  className="border border-gray-500 p-2 rounded-lg w-full bg-gray-700 text-white"
                   placeholder="Lesson Title"
                 />
               </div>
 
               <div className="mb-4">
-                <label className="block text-md font-medium text-gray-700 mb-1">
+                <label className="block text-md font-medium text-gray-300 mb-1">
                   Lesson Description
                 </label>
                 <textarea
@@ -298,14 +298,14 @@ const AddCourse = () => {
                   onChange={(e) =>
                     setNewLesson({ ...newLesson, description: e.target.value })
                   }
-                  className="border border-gray-300 p-2 rounded-lg w-full"
+                  className="border border-gray-500 p-2 rounded-lg w-full bg-gray-700 text-white"
                   placeholder="Lesson Description"
                 ></textarea>
               </div>
 
               {/* Video Upload */}
               <div className="mb-4">
-                <label className="block text-md font-medium text-gray-700 mb-1">
+                <label className="block text-md font-medium text-gray-300 mb-1">
                   Upload Video
                 </label>
                 <input
@@ -315,7 +315,7 @@ const AddCourse = () => {
                   onChange={(e) =>
                     setNewLesson({ ...newLesson, video: e.target.files[0] })
                   }
-                  className="border border-gray-300 p-2 rounded-lg w-full"
+                  className="border border-gray-500 p-2 rounded-lg w-full bg-gray-700 text-white"
                 />
                 {newLesson.video && (
                   <video
@@ -328,7 +328,7 @@ const AddCourse = () => {
 
               {/* Note Upload */}
               <div className="mb-4">
-                <label className="block text-md font-medium text-gray-700 mb-1">
+                <label className="block text-md font-medium text-gray-300 mb-1">
                   Upload Notes (PDF)
                 </label>
                 <input
@@ -337,7 +337,7 @@ const AddCourse = () => {
                   onChange={(e) =>
                     setNewLesson({ ...newLesson, note: e.target.files[0] })
                   }
-                  className="border border-gray-300 p-2 rounded-lg w-full"
+                  className="border border-gray-500 p-2 rounded-lg w-full bg-gray-700 text-white"
                 />
                 {newLesson.note && (
                   <iframe
@@ -350,10 +350,10 @@ const AddCourse = () => {
 
               <button
                 onClick={() => addLesson(chapterIndex)}
-                className={`bg-blue-500 text-white px-6 py-3 rounded ${
+                className={`bg-yellow-500 text-black px-6 py-3 rounded ${
                   isSubmittingLesson
                     ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-blue-600"
+                    : "hover:bg-yellow-400"
                 } transition`}
                 disabled={isSubmittingLesson}
               >
@@ -363,13 +363,13 @@ const AddCourse = () => {
           ))}
 
           {/* New Chapter Section */}
-          <div className="my-8 p-5 border-t-2 border-dashed border-gray-300">
-            <h4 className="text-xl font-semibold text-gray-800 mb-4">
+          <div className="my-8 p-5 border-t-2 border-dashed border-gray-600">
+            <h4 className="text-xl font-semibold text-yellow-500 mb-4">
               Add New Chapter
             </h4>
 
             <div className="mb-4">
-              <label className="block text-md font-medium text-gray-700 mb-1">
+              <label className="block text-md font-medium text-gray-300 mb-1">
                 Chapter Title
               </label>
               <input
@@ -378,13 +378,13 @@ const AddCourse = () => {
                 onChange={(e) =>
                   setNewChapter({ ...newChapter, title: e.target.value })
                 }
-                className="border border-gray-300 p-2 rounded-lg w-full"
+                className="border border-gray-500 p-2 rounded-lg w-full bg-gray-700 text-white"
                 placeholder="Chapter Title"
               />
             </div>
 
             <div className="mb-4">
-              <label className="block text-md font-medium text-gray-700 mb-1">
+              <label className="block text-md font-medium text-gray-300 mb-1">
                 Chapter Description
               </label>
               <textarea
@@ -392,17 +392,17 @@ const AddCourse = () => {
                 onChange={(e) =>
                   setNewChapter({ ...newChapter, description: e.target.value })
                 }
-                className="border border-gray-300 p-2 rounded-lg w-full"
+                className="border border-gray-500 p-2 rounded-lg w-full bg-gray-700 text-white"
                 placeholder="Chapter Description"
               ></textarea>
             </div>
 
             <button
               onClick={addChapter}
-              className={`bg-green-500 text-white px-6 py-3 rounded ${
+              className={`bg-yellow-500 text-black px-6 py-3 rounded ${
                 isSubmittingChapter
                   ? "opacity-50 cursor-not-allowed"
-                  : "hover:bg-green-600"
+                  : "hover:bg-yellow-400"
               } transition`}
               disabled={isSubmittingChapter}
             >

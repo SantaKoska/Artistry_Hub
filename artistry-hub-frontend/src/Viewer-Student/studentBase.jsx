@@ -36,38 +36,45 @@ const StudentBase = () => {
   return (
     <>
       {/* Header Section */}
-      <div className="bg-slate-800 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 fixed top-0 w-full z-50">
-        <header className="flex justify-between items-center px-4 py-1">
+      <div className="bg-black shadow-lg backdrop-filter backdrop-blur-md bg-opacity-90 fixed top-0 w-full z-50 border-b border-yellow-500/20">
+        <header className="flex justify-between items-center px-6 py-2">
           {/* Message Icon */}
           <div className="flex items-center">
             <Link
               to="/viewer-student-home/Message"
-              className="text-white hover:text-yellow-400 transition-colors duration-300"
+              className="text-gray-300 hover:text-yellow-400 transition-all duration-300 hover:scale-110"
             >
-              <FaEnvelope size={20} aria-label="Messages" />
+              <FaEnvelope size={22} aria-label="Messages" />
             </Link>
           </div>
 
           {/* Logo in the Center */}
           <div className="flex justify-center">
-            <img src={Logo} alt="logo" className="w-12 h-12" />
+            <img
+              src={Logo}
+              alt="logo"
+              className="w-14 h-14 hover:opacity-80 transition-opacity duration-300"
+            />
           </div>
 
-          {/* Profile Picture and Username on the Right */}
-          <div className="flex items-center space-x-2">
-            <div className="flex flex-col">
-              <span className="text-white">{userData.userName}</span>
-              <span className="text-gray-400 text-sm">{userData.role}</span>
+          {/* Profile Section */}
+          <div className="flex items-center space-x-3">
+            <div className="flex flex-col items-end">
+              <span className="text-gray-100 font-medium">
+                {userData.userName}
+              </span>
+              <span className="text-yellow-400 text-sm">{userData.role}</span>
             </div>
             <Link
               to="/viewer-student-home/studentprofile"
-              className="text-white hover:text-yellow-400 transition-colors duration-300"
+              className="transition-transform duration-300 hover:scale-105"
             >
               <img
                 src={`${import.meta.env.VITE_BACKEND_URL}${
                   userData.profilePicture
                 }`}
-                className="w-10 h-10 rounded-full" // Ensure it's styled as a circle
+                className="w-11 h-11 rounded-full border-2 border-yellow-400/30 hover:border-yellow-400 transition-colors duration-300"
+                alt="Profile"
               />
             </Link>
           </div>
@@ -75,7 +82,7 @@ const StudentBase = () => {
       </div>
 
       {/* Main Content Section */}
-      <div className="pt-16 pb-16 flex-grow h-full">
+      <div className="pt-20 pb-20 flex-grow h-full bg-black min-h-screen">
         <main className="w-full h-full">
           <Outlet />
         </main>
@@ -83,13 +90,13 @@ const StudentBase = () => {
 
       {/* Modal for Create Post */}
       {showCreatePostModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
-          <div className="relative bg-slate-800 text-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
+          <div className="relative bg-zinc-900 text-white p-8 rounded-lg shadow-2xl w-full max-w-2xl border border-yellow-500/20">
             <button
-              className="absolute top-2 right-2 text-gray-500 hover:text-white focus:outline-none"
+              className="absolute top-2 right-2 text-gray-400 hover:text-yellow-400 focus:outline-none"
               onClick={() => setShowCreatePostModal(false)}
             >
-              &#10005; {/* Close icon */}
+              &#10005;
             </button>
             <CreatePost onClose={() => setShowCreatePostModal(false)} />
           </div>
@@ -97,32 +104,36 @@ const StudentBase = () => {
       )}
 
       {/* Footer Navigation Section */}
-      <div className="bg-slate-800 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 fixed bottom-0 w-full z-50">
+      <div className="bg-black shadow-lg backdrop-filter backdrop-blur-md bg-opacity-90 fixed bottom-0 w-full z-50 border-t border-yellow-500/20">
         <footer>
-          <nav className="flex justify-around p-2 text-white">
+          <nav className="flex justify-around p-3 text-gray-300">
             {[
-              { to: "/viewer-student-home", icon: <FaHome size={20} /> },
+              { to: "/viewer-student-home", icon: <FaHome size={22} /> },
               {
                 to: "/viewer-student-home/learning",
-                icon: <FaBook size={20} />,
+                icon: <FaBook size={22} />,
               },
               {
                 icon: (
                   <FaPlus
-                    size={20}
-                    onClick={() => setShowCreatePostModal(true)} // Show modal on click
-                    className="cursor-pointer"
+                    size={22}
+                    onClick={() => setShowCreatePostModal(true)}
+                    className="cursor-pointer text-yellow-400 hover:scale-110 transition-transform duration-300"
                   />
                 ),
               },
               {
                 to: "/viewer-student-home/service-requests",
-                icon: <span className="text-xl font-bold leading-none">S</span>,
+                icon: (
+                  <span className="text-xl font-bold leading-none hover:text-yellow-400">
+                    S
+                  </span>
+                ),
               },
             ].map(({ to, icon }, index) => (
               <div
                 key={index}
-                className="hover:text-yellow-400 transition-colors duration-300"
+                className="hover:text-yellow-400 transition-all duration-300 hover:scale-110"
               >
                 {to ? (
                   <Link to={to} aria-label={to}>

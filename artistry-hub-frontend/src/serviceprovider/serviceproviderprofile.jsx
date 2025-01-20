@@ -183,7 +183,7 @@ const ServiceProviderProfile = () => {
   };
 
   return (
-    <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-blur-md bg-opacity-30 max-w-screen-lg mx-auto">
+    <div className="bg-black rounded-md p-8 shadow-lg backdrop-blur-md bg-opacity-90 max-w-screen-lg mx-auto text-white">
       {profile && (
         <>
           <div className="flex flex-col md:flex-row gap-10 items-center">
@@ -193,7 +193,7 @@ const ServiceProviderProfile = () => {
                   profile.profilePicture
                 }`}
                 alt="Profile"
-                className="w-48 h-44 rounded-full mb-4"
+                className="w-48 h-48 rounded-full border-4 border-yellow-400 mb-4"
               />
               <h1 className="text-5xl font-semibold text-yellow-400 mt-4">
                 {profile.userName}
@@ -224,7 +224,7 @@ const ServiceProviderProfile = () => {
               <div className="flex flex-col gap-4">
                 <button
                   onClick={handleOpenModal}
-                  className="w-full md:w-64 text-lg font-semibold bg-white text-black hover:bg-emerald-900 hover:text-white py-2 rounded-full transition-colors duration-400"
+                  className="w-full md:w-64 text-lg font-semibold bg-yellow-400 text-black hover:bg-yellow-500 py-2 rounded-full transition-colors duration-400"
                 >
                   Edit Profile
                 </button>
@@ -239,7 +239,7 @@ const ServiceProviderProfile = () => {
           </div>
 
           <div className="mt-10">
-            <h2 className="text-3xl text-white mb-4">Posts</h2>
+            <h2 className="text-3xl text-yellow-400 mb-4">Posts</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {posts.length > 0 ? (
                 posts.map((post) => <Post key={post._id} post={post} />)
@@ -253,82 +253,45 @@ const ServiceProviderProfile = () => {
           <Modal
             isOpen={modalIsOpen}
             onRequestClose={handleCloseModal}
-            className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-blur-md w-full md:w-2/3 mx-auto"
+            className="modal bg-gray-800 rounded-md p-8 shadow-lg backdrop-blur-md w-full md:w-2/3 mx-auto"
             overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
           >
-            <h2 className="text-white text-2xl mb-4">Edit Profile</h2>
+            <h2 className="text-yellow-400 text-2xl mb-4">Edit Profile</h2>
             <form onSubmit={handleSave} className="space-y-4">
-              <div className="flex flex-col">
-                <label htmlFor="userName" className="text-white">
-                  User Name
-                </label>
-                <input
-                  id="userName"
-                  type="text"
-                  className="bg-gray-700 rounded p-2 text-white"
-                  value={formData.userName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, userName: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="flex flex-col">
-                <label htmlFor="description" className="text-white">
-                  Description
-                </label>
-                <textarea
-                  id="description"
-                  className="bg-gray-700 rounded p-2 text-white"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="flex flex-col">
-                <label htmlFor="expertise" className="text-white">
-                  Expertise
-                </label>
-                <input
-                  id="expertise"
-                  type="text"
-                  className="bg-gray-700 rounded p-2 text-white"
-                  value={formData.expertise}
-                  onChange={(e) =>
-                    setFormData({ ...formData, expertise: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="flex flex-col">
-                <label htmlFor="ownerName" className="text-white">
-                  Owner Name
-                </label>
-                <input
-                  id="ownerName"
-                  type="text"
-                  className="bg-gray-700 rounded p-2 text-white"
-                  value={formData.ownerName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, ownerName: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="flex flex-col">
-                <label htmlFor="profilePicture" className="text-white">
-                  Profile Picture
-                </label>
-                <input
-                  id="profilePicture"
-                  type="file"
-                  accept="image/*"
-                  className="bg-gray-700 rounded p-2 text-white"
-                  onChange={handleFileChange}
-                />
-              </div>
+              {/* Form Fields */}
+              {Object.entries(formData).map(([key, value]) => (
+                <div className="flex flex-col" key={key}>
+                  <label htmlFor={key} className="text-white">
+                    {key.charAt(0).toUpperCase() + key.slice(1)}
+                  </label>
+                  {key === "description" ? (
+                    <textarea
+                      id={key}
+                      className="bg-gray-700 rounded p-2 text-white"
+                      value={value}
+                      onChange={(e) =>
+                        setFormData({ ...formData, [key]: e.target.value })
+                      }
+                    />
+                  ) : (
+                    <input
+                      id={key}
+                      type={key === "profilePicture" ? "file" : "text"}
+                      className="bg-gray-700 rounded p-2 text-white"
+                      value={key !== "profilePicture" ? value : undefined}
+                      onChange={
+                        key === "profilePicture"
+                          ? handleFileChange
+                          : (e) =>
+                              setFormData({
+                                ...formData,
+                                [key]: e.target.value,
+                              })
+                      }
+                    />
+                  )}
+                </div>
+              ))}
 
               <div className="flex justify-between mt-4">
                 <button
@@ -340,7 +303,7 @@ const ServiceProviderProfile = () => {
                 </button>
                 <button
                   type="submit"
-                  className="bg-emerald-900 text-white rounded px-4 py-2"
+                  className="bg-yellow-400 text-black rounded px-4 py-2 hover:bg-yellow-500"
                 >
                   Save Changes
                 </button>
@@ -352,10 +315,10 @@ const ServiceProviderProfile = () => {
           <Modal
             isOpen={confirmationModalIsOpen}
             onRequestClose={handleCloseConfirmationModal}
-            className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-blur-md w-full md:w-1/3 mx-auto"
+            className="modal bg-gray-800 rounded-md p-8 shadow-lg backdrop-blur-md w-full md:w-1/3 mx-auto"
             overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
           >
-            <h2 className="text-white text-2xl mb-4">Confirm Deletion</h2>
+            <h2 className="text-yellow-400 text-2xl mb-4">Confirm Deletion</h2>
             <p className="text-white">
               Are you sure you want to delete this post?
             </p>
@@ -379,10 +342,10 @@ const ServiceProviderProfile = () => {
           <Modal
             isOpen={logoutModalIsOpen}
             onRequestClose={handleCloseLogoutModal}
-            className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-blur-md w-full md:w-1/3 mx-auto"
+            className="modal bg-gray-800 rounded-md p-8 shadow-lg backdrop-blur-md w-full md:w-1/3 mx-auto"
             overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
           >
-            <h2 className="text-white text-2xl mb-4">Confirm Logout</h2>
+            <h2 className="text-yellow-400 text-2xl mb-4">Confirm Logout</h2>
             <p className="text-white">Are you sure you want to logout?</p>
             <div className="flex justify-between mt-4">
               <button

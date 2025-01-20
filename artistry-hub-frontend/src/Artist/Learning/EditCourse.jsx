@@ -257,11 +257,12 @@ const EditCourse = ({ selectedCourse }) => {
   };
 
   return (
-    <div className="bg-slate-800 rounded-md p-6 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 relative">
+    <div className="bg-black text-white rounded-lg p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-40 relative">
       {/* Course Header */}
       <div className="mb-6">
         {editingCourse ? (
           <div className="space-y-4">
+            <h1 className="text-4xl font-bold text-yellow-400">Edit Course</h1>
             <div className="relative my-4">
               <input
                 type="text"
@@ -272,7 +273,7 @@ const EditCourse = ({ selectedCourse }) => {
                     courseName: e.target.value,
                   })
                 }
-                className="block w-full py-2.4 px-0 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:border-yellow-500 peer"
+                className="block w-full py-2.4 px-0 text-base text-white font-semibold bg-transparent border-b-2 border-yellow-500 appearance-none focus:outline-none focus:ring-0 focus:border-yellow-400 peer"
                 placeholder=" "
                 required
               />
@@ -286,7 +287,7 @@ const EditCourse = ({ selectedCourse }) => {
                 onChange={(e) =>
                   setEditedCourse({ ...editedCourse, level: e.target.value })
                 }
-                className="block w-full py-2.4 text-base text-white font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:border-yellow-500"
+                className="block w-full py-2.4 text-base text-white font-semibold bg-transparent border-b-2 border-yellow-500 appearance-none focus:outline-none focus:ring-0 focus:border-yellow-400"
               >
                 <option value="Beginner">Beginner</option>
                 <option value="Intermediate">Intermediate</option>
@@ -298,14 +299,14 @@ const EditCourse = ({ selectedCourse }) => {
             </div>
             <button
               onClick={handleEditCourse}
-              className="w-full mb-4 text-[18px] font-semibold mt-6 rounded-full bg-white text-black hover:bg-emerald-900 hover:text-white py-2 transition-colors duration-400"
+              className="w-full mb-4 text-[18px] font-semibold mt-6 rounded-full bg-yellow-500 text-black hover:bg-yellow-400 py-2 transition-colors duration-400"
             >
               Save
             </button>
           </div>
         ) : (
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-white">
+            <h1 className="text-3xl font-bold text-yellow-400">
               {courseData.courseName}
             </h1>
             <p className="text-lg italic text-gray-300">{courseData.level}</p>
@@ -319,13 +320,13 @@ const EditCourse = ({ selectedCourse }) => {
         )}
       </div>
 
-      {/* chapters */}
-      <div className="bg-slate-800 shadow-lg rounded-md p-6 mb-6 text-black">
-        <h2 className="text-2xl font-bold text-white mb-4">Chapters</h2>
+      {/* Chapters Section */}
+      <div className="bg-gray-900 shadow-lg rounded-md p-6 mb-6 text-white">
+        <h2 className="text-2xl font-bold text-yellow-400 mb-4">Chapters</h2>
         {courseData.chapters.map((chapter) => (
           <div
             key={chapter._id}
-            className="mb-4 bg-white rounded-md p-4 shadow-sm"
+            className="mb-4 bg-gray-800 rounded-md p-4 shadow-sm"
           >
             <div className="flex justify-between items-center mb-2">
               {editingChapterId === chapter._id ? (
@@ -339,7 +340,7 @@ const EditCourse = ({ selectedCourse }) => {
                         title: e.target.value,
                       })
                     }
-                    className="block w-full py-2.4 px-0 text-lg font-semibold bg-transparent border-0 border-b-2 border-emerald-900 appearance-none focus:outline-none focus:ring-0 focus:border-yellow-500 peer"
+                    className="block w-full py-2.4 px-0 text-lg font-semibold bg-transparent border-b-2 border-yellow-500 appearance-none focus:outline-none focus:ring-0 focus:border-yellow-400 peer"
                     placeholder=" "
                     required
                   />
@@ -352,14 +353,14 @@ const EditCourse = ({ selectedCourse }) => {
                       );
                       setEditingChapterId(null);
                     }}
-                    className="ml-2 mb-2 w-24 text-lg font-semibold rounded-full bg-green-500 text-white hover:bg-green-600 transition duration-300"
+                    className="ml-2 mb-2 w-24 text-lg font-semibold rounded-full bg-yellow-500 text-black hover:bg-yellow-400 transition duration-300"
                   >
                     Save
                   </button>
                 </>
               ) : (
                 <>
-                  <h3 className="text-lg font-semibold text-gray-800">
+                  <h3 className="text-lg font-semibold text-yellow-300">
                     {chapter.title}
                   </h3>
                   <div className="space-x-2">
@@ -394,15 +395,15 @@ const EditCourse = ({ selectedCourse }) => {
                     description: e.target.value,
                   })
                 }
-                className="w-full h-24 border border-gray-300 rounded-md p-2"
+                className="w-full h-24 border border-gray-300 rounded-md p-2 bg-gray-700 text-white"
               />
             ) : (
-              <p className="text-gray-600 mb-4">{chapter.description}</p>
+              <p className="text-gray-400 mb-4">{chapter.description}</p>
             )}
 
             {/* Lessons Section */}
-            <div className="bg-gray-100 p-4 rounded-lg mb-4">
-              <h4 className="font-bold mb-2">Lessons</h4>
+            <div className="bg-gray-800 p-4 rounded-lg mb-4">
+              <h4 className="font-bold mb-2 text-yellow-400">Lessons</h4>
               {chapter.lessons.map((lesson) => (
                 <div
                   key={lesson._id}
@@ -419,7 +420,7 @@ const EditCourse = ({ selectedCourse }) => {
                             title: e.target.value,
                           })
                         }
-                        className="text-sm font-semibold border border-gray-300 rounded-md p-1 mb-2"
+                        className="text-sm font-semibold border border-gray-300 rounded-md p-1 mb-2 bg-gray-700 text-white"
                       />
                       <textarea
                         value={editedLesson.description}
@@ -429,12 +430,14 @@ const EditCourse = ({ selectedCourse }) => {
                             description: e.target.value,
                           })
                         }
-                        className="w-full border border-gray-300 rounded-md p-1 mb-2"
+                        className="w-full border border-gray-300 rounded-md p-1 mb-2 bg-gray-700 text-white"
                       />
 
                       {/* Current Media Previews */}
                       <div className="mb-2">
-                        <h5 className="font-bold mb-1">Current Media</h5>
+                        <h5 className="font-bold mb-1 text-yellow-400">
+                          Current Media
+                        </h5>
 
                         <h6 className="font-bold mb-1">Current Video</h6>
                         {/* Current Video Preview */}
@@ -467,7 +470,7 @@ const EditCourse = ({ selectedCourse }) => {
 
                       {/* New Media Upload */}
                       <div className="mb-2">
-                        <h5 className="font-bold mb-1">
+                        <h5 className="font-bold mb-1 text-yellow-400">
                           Update With New Media
                         </h5>
 
@@ -485,7 +488,7 @@ const EditCourse = ({ selectedCourse }) => {
                             });
                             setNewVideoPreview(videoPreviewURL); // Set new video preview
                           }}
-                          className="mb-2"
+                          className="mb-2 bg-gray-700 text-white"
                         />
 
                         {/* New Video Preview */}
@@ -515,7 +518,7 @@ const EditCourse = ({ selectedCourse }) => {
                             });
                             setNewNotePreview(notePreviewURL); // Set new note preview
                           }}
-                          className="mb-2"
+                          className="mb-2 bg-gray-700 text-white"
                         />
 
                         {/* New Note Preview */}
@@ -538,7 +541,7 @@ const EditCourse = ({ selectedCourse }) => {
                           );
                           setEditingLessonId(null);
                         }}
-                        className="bg-green-500 text-white py-1 px-2 rounded hover:bg-green-600"
+                        className="bg-yellow-500 text-black py-1 px-2 rounded hover:bg-yellow-400"
                       >
                         Save
                       </button>
@@ -547,7 +550,9 @@ const EditCourse = ({ selectedCourse }) => {
                     <>
                       <div>
                         <p className="text-sm font-semibold">{lesson.title}</p>
-                        <p className="text-sm">{lesson.description}</p>
+                        <p className="text-sm text-gray-400">
+                          {lesson.description}
+                        </p>
                       </div>
                       <div className="space-x-2">
                         <button
@@ -560,7 +565,7 @@ const EditCourse = ({ selectedCourse }) => {
                               noteUrl: lesson.noteUrl,
                             });
                           }}
-                          className="text-blue-500 hover:text-blue-700"
+                          className="text-yellow-400 hover:text-yellow-500"
                         >
                           <BiEdit className="inline-block" />
                         </button>
@@ -577,115 +582,119 @@ const EditCourse = ({ selectedCourse }) => {
                   )}
                 </div>
               ))}
-            </div>
 
-            {/* Add New Lesson Section */}
-            <div className="bg-gray-50 p-4 rounded-lg mb-4">
-              <h4 className="font-bold mb-2">Add New Lesson</h4>
+              {/* Add New Lesson Section */}
+              <div className="bg-gray-700 p-4 rounded-lg mb-4">
+                <h4 className="font-bold mb-2 text-yellow-400">
+                  Add New Lesson
+                </h4>
 
-              <input
-                type="text"
-                name="title"
-                value={newLesson.title}
-                onChange={(e) =>
-                  setNewLesson({ ...newLesson, title: e.target.value })
-                }
-                placeholder="Lesson Title"
-                className="mb-2 block w-full border border-gray-300 rounded-md shadow-sm"
-              />
-
-              <textarea
-                name="description"
-                value={newLesson.description}
-                onChange={(e) =>
-                  setNewLesson({ ...newLesson, description: e.target.value })
-                }
-                placeholder="Lesson Description"
-                className="mb-2 block w-full border border-gray-300 rounded-md shadow-sm"
-              ></textarea>
-
-              {/* Video Upload */}
-              <input
-                type="file"
-                name="mediaUrl"
-                accept="video/*"
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  setNewLesson({ ...newLesson, mediaUrl: file });
-                  const videoURL = URL.createObjectURL(file);
-                  setVideoPreview(videoURL); // set video preview
-                }}
-                className="mb-2"
-              />
-
-              {/* Video Preview */}
-              {videoPreview && (
-                <div className="mb-2">
-                  <video
-                    controls
-                    src={videoPreview}
-                    className="w-full max-w-sm h-auto mb-2 rounded-md"
-                  >
-                    Your browser does not support the video tag.
-                  </video>
-                </div>
-              )}
-
-              {/* Note Upload */}
-              <input
-                type="file"
-                name="noteUrl"
-                accept="application/pdf"
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  setNewLesson({ ...newLesson, noteUrl: file });
-                  const noteURL = URL.createObjectURL(file);
-                  setNotePreview(noteURL); // set note preview
-                }}
-                className="mb-2"
-              />
-
-              {/* PDF Preview */}
-              {notePreview && (
-                <div className="mb-2">
-                  <iframe
-                    src={notePreview}
-                    className="w-full max-w-sm h-64 border rounded-md"
-                  ></iframe>
-                </div>
-              )}
-
-              {/* Validation message */}
-              {(!newLesson.title || !newLesson.mediaUrl) && (
-                <p className="text-red-500 text-sm mb-2 flex items-center">
-                  <BiError className="mr-1" /> {/* Error icon */}
-                  Please provide both a title and a video for the lesson.
-                </p>
-              )}
-
-              <button
-                onClick={() => {
-                  if (newLesson.title && newLesson.mediaUrl) {
-                    handleAddLesson(chapter._id);
+                <input
+                  type="text"
+                  name="title"
+                  value={newLesson.title}
+                  onChange={(e) =>
+                    setNewLesson({ ...newLesson, title: e.target.value })
                   }
-                }}
-                className={`flex items-center bg-blue-500 text-white py-1 px-2 rounded hover:bg-blue-600 ${
-                  !newLesson.title || !newLesson.mediaUrl
-                    ? "opacity-50 cursor-not-allowed"
-                    : ""
-                }`}
-                disabled={!newLesson.title || !newLesson.mediaUrl} // Disable button if validation fails
-              >
-                <BiPlus className="mr-1" /> {/* Plus icon */}
-                Add Lesson
-              </button>
+                  placeholder="Lesson Title"
+                  className="mb-2 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-600 text-white"
+                />
+
+                <textarea
+                  name="description"
+                  value={newLesson.description}
+                  onChange={(e) =>
+                    setNewLesson({ ...newLesson, description: e.target.value })
+                  }
+                  placeholder="Lesson Description"
+                  className="mb-2 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-600 text-white"
+                ></textarea>
+
+                {/* Video Upload */}
+                <input
+                  type="file"
+                  name="mediaUrl"
+                  accept="video/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    setNewLesson({ ...newLesson, mediaUrl: file });
+                    const videoURL = URL.createObjectURL(file);
+                    setVideoPreview(videoURL); // set video preview
+                  }}
+                  className="mb-2 bg-gray-700 text-white"
+                />
+
+                {/* Video Preview */}
+                {videoPreview && (
+                  <div className="mb-2">
+                    <video
+                      controls
+                      src={videoPreview}
+                      className="w-full max-w-sm h-auto mb-2 rounded-md"
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                )}
+
+                {/* Note Upload */}
+                <input
+                  type="file"
+                  name="noteUrl"
+                  accept="application/pdf"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    setNewLesson({ ...newLesson, noteUrl: file });
+                    const noteURL = URL.createObjectURL(file);
+                    setNotePreview(noteURL); // set note preview
+                  }}
+                  className="mb-2 bg-gray-700 text-white"
+                />
+
+                {/* PDF Preview */}
+                {notePreview && (
+                  <div className="mb-2">
+                    <iframe
+                      src={notePreview}
+                      className="w-full max-w-sm h-64 border rounded-md"
+                    ></iframe>
+                  </div>
+                )}
+
+                {/* Validation message */}
+                {(!newLesson.title || !newLesson.mediaUrl) && (
+                  <p className="text-red-500 text-sm mb-2 flex items-center">
+                    <BiError className="mr-1" /> {/* Error icon */}
+                    Please provide both a title and a video for the lesson.
+                  </p>
+                )}
+
+                <button
+                  onClick={() => {
+                    if (newLesson.title && newLesson.mediaUrl) {
+                      handleAddLesson(chapter._id);
+                    }
+                  }}
+                  className={`flex items-center bg-yellow-500 text-black py-1 px-2 rounded hover:bg-yellow-400 ${
+                    !newLesson.title || !newLesson.mediaUrl
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                  disabled={!newLesson.title || !newLesson.mediaUrl} // Disable button if validation fails
+                >
+                  <BiPlus className="mr-1" /> {/* Plus icon */}
+                  Add Lesson
+                </button>
+              </div>
             </div>
           </div>
         ))}
 
         {/* Add New Chapter Section */}
-        <div className="bg-gray-50 p-6 rounded-lg">
-          <h2 className="text-lg font-bold mb-4">Add New Chapter</h2>
+        <div className="bg-gray-700 p-6 rounded-lg">
+          <h2 className="text-lg font-bold mb-4 text-yellow-400">
+            Add New Chapter
+          </h2>
           <input
             type="text"
             name="title"
@@ -694,7 +703,7 @@ const EditCourse = ({ selectedCourse }) => {
               setNewChapter({ ...newChapter, title: e.target.value })
             }
             placeholder="Chapter Title"
-            className="mb-2 block w-full border border-gray-300 rounded-md shadow-sm"
+            className="mb-2 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-600 text-white"
           />
           <textarea
             name="description"
@@ -703,11 +712,11 @@ const EditCourse = ({ selectedCourse }) => {
               setNewChapter({ ...newChapter, description: e.target.value })
             }
             placeholder="Chapter Description"
-            className="mb-2 block w-full border border-gray-300 rounded-md shadow-sm"
+            className="mb-2 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-600 text-white"
           ></textarea>
           <button
             onClick={handleAddChapter}
-            className={`flex items-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 ${
+            className={`flex items-center bg-yellow-500 text-black py-2 px-4 rounded hover:bg-yellow-400 ${
               !newChapter.title ? "opacity-50 cursor-not-allowed" : ""
             }`}
             disabled={!newChapter.title} // Disable button if the title is empty

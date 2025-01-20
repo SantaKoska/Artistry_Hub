@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
+import { FaUpload } from "react-icons/fa";
 
 const CreatePost = ({ onClose }) => {
   const [content, setContent] = useState("");
@@ -69,14 +70,14 @@ const CreatePost = ({ onClose }) => {
   };
 
   return (
-    <div>
+    <div className="bg-black text-white p-6 rounded-lg shadow-lg">
       <form onSubmit={handleSubmit} className="w-full">
         <div className="mb-6">
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="What's on your mind?"
-            className="w-full px-6 py-4 bg-gray-700 text-white text-lg border-2 border-gray-500 rounded-lg focus:outline-none focus:ring-4 focus:ring-yellow-500 resize-none transition-transform duration-200 hover:scale-105"
+            className="w-full px-4 py-3 bg-gray-800 text-white text-lg border-2 border-yellow-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 resize-none transition-transform duration-200 hover:scale-105"
             rows="4"
           />
         </div>
@@ -92,7 +93,8 @@ const CreatePost = ({ onClose }) => {
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               accept="image/*,video/*,audio/*"
             />
-            <div className="flex items-center justify-center py-2 px-6 text-white font-semibold bg-opacity-50 hover:bg-opacity-70 transition-all duration-300">
+            <div className="flex items-center justify-center py-2 px-6 text-black font-semibold bg-white bg-opacity-80 hover:bg-opacity-100 transition-all duration-300">
+              <FaUpload className="mr-2" />
               Choose File
             </div>
           </div>

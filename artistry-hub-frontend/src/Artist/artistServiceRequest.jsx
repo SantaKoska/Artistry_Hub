@@ -244,36 +244,41 @@ const ArtistCreateServiceRequest = () => {
   };
 
   return (
-    <div className="bg-slate-900 p-10 shadow-xl backdrop-filter backdrop-blur-md bg-opacity-40 w-full max-w-screen-xl mx-auto mt-16 rounded-xl text-black">
-      <div className="flex justify-between items-center border-b border-gray-500 pb-4 mb-8">
-        <h1 className="text-4xl font-bold text-yellow-400 mr-96">
+    <div className="bg-black text-white p-10 shadow-xl backdrop-filter backdrop-blur-md bg-opacity-40 w-full max-w-screen-xl mx-auto mt-16 rounded-xl">
+      <div className="flex justify-between items-center border-b border-yellow-500 pb-4 mb-8">
+        <h1 className="text-4xl font-bold text-yellow-500">
           My Service Requests
         </h1>
         <button
           onClick={handleAddServiceRequest}
-          className="text-lg font-medium bg-emerald-900 text-white hover:bg-yellow-400 hover:text-black py-3 px-8 rounded-lg transition-all duration-300"
+          className="text-lg font-medium bg-yellow-500 text-black hover:bg-yellow-600 py-3 px-8 rounded-lg transition-all duration-300"
         >
           Add Service Request
         </button>
       </div>
 
       {serviceRequests.length === 0 ? (
-        <p className="text-white text-center text-2xl font-light">
+        <p className="text-gray-400 text-center text-2xl font-light">
           No service requests found.
         </p>
       ) : (
-        <ul className="space-y-4">
+        <ul className="space-y-6">
           {serviceRequests.map((request) => (
-            <li key={request._id} className="bg-gray-800 p-4 rounded-md">
-              <p className="text-white">{request.description}</p>
+            <li
+              key={request._id}
+              className="bg-gray-800 p-6 rounded-lg shadow-lg transition-transform transform hover:scale-105"
+            >
+              <h2 className="text-xl font-semibold text-yellow-500 mb-2">
+                {request.description}
+              </h2>
               {request.images && request.images.length > 0 && (
-                <div className="mt-2 flex space-x-2">
+                <div className="mt-2 flex space-x-2 overflow-x-auto">
                   {request.images.map((img, index) => (
                     <div key={index} className="relative">
                       <img
                         src={`${import.meta.env.VITE_BACKEND_URL}${img}`}
                         alt={`request image ${index}`}
-                        className="w-20 h-20 object-cover border border-gray-300 rounded-md"
+                        className="w-24 h-24 object-cover border border-yellow-500 rounded-md"
                       />
                     </div>
                   ))}
@@ -282,14 +287,14 @@ const ArtistCreateServiceRequest = () => {
               <div className="mt-4 flex space-x-4">
                 <button
                   onClick={() => handleEdit(request)}
-                  className="bg-yellow-400 text-black p-2 rounded-lg hover:bg-yellow-500 flex items-center"
+                  className="bg-yellow-500 text-black p-2 rounded-lg hover:bg-yellow-600 flex items-center transition-all duration-300"
                 >
                   <BiEdit className="mr-2" />
                   Edit
                 </button>
                 <button
                   onClick={() => handleDelete(request._id)}
-                  className="bg-red-600 text-white p-2 rounded-lg hover:bg-red-700 flex items-center"
+                  className="bg-red-600 text-white p-2 rounded-lg hover:bg-red-700 flex items-center transition-all duration-300"
                 >
                   <BiTrash className="mr-2" />
                   Delete
@@ -299,12 +304,12 @@ const ArtistCreateServiceRequest = () => {
               <div className="mt-4">
                 <button
                   onClick={() => handleFetchProviders(request._id)}
-                  className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700"
+                  className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-all duration-300"
                 >
                   View Providers
                 </button>
 
-                {viewProviders && ( // Only display the providers if the view state is set to true
+                {viewProviders && (
                   <div className="mt-2 text-yellow-500">
                     {acceptedProviders.length > 0 ? (
                       <>
@@ -327,13 +332,13 @@ const ArtistCreateServiceRequest = () => {
                                 />
                                 <div className="ml-4">
                                   <Link to={`/profile/${provider.userName}`}>
-                                    <p className="font-bold text-lg text-emerald-900 hover:underline">
+                                    <p className="font-bold text-lg text-yellow-500 hover:underline">
                                       {provider.userName}
                                     </p>
                                   </Link>
                                 </div>
                               </div>
-                              {request.status !== "Accepted" && ( // Disable select if request is accepted
+                              {request.status !== "Accepted" && (
                                 <button
                                   onClick={() =>
                                     handleConfirmSelection(
@@ -364,10 +369,12 @@ const ArtistCreateServiceRequest = () => {
       )}
 
       {confirmSelection && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center">
           <div className="bg-white p-8 rounded-lg w-full max-w-md">
-            <h2 className="text-xl font-semibold mb-4">Confirm Selection</h2>
-            <p className="mb-4">
+            <h2 className="text-xl font-semibold mb-4 text-center text-yellow-500">
+              Confirm Selection
+            </h2>
+            <p className="mb-4 text-gray-800">
               Are you sure you want to select this service provider? After
               selecting, your request will be retrieved and you cannot select
               any other service providers.
@@ -391,9 +398,9 @@ const ArtistCreateServiceRequest = () => {
       )}
 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center">
           <div className="bg-white p-8 rounded-lg w-full max-w-2xl">
-            <h2 className="text-xl font-semibold mb-4">
+            <h2 className="text-xl font-semibold mb-4 text-center text-yellow-500">
               {editingRequest
                 ? "Edit Service Request"
                 : "Create Service Request"}
@@ -404,7 +411,7 @@ const ArtistCreateServiceRequest = () => {
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-yellow-500 rounded-md bg-gray-800 text-white"
                   required
                 />
               </div>
@@ -416,7 +423,7 @@ const ArtistCreateServiceRequest = () => {
                 <select
                   value={selectedSpecialization}
                   onChange={(e) => setSelectedSpecialization(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-yellow-500 rounded-md bg-gray-800 text-white"
                   required
                 >
                   <option value="">Select a specialization</option>
@@ -434,7 +441,7 @@ const ArtistCreateServiceRequest = () => {
                   type="file"
                   multiple
                   onChange={handleImageChange}
-                  className="w-full"
+                  className="w-full text-white"
                 />
                 <div className="mt-4 flex space-x-2">
                   {imagePreviews.map((preview, index) => (
@@ -442,7 +449,7 @@ const ArtistCreateServiceRequest = () => {
                       <img
                         src={preview}
                         alt={`preview ${index}`}
-                        className="w-20 h-20 object-cover border border-gray-300 rounded-md"
+                        className="w-24 h-24 object-cover border border-yellow-500 rounded-md"
                       />
                       <button
                         type="button"
@@ -459,7 +466,7 @@ const ArtistCreateServiceRequest = () => {
               <div className="flex justify-between">
                 <button
                   type="submit"
-                  className="bg-emerald-600 text-white py-2 px-4 rounded-md hover:bg-emerald-700"
+                  className="bg-yellow-500 text-black py-2 px-4 rounded-md hover:bg-yellow-600"
                 >
                   {editingRequest ? "Update Request" : "Create Request"}
                 </button>

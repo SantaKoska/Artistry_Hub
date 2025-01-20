@@ -75,11 +75,11 @@ const StudentDashboard = () => {
   }, [token]);
 
   return (
-    <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 max-w-screen-xl w-full mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-10 items-start">
+    <div className="min-h-screen bg-black p-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 max-w-screen-xl mx-auto">
         {/* Sidebar */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-emerald-900 text-2xl font-semibold mb-6 text-center">
+        <div className="bg-zinc-900 rounded-xl shadow-2xl p-6 border border-zinc-800">
+          <h2 className="text-yellow-400 text-2xl font-bold mb-8 text-center">
             Dashboard
           </h2>
           <ul className="space-y-6">
@@ -87,12 +87,12 @@ const StudentDashboard = () => {
               <button
                 onClick={() => {
                   setActiveSection("availableCourses");
-                  setActiveCourse(null); // Reset active course when switching section
+                  setActiveCourse(null);
                 }}
-                className={`text-lg font-semibold text-center block w-full ${
+                className={`text-lg font-semibold text-center block w-full transition-colors duration-300 ${
                   activeSection === "availableCourses"
                     ? "text-yellow-400"
-                    : "text-gray-700 hover:text-emerald-900"
+                    : "text-gray-400 hover:text-yellow-300"
                 }`}
               >
                 Available Courses
@@ -102,12 +102,12 @@ const StudentDashboard = () => {
               <button
                 onClick={() => {
                   setActiveSection("myCourses");
-                  setActiveCourse(null); // Reset active course when switching section
+                  setActiveCourse(null);
                 }}
-                className={`text-lg font-semibold text-center block w-full ${
+                className={`text-lg font-semibold text-center block w-full transition-colors duration-300 ${
                   activeSection === "myCourses"
                     ? "text-yellow-400"
-                    : "text-gray-700 hover:text-emerald-900"
+                    : "text-gray-400 hover:text-yellow-300"
                 }`}
               >
                 My Courses
@@ -118,8 +118,7 @@ const StudentDashboard = () => {
 
         {/* Main Dashboard Content */}
         <div className="lg:col-span-3">
-          <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30">
-            {/* Render CourseDetails component when a course is selected */}
+          <div className="bg-zinc-900 rounded-xl shadow-2xl p-8 border border-zinc-800">
             {activeCourse ? (
               <CourseDetails
                 course={activeCourse}
@@ -127,30 +126,30 @@ const StudentDashboard = () => {
                 isEnrolled={enrolledCourses.some(
                   (course) => course._id === activeCourse._id
                 )}
-                fetchEnrolledCourses={fetchEnrolledCourses} // Pass this function to refresh enrolled courses after enroll/unenroll
+                fetchEnrolledCourses={fetchEnrolledCourses}
               />
             ) : (
               <>
                 {activeSection === "availableCourses" && (
                   <div>
-                    <h1 className="text-4xl font-bold text-yellow-400 mb-6">
+                    <h1 className="text-4xl font-bold text-yellow-400 mb-8">
                       Available Courses
                     </h1>
                     {availableCourses.length > 0 ? (
                       availableCourses.map((course, idx) => (
                         <div
                           key={idx}
-                          className="mb-8 cursor-pointer hover:bg-slate-700 p-4 rounded-lg transition-all duration-200"
+                          className="mb-6 cursor-pointer bg-zinc-800 hover:bg-zinc-700 p-6 rounded-xl transition-all duration-300 border border-zinc-700"
                           onClick={() => setActiveCourse(course)}
                         >
-                          <h2 className="text-2xl font-semibold text-emerald-300">
+                          <h2 className="text-2xl font-bold text-white mb-2">
                             {course.courseName}
                           </h2>
-                          <p className="text-gray-400">Level: {course.level}</p>
+                          <p className="text-gray-300">Level: {course.level}</p>
                         </div>
                       ))
                     ) : (
-                      <p className="text-gray-500">
+                      <p className="text-gray-400 text-center">
                         No available courses at the moment.
                       </p>
                     )}
@@ -159,43 +158,43 @@ const StudentDashboard = () => {
 
                 {activeSection === "myCourses" && (
                   <div>
-                    <h1 className="text-4xl font-bold text-yellow-400 mb-6">
+                    <h1 className="text-4xl font-bold text-yellow-400 mb-8">
                       My Courses
                     </h1>
                     {enrolledCourses.length > 0 ? (
                       enrolledCourses.map((course, idx) => (
                         <div
                           key={idx}
-                          className="mb-8 cursor-pointer hover:bg-slate-700 p-4 rounded-lg transition-all duration-200"
+                          className="mb-6 cursor-pointer bg-zinc-800 hover:bg-zinc-700 p-6 rounded-xl transition-all duration-300 border border-zinc-700"
                           onClick={() => setActiveCourse(course)}
                         >
-                          <h2 className="text-2xl font-semibold text-emerald-300">
+                          <h2 className="text-2xl font-bold text-white mb-2">
                             {course.courseName}
                           </h2>
-                          <p className="text-gray-400">Level: {course.level}</p>
+                          <p className="text-gray-300 mb-4">
+                            Level: {course.level}
+                          </p>
 
                           {/* Progress Bar */}
                           <div className="relative pt-1">
                             <div className="flex mb-2 items-center justify-between">
-                              <div>
-                                <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-yellow-400 bg-emerald-800">
-                                  Progress: {courseProgress[course._id] || 0}%
-                                </span>
-                              </div>
+                              <span className="text-sm font-semibold inline-block py-1 px-2 uppercase rounded-full text-yellow-400 bg-yellow-400/10">
+                                Progress: {courseProgress[course._id] || 0}%
+                              </span>
                             </div>
-                            <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-yellow-100">
+                            <div className="overflow-hidden h-2 mb-1 text-xs flex rounded-full bg-zinc-700">
                               <div
                                 style={{
                                   width: `${courseProgress[course._id] || 0}%`,
                                 }}
-                                className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-yellow-400"
+                                className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-yellow-400 transition-all duration-500 rounded-full"
                               ></div>
                             </div>
                           </div>
                         </div>
                       ))
                     ) : (
-                      <p className="text-gray-500">
+                      <p className="text-gray-400 text-center">
                         You have not enrolled in any courses yet.
                       </p>
                     )}

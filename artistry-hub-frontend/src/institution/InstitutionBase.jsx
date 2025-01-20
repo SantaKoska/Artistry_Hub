@@ -43,38 +43,40 @@ const InstitutionBase = () => {
   return (
     <>
       {/* Header Section */}
-      <div className="bg-slate-800 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 fixed top-0 w-full z-50">
-        <header className="flex justify-between items-center px-4 py-1">
+      <div className="bg-black shadow-lg backdrop-filter backdrop-blur-md bg-opacity-90 fixed top-0 w-full z-50">
+        <header className="flex justify-between items-center px-6 py-2">
           {/* Message Icon */}
           <div className="flex items-center">
             <Link
               to="/institution-Home/Message"
-              className="text-white hover:text-yellow-400 transition-colors duration-300"
+              className="text-yellow-400 hover:text-white transition-colors duration-300"
             >
-              <FaEnvelope size={20} aria-label="Messages" />
+              <FaEnvelope size={24} aria-label="Messages" />
             </Link>
           </div>
 
           {/* Logo in the Center */}
           <div className="flex justify-center">
-            <img src={Logo} alt="logo" className="w-12 h-12" />
+            <img src={Logo} alt="logo" className="w-16 h-16" />
           </div>
 
           {/* Profile Picture and Username on the Right */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             <div className="flex flex-col">
-              <span className="text-white">{userData.userName}</span>
-              <span className="text-gray-400 text-sm">{userData.role}</span>
+              <span className="text-white text-lg font-semibold">
+                {userData.userName}
+              </span>
+              <span className="text-gray-300 text-sm">{userData.role}</span>
             </div>
             <Link
               to="/institution-Home/institutionprofile"
-              className="text-white hover:text-yellow-400 transition-colors duration-300"
+              className="text-yellow-400 hover:text-white transition-colors duration-300"
             >
               <img
                 src={`${import.meta.env.VITE_BACKEND_URL}${
                   userData.profilePicture
                 }`}
-                className="w-10 h-10 rounded-full" // Ensure it's styled as a circle
+                className="w-12 h-12 rounded-full border-2 border-yellow-400" // Added border for elegance
               />
             </Link>
           </div>
@@ -82,18 +84,18 @@ const InstitutionBase = () => {
       </div>
 
       {/* Main Content Section */}
-      <div className="pt-16 pb-16 flex-grow h-full">
-        <main className="w-full h-full">
+      <div className="pt-20 pb-20 flex-grow h-full">
+        <main className="w-full h-full text-white">
           <Outlet />
         </main>
       </div>
 
       {/* Modal for Create Post */}
       {showCreatePostModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
-          <div className="relative bg-slate-800 text-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80">
+          <div className="relative bg-gray-800 text-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
             <button
-              className="absolute top-2 right-2 text-gray-500 hover:text-white focus:outline-none"
+              className="absolute top-2 right-2 text-gray-400 hover:text-yellow-400 focus:outline-none"
               onClick={() => setShowCreatePostModal(false)}
             >
               &#10005; {/* Close icon */}
@@ -104,16 +106,19 @@ const InstitutionBase = () => {
       )}
 
       {/* Footer Navigation Section */}
-      <div className="bg-slate-800 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 fixed bottom-0 w-full z-50">
+      <div className="bg-black shadow-lg backdrop-filter backdrop-blur-md bg-opacity-90 fixed bottom-0 w-full z-50">
         <footer>
-          <nav className="flex justify-around p-2 text-white">
+          <nav className="flex justify-around p-3 text-white">
             {[
-              { to: "/institution-Home", icon: <FaHome size={20} /> },
-
+              { to: "/institution-Home", icon: <FaHome size={24} /> },
+              {
+                to: "/institution-Home/my-courses",
+                icon: <FaBook size={24} />,
+              },
               {
                 icon: (
                   <FaPlus
-                    size={20}
+                    size={24}
                     onClick={() => setShowCreatePostModal(true)} // Show modal on click
                     id="create-post-button"
                   />
@@ -124,15 +129,11 @@ const InstitutionBase = () => {
                 icon: (
                   <span
                     id="service-request"
-                    className="text-xl font-bold leading-none"
+                    className="text-2xl font-bold leading-none hover:text-yellow-400 transition-colors duration-300"
                   >
                     S
                   </span>
                 ),
-              },
-              {
-                to: "/institution-Home/post-events",
-                icon: <FaBriefcase size={20} />,
               },
             ].map(({ to, icon }, index) => (
               <div

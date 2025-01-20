@@ -181,7 +181,7 @@ const ArtistProfile = () => {
   };
 
   return (
-    <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-blur-md bg-opacity-30 max-w-screen-lg mx-auto">
+    <div className="bg-black rounded-md p-8 shadow-lg backdrop-blur-md bg-opacity-30 max-w-screen-lg mx-auto">
       {profile && (
         <>
           <div className="flex flex-col md:flex-row gap-10 items-center">
@@ -191,7 +191,7 @@ const ArtistProfile = () => {
                   profile.profilePicture
                 }`}
                 alt="Profile"
-                className="w-48 h-44 rounded-full mb-4"
+                className="w-60 h-44 rounded-full mb-4"
               />
               <h1 className="text-5xl font-semibold text-yellow-400 mt-4">
                 {profile.userName}

@@ -52,6 +52,7 @@ const ServiceProviderHome = () => {
             }/common-things/specializations/${userArtForm}`
           );
           setSpecializations(response.data);
+          console.log(specializations);
         } catch (error) {
           console.error("Error fetching specializations:", error);
         }
