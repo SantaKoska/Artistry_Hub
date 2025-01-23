@@ -33,6 +33,7 @@ const CommonProfile = () => {
         );
         setProfile(response.data.profile);
         setPosts(response.data.posts);
+        // console.log(response.data.profile);
       } catch (error) {
         console.error("Error fetching profile:", error);
       }
@@ -98,6 +99,7 @@ const CommonProfile = () => {
       console.error("Error liking/unliking post:", error);
     }
   };
+  //
 
   // Function to toggle Read More/Read Less
   const toggleReadMore = (postId) => {

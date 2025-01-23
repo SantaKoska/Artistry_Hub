@@ -161,7 +161,7 @@ router.get("/homeposts", verifyToken, async (req, res) => {
     })
       .populate("user")
       .sort({ timestamp: -1 }) // Sort by timestamp in descending order
-      .limit(10);
+      .limit(100);
 
     // Combine the two sets of posts
     const posts = [...followedPosts, ...nonFollowedPosts];

@@ -176,7 +176,7 @@ router.get("/institution-homeposts", verifyToken, async (req, res) => {
     })
       .populate("user")
       .sort({ timestamp: -1 })
-      .limit(10);
+      .limit(100);
 
     // Combine posts
     const posts = [...followedPosts, ...nonFollowedPosts];

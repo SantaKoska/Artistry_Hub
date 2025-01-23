@@ -4,7 +4,8 @@
   "description": "this is my artistry hub project backend",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
   },
   "author": "",
   "license": "ISC",
@@ -19,7 +20,7 @@
     "mongoose": "^8.7.1",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.15",
-    "nodemon": "^3.1.7",
+    "nodemon": "^3.1.9",
     "otp-generator": "^4.0.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",

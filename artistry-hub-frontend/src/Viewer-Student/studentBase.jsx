@@ -91,7 +91,7 @@ const StudentBase = () => {
       {/* Modal for Create Post */}
       {showCreatePostModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
-          <div className="relative bg-zinc-900 text-white p-8 rounded-lg shadow-2xl w-full max-w-2xl border border-yellow-500/20">
+          <div className="relative bg-zinc-900 text-white p-8 rounded-lg shadow-2xl w-full max-w-2xl">
             <button
               className="absolute top-2 right-2 text-gray-400 hover:text-yellow-400 focus:outline-none"
               onClick={() => setShowCreatePostModal(false)}

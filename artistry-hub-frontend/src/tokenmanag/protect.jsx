@@ -14,11 +14,11 @@ const PrivateRoute = ({ children }) => {
     // checking if token is expired
     if (decodedToken.exp < currentTime) {
       localStorage.removeItem("token"); // clear expired token
-      return <Navigate to="/login" />;
+      return <Navigate to="/" />;
     }
   } catch (error) {
     localStorage.removeItem("token");
-    return <Navigate to="/login" />;
+    return <Navigate to="/" />;
   }
 
   return children;
