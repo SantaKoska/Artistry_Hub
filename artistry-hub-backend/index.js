@@ -16,6 +16,7 @@ const service = require("./routes/service");
 const institution = require("./routes/instituation");
 const suggestionsRoutes = require("./routes/suggestions");
 const comment = require("./routes/comments");
+const instrumentservice = require("./routes/instrumentServiceAssistant");
 
 //for env
 require("dotenv").config();
@@ -121,6 +122,8 @@ app.use("/institution", institution);
 app.use("/suggestions", suggestionsRoutes);
 
 app.use("/comments", comment);
+
+app.use("/instrumentservice", instrumentservice);
 
 //the app losening to the port
 app.listen(8000, () => {

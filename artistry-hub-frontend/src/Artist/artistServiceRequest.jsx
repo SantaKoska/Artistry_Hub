@@ -4,6 +4,7 @@ import { BiEdit, BiTrash } from "react-icons/bi";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import InstrumentServiceAssistant from "../components/InstrumentServiceAssistant";
 
 const ArtistCreateServiceRequest = () => {
   const [description, setDescription] = useState("");
@@ -20,6 +21,7 @@ const ArtistCreateServiceRequest = () => {
   const [confirmSelection, setConfirmSelection] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [selectedRequestId, setSelectedRequestId] = useState(null);
+  const [showChat, setShowChat] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -479,6 +481,32 @@ const ArtistCreateServiceRequest = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      <div className="mt-8">
+        <button
+          onClick={() => setShowChat(true)}
+          className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-all duration-300"
+        >
+          Open Instrument Service Assistant
+        </button>
+      </div>
+
+      {showChat && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center">
+          <div className="bg-gray-800 p-6 rounded-lg w-full max-w-md">
+            <h2 className="text-xl font-semibold mb-4 text-yellow-500 text-center">
+              Instrument Service Assistant
+            </h2>
+            <InstrumentServiceAssistant />
+            <button
+              onClick={() => setShowChat(false)}
+              className="mt-4 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-all duration-300"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}

@@ -23,6 +23,8 @@ ChartJS.register(
 
 const Dashboard = () => {
   const [analyticsData, setAnalyticsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -36,7 +38,9 @@ const Dashboard = () => {
         );
         setAnalyticsData(response.data);
       } catch (error) {
-        console.error("Error fetching analytics data:", error);
+        setError("Error fetching analytics data.");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -56,10 +60,13 @@ const Dashboard = () => {
     ],
   };
 
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
+
   return (
     <div className="bg-black text-white p-6 rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold mb-4">Course Analytics</h2>
-      <Bar data={data} />
+      <Bar data={data} options={{ responsive: true }} />
     </div>
   );
 };

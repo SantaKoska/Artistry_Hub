@@ -370,7 +370,7 @@ router.post("/enroll/:courseId", verifyToken, async (req, res) => {
 
     // Update the student's enrolledCourses
     student.enrolledCourses.push({
-      courseId,
+      courseId: courseId, // Ensure this is set correctly
       progress: 0, // Initial progress is 0%
       tickedLessons: [], // Initialize tickedLessons as an empty array
       tickedChapters: [], // Initialize tickedChapters as an empty array
@@ -770,29 +770,68 @@ router.post(
   }
 );
 
-// Fetch student analytics
+// Fetch student analytics with date range
 router.get("/student-analytics", verifyToken, async (req, res) => {
+  const { startDate, endDate } = req.query;
+
   try {
     const viewerStudent = await ViewerStudent.findOne({
       userId: req.user.identifier,
     }).populate("enrolledCourses.courseId");
 
+    // console.log("Viewer Student Data:", viewerStudent); // Log student data
+
     if (!viewerStudent) {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    const analytics = viewerStudent.enrolledCourses.map((course) => ({
-      courseName: course.courseId.courseName,
-      progress: course.progress,
-      completedLessons: course.tickedLessons.length,
-      totalLessons: course.courseId.chapters.reduce(
-        (total, chapter) => total + chapter.lessons.length,
+    // Ensure there are enrolled courses
+    if (!viewerStudent.enrolledCourses.length) {
+      return res.status(200).json({
+        analytics: [],
+        totalCourses: 0,
+        totalCompletedLessons: 0,
+        averageProgress: 0,
+      });
+    }
+
+    // Calculate analytics
+    const analytics = viewerStudent.enrolledCourses.map((course) => {
+      const totalLessons = course.courseId.chapters.reduce(
+        (total, chapter) =>
+          total + (chapter.lessons ? chapter.lessons.length : 0),
+        0
+      );
+
+      const completedLessons = course.tickedLessons.length;
+
+      return {
+        courseName: course.courseId.courseName,
+        progress:
+          totalLessons > 0
+            ? Math.round((completedLessons / totalLessons) * 100)
+            : 0,
+      };
+    });
+
+    // console.log("Analytics Data:", analytics); // Log analytics data
+
+    // Return the analytics data
+    res.status(200).json({
+      analytics,
+      totalCourses: viewerStudent.enrolledCourses.length,
+      totalCompletedLessons: viewerStudent.enrolledCourses.reduce(
+        (sum, course) => sum + course.tickedLessons.length,
         0
       ),
-      completedChapters: course.tickedChapters.length,
-    }));
-
-    res.status(200).json(analytics);
+      averageProgress:
+        analytics.length > 0
+          ? Math.round(
+              analytics.reduce((sum, a) => sum + a.progress, 0) /
+                analytics.length
+            )
+          : 0,
+    });
   } catch (error) {
     console.error("Error fetching student analytics:", error);
     res.status(500).json({ message: "Error fetching analytics" });

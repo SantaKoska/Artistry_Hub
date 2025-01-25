@@ -3,7 +3,7 @@ import AddCourse from "./AddCourse";
 import EditCourse from "./EditCourse";
 import axios from "axios";
 import { BiEdit, BiTrash } from "react-icons/bi";
-import Dashboard from "../Dashboard";
+import Dashboard from "./Dashboard";
 
 const MyCourses = () => {
   const [courses, setCourses] = useState([]);
