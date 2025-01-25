@@ -7,6 +7,7 @@ const UserSuggestions = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredUsers, setFilteredUsers] = useState([]);
   const navigate = useNavigate();
+  //   console.log(suggestedUsers);
 
   useEffect(() => {
     fetchUserSuggestions(); // Fetch user suggestions on component mount
@@ -29,7 +30,6 @@ const UserSuggestions = () => {
         }
       );
       setSuggestedUsers(response.data);
-      //   console.log(suggestedUsers);
     } catch (error) {
       console.error("Error fetching user suggestions:", error);
     }
@@ -84,7 +84,7 @@ const UserSuggestions = () => {
         placeholder="Search by name"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        className="w-full p-2 mb-4 border border-gray-600 rounded"
+        className="w-full p-2 mb-4 border border-gray-600 rounded text-black"
       />
       <ul className="flex flex-col gap-2">
         {filteredUsers.map((user) => (
@@ -104,9 +104,9 @@ const UserSuggestions = () => {
                 >
                   {user.userName}
                 </span>
-                <p className="text-sm text-gray-500">{user.description}</p>
-                <p className="text-sm text-gray-500">
-                  Followers: {user.followerCount}
+
+                <p className="text-xs text-gray-400">
+                  Mutual Friends: {user.mutualFollowerCount}
                 </p>
               </div>
             </div>

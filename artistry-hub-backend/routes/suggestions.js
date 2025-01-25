@@ -30,18 +30,49 @@ router.get("/user-suggestions", verifyToken, async (req, res) => {
       role = currentUser.role;
     }
 
-    // Fetch all users excluding the current user
-    const allUsers = await User.find({ _id: { $ne: userId } }).populate(
-      "following"
-    );
+    // Function to calculate mutual friends
+    const calculateMutualFriends = async (currentUserId, userId) => {
+      // Fetch the current user's following
+      const currentUser = await User.findById(currentUserId).populate(
+        "following"
+      );
+      const targetUser = await User.findById(userId).populate("following");
 
-    // console.log(allUsers);
+      if (!currentUser || !targetUser) return 0;
+
+      // Get the IDs of the users followed by the current user and the target user
+      const currentUserFollowingIds = currentUser.following.map((f) =>
+        f._id.toString()
+      );
+      const targetUserFollowingIds = targetUser.following.map((f) =>
+        f._id.toString()
+      );
+
+      // Find mutual friends
+      const mutualFriends = targetUserFollowingIds.filter((followedUserId) =>
+        currentUserFollowingIds.includes(followedUserId)
+      );
+
+      return mutualFriends.length;
+    };
+
+    // Fetch all users that the current user is not following and exclude the current user
+    const allUsers = await User.find({
+      _id: {
+        $nin: [
+          ...currentUser.following.map((f) => f._id), // Exclude followed users
+          currentUser._id, // Exclude the current user
+        ],
+      },
+    }).populate("following");
+
     // Sort users based on role, art form, and mutual following
     const sortedUsers = await Promise.all(
       allUsers.map(async (user) => {
-        const mutualFollowers = user.following.filter((followingId) =>
-          currentUser.following.some((f) => f._id.equals(followingId))
-        );
+        const mutualFollowerCount = await calculateMutualFriends(
+          currentUser._id,
+          user._id
+        ); // Updated mutual friend calculation
 
         // Fetch the artForm based on the user's role
         let artForm;
@@ -60,7 +91,7 @@ router.get("/user-suggestions", verifyToken, async (req, res) => {
 
         return {
           ...user.toObject(),
-          mutualFollowerCount: mutualFollowers.length,
+          mutualFollowerCount, // Updated mutual friend count
           isSameRole: user.role === role,
           isSameArtForm:
             (role === "Artist" && artForm === currentUser.artForm) ||

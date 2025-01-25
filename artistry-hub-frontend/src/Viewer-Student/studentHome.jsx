@@ -4,11 +4,13 @@ import { FaHeart } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import UserSuggestions from "../components/UserSuggestions";
 import { useMediaQuery } from "react-responsive";
+import CommentSection from "../components/CommentSection";
 
 const StudentHome = () => {
   const [posts, setPosts] = useState([]);
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [expandedPosts, setExpandedPosts] = useState(new Set());
+  const [userId, setUserId] = useState(null);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -23,15 +25,18 @@ const StudentHome = () => {
           }
         );
 
-        const { posts, userId } = response.data;
+        const { posts, userId: fetchedUserId } = response.data;
         const likedPostIds = new Set(
           posts
-            .map((post) => (post.likedBy.includes(userId) ? post._id : null))
+            .map((post) =>
+              post.likedBy.includes(fetchedUserId) ? post._id : null
+            )
             .filter(Boolean)
         );
 
         setPosts(posts);
         setLikedPosts(likedPostIds);
+        setUserId(fetchedUserId);
       } catch (error) {
         console.error("Error fetching posts:", error);
       }
@@ -184,20 +189,23 @@ const StudentHome = () => {
                 </div>
 
                 {/* Like Section */}
-                <div className="flex items-center mt-4 pt-4 border-t border-zinc-800">
-                  <button
-                    className={`focus:outline-none transition-all duration-300 transform hover:scale-110 ${
-                      likedPosts.has(post._id)
-                        ? "text-yellow-400"
-                        : "text-gray-400 hover:text-yellow-400"
-                    }`}
-                    onClick={() => handleLike(post._id)}
-                  >
-                    <FaHeart size={20} />
-                  </button>
-                  <span className="ml-2 text-gray-400 text-sm">
-                    {post.likes} {post.likes === 1 ? "Like" : "Likes"}
-                  </span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <button
+                      className={`focus:outline-none transition-all duration-300 transform hover:scale-110 ${
+                        likedPosts.has(post._id)
+                          ? "text-yellow-400"
+                          : "text-gray-400 hover:text-yellow-400"
+                      }`}
+                      onClick={() => handleLike(post._id)}
+                    >
+                      <FaHeart size={20} />
+                    </button>
+                    <span className="ml-2 text-gray-400 text-sm">
+                      {post.likes} {post.likes === 1 ? "Like" : "Likes"}
+                    </span>
+                  </div>
+                  <CommentSection postId={post._id} userId={userId} />
                 </div>
               </div>
             ))
