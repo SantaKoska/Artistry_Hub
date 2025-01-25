@@ -3,6 +3,7 @@ import AddCourse from "./AddCourse";
 import EditCourse from "./EditCourse";
 import axios from "axios";
 import { BiEdit, BiTrash } from "react-icons/bi";
+import Dashboard from "../Dashboard";
 
 const MyCourses = () => {
   const [courses, setCourses] = useState([]);
@@ -87,12 +88,25 @@ const MyCourses = () => {
                 Add Course
               </button>
             </li>
+            <li>
+              <button
+                onClick={() => setActiveSection("dashboard")}
+                className={`text-lg font-semibold text-center block w-full ${
+                  activeSection === "dashboard"
+                    ? "text-yellow-400"
+                    : "text-gray-300 hover:text-yellow-500"
+                }`}
+              >
+                Dashboard
+              </button>
+            </li>
           </ul>
         </div>
 
         {/* Main Dashboard Content */}
         <div className="lg:col-span-3">
           <div className="bg-gray-800 rounded-md p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30">
+            {activeSection === "dashboard" && <Dashboard />}
             {activeSection === "myCourses" && (
               <div>
                 <h1 className="text-4xl font-bold text-yellow-400 mb-6">

@@ -770,4 +770,27 @@ router.delete("/service-requests/:id", async (req, res) => {
   }
 });
 
+// Get analytics data for courses
+router.get("/course-analytics", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.identifier;
+
+    // Fetch courses created by the user
+    const courses = await LearningCourse.find({ createdBy: userId }).populate(
+      "enrolledIds"
+    );
+
+    const analytics = courses.map((course) => ({
+      courseName: course.courseName,
+      enrolledCount: course.enrolledIds.length,
+      // Add more metrics as needed
+    }));
+
+    res.status(200).json(analytics);
+  } catch (error) {
+    console.error("Error fetching course analytics:", error);
+    res.status(500).json({ message: "Error fetching analytics", error });
+  }
+});
+
 module.exports = router;

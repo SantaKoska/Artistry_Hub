@@ -770,4 +770,33 @@ router.post(
   }
 );
 
+// Fetch student analytics
+router.get("/student-analytics", verifyToken, async (req, res) => {
+  try {
+    const viewerStudent = await ViewerStudent.findOne({
+      userId: req.user.identifier,
+    }).populate("enrolledCourses.courseId");
+
+    if (!viewerStudent) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const analytics = viewerStudent.enrolledCourses.map((course) => ({
+      courseName: course.courseId.courseName,
+      progress: course.progress,
+      completedLessons: course.tickedLessons.length,
+      totalLessons: course.courseId.chapters.reduce(
+        (total, chapter) => total + chapter.lessons.length,
+        0
+      ),
+      completedChapters: course.tickedChapters.length,
+    }));
+
+    res.status(200).json(analytics);
+  } catch (error) {
+    console.error("Error fetching student analytics:", error);
+    res.status(500).json({ message: "Error fetching analytics" });
+  }
+});
+
 module.exports = router;
