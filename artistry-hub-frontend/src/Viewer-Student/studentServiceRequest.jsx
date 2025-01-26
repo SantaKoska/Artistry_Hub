@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { BiEdit, BiTrash } from "react-icons/bi"; // Import icons
+import { BiEdit, BiTrash, BiBot } from "react-icons/bi"; // Import icons
+import InstrumentServiceAssistant from "../components/InstrumentServiceAssistant";
 
 const StudentCreateServiceRequest = () => {
   const [description, setDescription] = useState("");
@@ -9,6 +10,7 @@ const StudentCreateServiceRequest = () => {
   const [serviceRequests, setServiceRequests] = useState([]);
   const [showCreateRequest, setShowCreateRequest] = useState(false);
   const [editingRequest, setEditingRequest] = useState(null); // State for editing request
+  const [showChat, setShowChat] = useState(false); // Add this state
 
   // Fetch existing service requests
   useEffect(() => {
@@ -144,15 +146,24 @@ const StudentCreateServiceRequest = () => {
   return (
     <div className="bg-slate-900 p-10 shadow-xl backdrop-filter backdrop-blur-md bg-opacity-40 w-full max-w-screen-xl mx-auto mt-16 rounded-xl text-black">
       <div className="flex justify-between items-center border-b border-gray-500 pb-4 mb-8">
-        <h1 className="text-4xl font-bold text-yellow-400 mr-96">
+        <h1 className="text-4xl font-bold text-yellow-400">
           My Service Requests
         </h1>
-        <button
-          onClick={handleAddServiceRequest}
-          className="text-lg font-medium bg-emerald-900 text-white hover:bg-yellow-400 hover:text-black py-3 px-8 rounded-lg transition-all duration-300"
-        >
-          Add Service Request
-        </button>
+        <div className="flex items-center gap-4">
+          <button onClick={() => setShowChat(true)} className="relative group">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-full blur opacity-60 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
+            <div className="relative flex items-center gap-2 px-4 py-2 bg-black rounded-full leading-none">
+              <BiBot className="text-2xl text-yellow-500" />
+              <span className="text-yellow-500 font-medium">AI Assistant</span>
+            </div>
+          </button>
+          <button
+            onClick={handleAddServiceRequest}
+            className="text-lg font-medium bg-emerald-900 text-white hover:bg-yellow-400 hover:text-black py-3 px-8 rounded-lg transition-all duration-300"
+          >
+            Add Service Request
+          </button>
+        </div>
       </div>
 
       {serviceRequests.length === 0 ? (
@@ -267,6 +278,44 @@ const StudentCreateServiceRequest = () => {
                 Cancel
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add AI Chat Modal */}
+      {showChat && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-60">
+          <div className="bg-[#1a1a1a] w-[95%] max-w-3xl h-[80vh] rounded-2xl shadow-2xl flex flex-col mt-80">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
+              <div className="flex items-center gap-3">
+                <BiBot className="text-2xl text-yellow-500" />
+                <h2 className="text-xl font-semibold text-yellow-500">
+                  Instrument Service Assistant
+                </h2>
+              </div>
+              <button
+                onClick={() => setShowChat(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-hidden">
+              <InstrumentServiceAssistant />
+            </div>
           </div>
         </div>
       )}
