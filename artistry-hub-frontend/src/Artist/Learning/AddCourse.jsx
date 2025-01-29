@@ -1,7 +1,8 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { BiArrowBack } from "react-icons/bi";
 
 const AddCourse = () => {
   const [courseName, setCourseName] = useState("");
@@ -24,14 +25,47 @@ const AddCourse = () => {
   const [courseCreated, setCourseCreated] = useState(false); // Step Control
   const [courseId, setCourseId] = useState(null); // Store the created course ID
   const [error, setError] = useState(null);
+  const [artForm, setArtForm] = useState("");
+  const [specialization, setSpecialization] = useState("");
+  const [artForms, setArtForms] = useState([]);
+  const [specializations, setSpecializations] = useState([]);
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
+  // Fetch art forms on component mount
+  useEffect(() => {
+    const fetchArtForms = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/artist/art-forms`
+        );
+        setArtForms(response.data);
+      } catch (error) {
+        console.error("Error fetching art forms:", error);
+      }
+    };
+    fetchArtForms();
+  }, []);
+
+  const handleArtFormChange = async (artForm) => {
+    setArtForm(artForm);
+    setSpecialization(""); // Reset specialization when art form changes
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/artist/art-forms/${artForm}`
+      );
+      setSpecializations(response.data.specializations || []); // Ensure it's an array
+    } catch (error) {
+      console.error("Error fetching specializations:", error);
+      setSpecializations([]); // Reset to empty array on error
+    }
+  };
+
   // Function to handle course submission
   const handleCourseSubmit = async () => {
-    if (!courseName || !level) {
-      alert("Please provide both course name and level.");
+    if (!courseName || !level || !artForm || !specialization) {
+      alert("Please provide course name, level, art form, and specialization.");
       return;
     }
 
@@ -41,7 +75,7 @@ const AddCourse = () => {
     try {
       const createCourseResponse = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/artist/create-course`,
-        { courseName, level },
+        { courseName, level, artForm, specialization }, // Include artForm and specialization
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -173,11 +207,9 @@ const AddCourse = () => {
   };
 
   return (
-    <div className="bg-black text-white rounded-lg shadow-lg p-10 w-96 mx-auto">
-      <div className="flex justify-center mb-6">
-        <h1 className="text-4xl font-bold text-center mb-6 text-yellow-500">
-          Add New Course
-        </h1>
+    <div className="bg-black text-white rounded-md p-4 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 max-w-screen-xl w-full mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-4xl font-bold text-yellow-500">Add New Course</h1>
       </div>
 
       {/* Display error if any */}
@@ -245,6 +277,45 @@ const AddCourse = () => {
                 <span className="ml-2 text-gray-700">Professional</span>
               </label>
             </div>
+          </div>
+
+          <div className="mb-8">
+            <label className="block text-lg font-semibold text-gray-300 mb-2">
+              Art Form
+            </label>
+            <select
+              value={artForm}
+              onChange={(e) => handleArtFormChange(e.target.value)}
+              className="block w-full py-3 px-4 text-base text-black border border-yellow-500 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              required
+            >
+              <option value="">Select Art Form</option>
+              {artForms.map((form) => (
+                <option key={form} value={form}>
+                  {form}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-8">
+            <label className="block text-lg font-semibold text-gray-300 mb-2">
+              Specialization
+            </label>
+            <select
+              value={specialization}
+              onChange={(e) => setSpecialization(e.target.value)}
+              className="block w-full py-3 px-4 text-base text-black border border-yellow-500 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              required
+            >
+              <option value="">Select Specialization</option>
+              {Array.isArray(specializations) &&
+                specializations.map((spec) => (
+                  <option key={spec} value={spec}>
+                    {spec}
+                  </option>
+                ))}
+            </select>
           </div>
 
           <button

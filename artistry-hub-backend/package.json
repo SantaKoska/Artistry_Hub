@@ -10,6 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@zoomus/websdk": "^2.18.3",
+    "argon2": "^0.41.1",
     "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
@@ -28,6 +30,7 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pdfkit": "^0.15.0",
+    "qrcode": "^1.5.4",
     "socket.io": "^4.8.0",
     "validator": "^13.12.0"
   }

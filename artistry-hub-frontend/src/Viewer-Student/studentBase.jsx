@@ -104,9 +104,9 @@ const StudentBase = () => {
       )}
 
       {/* Footer Navigation Section */}
-      <div className="bg-black shadow-lg backdrop-filter backdrop-blur-md bg-opacity-90 fixed bottom-0 w-full z-50 border-t border-yellow-500/20">
+      <div className="bg-black shadow-lg backdrop-filter backdrop-blur-md bg-opacity-90 fixed bottom-0 w-full z-50">
         <footer>
-          <nav className="flex justify-around p-3 text-gray-300">
+          <nav className="flex justify-around p-3 text-gray-300 max-w-md mx-auto">
             {[
               { to: "/viewer-student-home", icon: <FaHome size={22} /> },
               {
@@ -118,7 +118,7 @@ const StudentBase = () => {
                   <FaPlus
                     size={22}
                     onClick={() => setShowCreatePostModal(true)}
-                    className="cursor-pointer text-yellow-400 hover:scale-110 transition-transform duration-300"
+                    className="cursor-pointer text-white hover:text-yellow-400 scale-110 transition-transform duration-300"
                   />
                 ),
               },
@@ -133,7 +133,7 @@ const StudentBase = () => {
             ].map(({ to, icon }, index) => (
               <div
                 key={index}
-                className="hover:text-yellow-400 transition-all duration-300 hover:scale-110"
+                className="hover:text-yellow-400 transition-all duration-300 hover:scale-110 mx-2"
               >
                 {to ? (
                   <Link to={to} aria-label={to}>

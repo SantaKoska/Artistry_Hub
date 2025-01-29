@@ -101,7 +101,7 @@ const ServiceProviderBase = () => {
       {/* Footer Navigation Section */}
       <div className="bg-black shadow-lg backdrop-filter backdrop-blur-md bg-opacity-90 fixed bottom-0 w-full z-50">
         <footer>
-          <nav className="flex justify-around p-2 text-white">
+          <nav className="flex justify-around p-2 text-white max-w-md mx-auto">
             {[
               { to: "/Service-Provider-home", icon: <FaHome size={20} /> },
               {
@@ -116,7 +116,7 @@ const ServiceProviderBase = () => {
             ].map(({ to, icon }, index) => (
               <div
                 key={index}
-                className="hover:text-yellow-400 transition-colors duration-300"
+                className="hover:text-yellow-400 transition-colors duration-300 mx-2"
               >
                 {to ? (
                   <Link to={to} aria-label={to}>

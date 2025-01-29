@@ -8,6 +8,7 @@ const LearningCourse = require("../models/LearningCourseModel");
 const ServiceRequest = require("../models/ServiceRequestModels");
 const path = require("path");
 const multer = require("multer");
+const ArtFormSpecialization = require("../models/ArtFormSpecializationModels"); // Import the model
 
 //authentication
 const { verifyToken } = require("../utils/tokendec");
@@ -214,8 +215,7 @@ const findChapterInCourse = (course, chapterId) => {
 
 // Create a new course
 router.post("/create-course", verifyToken, async (req, res) => {
-  const { courseName, level } = req.body;
-  // console.log("req body", req.body);
+  const { courseName, level, artForm, specialization } = req.body;
   try {
     const existingCourse = await LearningCourse.findOne({ courseName });
     if (existingCourse) {
@@ -225,11 +225,15 @@ router.post("/create-course", verifyToken, async (req, res) => {
     const newCourse = new LearningCourse({
       courseName,
       level,
+      artForm,
+      specialization,
       chapters: [],
       createdBy: req.user.identifier,
+      certificateSerials: [], // This will now be an empty array without any null values
+      enrolledNumber: 0,
+      enrolledIds: [],
     });
 
-    // console.log("find the new course information", req.user.identifier);
     await newCourse.save();
     await Artist.findOneAndUpdate(
       { userId: req.user.identifier },
@@ -281,7 +285,7 @@ router.get("/my-courses", verifyToken, async (req, res) => {
     const courses = await LearningCourse.find({
       createdBy: req.user.identifier,
     }).populate("chapters");
-
+    // console.log(courses);
     if (!courses.length) {
       return res
         .status(200)
@@ -790,6 +794,47 @@ router.get("/course-analytics", verifyToken, async (req, res) => {
   } catch (error) {
     console.error("Error fetching course analytics:", error);
     res.status(500).json({ message: "Error fetching analytics", error });
+  }
+});
+
+// Get course details by ID
+router.get("/course/:id", verifyToken, async (req, res) => {
+  try {
+    const course = await LearningCourse.findById(req.params.id).populate(
+      "chapters.lessons"
+    );
+    if (!course) {
+      return res.status(404).json({ message: "Course not found." });
+    }
+    res.status(200).json(course);
+  } catch (error) {
+    console.error("Error fetching course details:", error);
+    res.status(500).json({ message: "Error fetching course details", error });
+  }
+});
+
+// Endpoint to get art forms
+router.get("/art-forms", async (req, res) => {
+  try {
+    const artForms = await ArtFormSpecialization.find({});
+    res.json(artForms.map((form) => form.artForm));
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching art forms", error });
+  }
+});
+
+// Endpoint to get specializations based on art form
+router.get("/art-forms/:artForm", async (req, res) => {
+  try {
+    const artForm = await ArtFormSpecialization.findOne({
+      artForm: req.params.artForm,
+    });
+    if (!artForm) {
+      return res.status(404).json({ message: "Art form not found" });
+    }
+    res.json(artForm);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching specializations", error });
   }
 });
 

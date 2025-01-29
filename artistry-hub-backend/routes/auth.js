@@ -10,6 +10,7 @@ const { getToken } = require("../utils/helper");
 const OTPModel = require("../models/OTPModels");
 const { generateOTP, transporter } = require("../utils/mailer");
 const crypto = require("crypto");
+const argon2 = require("argon2");
 
 const router = express.Router();
 
@@ -57,12 +58,13 @@ router.post("/register", async (req, res) => {
   }
 
   // Encrypt the password
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await argon2.hash(password); // Use Argon2 for new users
   const newUserDetails = {
     userName,
     email,
     password: hashedPassword,
     role,
+    hashAlgorithm: "argon2", // Set the hashing algorithm to Argon2
   };
 
   let newUser;
@@ -114,26 +116,40 @@ router.post("/login", async (req, res) => {
   if (!email || !password) {
     return res.status(400).json({ err: "Invalid username or password" });
   }
-  //verify if the user exist
+
+  //verify if the user exists
   const user = await User.findOne({ email: email });
   if (!user) {
     return res.status(400).json({ err: "Invalid username or password" });
   }
 
-  //verify the coreesponding password is crct
-  //can't verify directly encryption
-  const isPasswordValid = await bcrypt.compare(password, user.password);
+  // Check the hashing algorithm
+  let isPasswordValid;
+  if (user.hashAlgorithm === "bcrypt") {
+    isPasswordValid = await bcrypt.compare(password, user.password);
+  } else if (user.hashAlgorithm === "argon2") {
+    isPasswordValid = await argon2.verify(user.password, password);
+  }
+
   if (!isPasswordValid) {
     return res.status(400).json({ err: "Invalid username or password" });
   }
 
-  //generate token fro this user
+  // After successful login, re-hash with Argon2 if the user was using bcrypt
+  if (user.hashAlgorithm === "bcrypt") {
+    const newHashedPassword = await argon2.hash(password);
+    user.password = newHashedPassword;
+    user.hashAlgorithm = "argon2"; // Update the algorithm
+    await user.save(); // Save the updated user
+  }
+
+  //generate token for this user
   const token = await getToken(user);
 
   // GET ROLE
   const role = user.role;
 
-  //sending JSON as responce
+  //sending JSON as response
   const userToReturn = { token, role };
   delete userToReturn.password;
 

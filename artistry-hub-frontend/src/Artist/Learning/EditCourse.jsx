@@ -257,12 +257,12 @@ const EditCourse = ({ selectedCourse }) => {
   };
 
   return (
-    <div className="bg-black text-white rounded-lg p-8 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-40 relative">
+    <div className="bg-black text-white rounded-lg p-4 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-40 relative">
       {/* Course Header */}
-      <div className="mb-6">
+      <div className="mb-4">
+        <h1 className="text-3xl font-bold text-yellow-400 mb-2">Edit Course</h1>
         {editingCourse ? (
           <div className="space-y-4">
-            <h1 className="text-4xl font-bold text-yellow-400">Edit Course</h1>
             <div className="relative my-4">
               <input
                 type="text"
@@ -321,12 +321,12 @@ const EditCourse = ({ selectedCourse }) => {
       </div>
 
       {/* Chapters Section */}
-      <div className="bg-gray-900 shadow-lg rounded-md p-6 mb-6 text-white">
-        <h2 className="text-2xl font-bold text-yellow-400 mb-4">Chapters</h2>
+      <div className="bg-gray-900 shadow-lg rounded-md p-4 mb-4 text-white">
+        <h2 className="text-xl font-bold text-yellow-400 mb-2">Chapters</h2>
         {courseData.chapters.map((chapter) => (
           <div
             key={chapter._id}
-            className="mb-4 bg-gray-800 rounded-md p-4 shadow-sm"
+            className="mb-2 bg-gray-800 rounded-md p-2 shadow-sm"
           >
             <div className="flex justify-between items-center mb-2">
               {editingChapterId === chapter._id ? (
@@ -398,16 +398,16 @@ const EditCourse = ({ selectedCourse }) => {
                 className="w-full h-24 border border-gray-300 rounded-md p-2 bg-gray-700 text-white"
               />
             ) : (
-              <p className="text-gray-400 mb-4">{chapter.description}</p>
+              <p className="text-gray-400 mb-2">{chapter.description}</p>
             )}
 
             {/* Lessons Section */}
-            <div className="bg-gray-800 p-4 rounded-lg mb-4">
-              <h4 className="font-bold mb-2 text-yellow-400">Lessons</h4>
+            <div className="bg-gray-800 p-2 rounded-lg mb-2">
+              <h4 className="font-bold mb-1 text-yellow-400">Lessons</h4>
               {chapter.lessons.map((lesson) => (
                 <div
                   key={lesson._id}
-                  className="mb-2 flex flex-col justify-between items-start"
+                  className="mb-1 flex flex-col justify-between items-start"
                 >
                   {editingLessonId === lesson._id ? (
                     <>
@@ -584,11 +584,10 @@ const EditCourse = ({ selectedCourse }) => {
               ))}
 
               {/* Add New Lesson Section */}
-              <div className="bg-gray-700 p-4 rounded-lg mb-4">
-                <h4 className="font-bold mb-2 text-yellow-400">
+              <div className="bg-gray-700 p-2 rounded-lg mb-2">
+                <h4 className="font-bold mb-1 text-yellow-400">
                   Add New Lesson
                 </h4>
-
                 <input
                   type="text"
                   name="title"
@@ -597,9 +596,8 @@ const EditCourse = ({ selectedCourse }) => {
                     setNewLesson({ ...newLesson, title: e.target.value })
                   }
                   placeholder="Lesson Title"
-                  className="mb-2 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-600 text-white"
+                  className="mb-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-600 text-white"
                 />
-
                 <textarea
                   name="description"
                   value={newLesson.description}
@@ -607,7 +605,7 @@ const EditCourse = ({ selectedCourse }) => {
                     setNewLesson({ ...newLesson, description: e.target.value })
                   }
                   placeholder="Lesson Description"
-                  className="mb-2 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-600 text-white"
+                  className="mb-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-600 text-white"
                 ></textarea>
 
                 {/* Video Upload */}
@@ -680,9 +678,9 @@ const EditCourse = ({ selectedCourse }) => {
                       ? "opacity-50 cursor-not-allowed"
                       : ""
                   }`}
-                  disabled={!newLesson.title || !newLesson.mediaUrl} // Disable button if validation fails
+                  disabled={!newLesson.title || !newLesson.mediaUrl}
                 >
-                  <BiPlus className="mr-1" /> {/* Plus icon */}
+                  <BiPlus className="mr-1" />
                   Add Lesson
                 </button>
               </div>
@@ -691,8 +689,8 @@ const EditCourse = ({ selectedCourse }) => {
         ))}
 
         {/* Add New Chapter Section */}
-        <div className="bg-gray-700 p-6 rounded-lg">
-          <h2 className="text-lg font-bold mb-4 text-yellow-400">
+        <div className="bg-gray-700 p-4 rounded-lg">
+          <h2 className="text-lg font-bold mb-2 text-yellow-400">
             Add New Chapter
           </h2>
           <input
@@ -703,7 +701,7 @@ const EditCourse = ({ selectedCourse }) => {
               setNewChapter({ ...newChapter, title: e.target.value })
             }
             placeholder="Chapter Title"
-            className="mb-2 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-600 text-white"
+            className="mb-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-600 text-white"
           />
           <textarea
             name="description"
@@ -712,16 +710,16 @@ const EditCourse = ({ selectedCourse }) => {
               setNewChapter({ ...newChapter, description: e.target.value })
             }
             placeholder="Chapter Description"
-            className="mb-2 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-600 text-white"
+            className="mb-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-600 text-white"
           ></textarea>
           <button
             onClick={handleAddChapter}
             className={`flex items-center bg-yellow-500 text-black py-2 px-4 rounded hover:bg-yellow-400 ${
               !newChapter.title ? "opacity-50 cursor-not-allowed" : ""
             }`}
-            disabled={!newChapter.title} // Disable button if the title is empty
+            disabled={!newChapter.title}
           >
-            <BiPlus className="mr-1" /> {/* Plus icon */}
+            <BiPlus className="mr-1" />
             Add Chapter
           </button>
         </div>

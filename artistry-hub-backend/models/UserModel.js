@@ -55,6 +55,11 @@ const UserSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    hashAlgorithm: {
+      type: String,
+      required: true,
+      default: "bcrypt",
+    },
   },
   {
     timestamps: true,

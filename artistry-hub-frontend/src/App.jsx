@@ -32,6 +32,7 @@ import ServiceProviderProfile from "./serviceprovider/serviceproviderprofile";
 import InstitutionBase from "./institution/InstitutionBase";
 import InstitutionHome from "./institution/InstitutionHome";
 import InstitutionProfile from "./institution/InstitutionProfile";
+import CertificateVerification from "./Viewer-Student/CertificateVerification";
 
 function App() {
   return (
@@ -141,6 +142,10 @@ function App() {
 
           <Route path="reset-password/:token" element={<ResetPassword />} />
           <Route path="/login" element={<Navigate replace to="/" />} />
+          <Route
+            path="/verify-certificate/:serialNumber"
+            element={<CertificateVerification />}
+          />
         </Routes>
       </div>
     </>

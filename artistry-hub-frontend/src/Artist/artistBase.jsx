@@ -102,7 +102,7 @@ const ArtistBase = () => {
       {/* Footer Navigation Section */}
       <div className="bg-black shadow-lg backdrop-filter backdrop-blur-md bg-opacity-90 fixed bottom-0 w-full z-50">
         <footer>
-          <nav className="flex justify-around p-3 text-white">
+          <nav className="flex justify-around p-3 text-white max-w-md mx-auto">
             {[
               { to: "/artist-Home", icon: <FaHome size={24} /> },
               { to: "/artist-Home/my-courses", icon: <FaBook size={24} /> },
@@ -129,7 +129,7 @@ const ArtistBase = () => {
             ].map(({ to, icon }, index) => (
               <div
                 key={index}
-                className="hover:text-yellow-400 transition-colors duration-300"
+                className="hover:text-yellow-400 transition-colors duration-300 mx-2 md:mx-4"
               >
                 {to ? (
                   <Link to={to} aria-label={to}>

@@ -11,6 +11,8 @@ const Artist = require("../models/ArtistModels");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const multer = require("multer");
+const ArtFormSpecialization = require("../models/ArtFormSpecializationModels");
+const QRCode = require("qrcode"); // Import QRCode library
 
 //authentication
 const { verifyToken } = require("../utils/tokendec");
@@ -631,15 +633,20 @@ router.get("/check-completion/:courseId", verifyToken, async (req, res) => {
   }
 });
 
+const generateUniqueSerial = async () => {
+  // Generate a unique serial number (you can customize this logic)
+  const serial = `CERT-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+  return serial;
+};
+
 router.post(
   "/generate-certificate/:courseId",
   verifyToken,
   async (req, res) => {
     const { courseId } = req.params;
-    const { certificateName } = req.body; // Extracting certificateName from the request body
+    const { certificateName } = req.body;
 
     try {
-      // Fetch the student and their enrolled course details
       const viewerStudent = await ViewerStudent.findOne({
         userId: req.user.identifier,
       });
@@ -648,18 +655,38 @@ router.post(
         (course) => course.courseId.toString() === courseId
       );
 
-      // Check if the course is completed
       if (!enrolledCourse || !enrolledCourse.certificateIssued) {
         return res
           .status(400)
           .json({ message: "Certificate cannot be generated." });
       }
 
-      // Fetch course details
       const course = await LearningCourse.findById(courseId);
       if (!course) {
         return res.status(404).json({ message: "Course not found." });
       }
+
+      // Check if a serial number already exists for this student and course
+      const existingSerial = course.certificateSerials.find(
+        (serial) => serial.studentId.toString() === viewerStudent._id.toString()
+      );
+
+      let serialNumber;
+      if (existingSerial) {
+        // Use the existing serial number
+        serialNumber = existingSerial.serialNumber;
+      } else {
+        // Generate a new unique serial number
+        serialNumber = await generateUniqueSerial();
+
+        // Store the new serial number in the LearningCourse model
+        course.certificateSerials.push({
+          studentId: viewerStudent._id,
+          serialNumber: serialNumber,
+        });
+      }
+
+      await course.save(); // Save the updated course
 
       // Create a PDF document
       const doc = new PDFDocument({ size: "A4", layout: "landscape" });
@@ -675,18 +702,18 @@ router.post(
       const primaryColor = "#333";
       const secondaryColor = "#666";
       const accentColor = "#2980b9"; // A blue accent color for highlights
-      const margin = 50;
+      const margin = 30; // Reduced margin
 
       // Insert logo at the top center
       const logoPath = path.join(__dirname, "../../storage/LOGO.png");
       doc.image(logoPath, (doc.page.width - 80) / 2, margin, { width: 80 });
 
-      doc.moveDown(10);
+      doc.moveDown(5); // Adjusted spacing
 
       // Title "Certificate of Completion" with an accent color
       doc
         .fillColor(accentColor)
-        .fontSize(35)
+        .fontSize(30) // Reduced font size
         .font("Helvetica-Bold")
         .text("Certificate of Completion", { align: "center" });
 
@@ -696,14 +723,14 @@ router.post(
       // Subtitle "This certifies that"
       doc
         .fillColor(primaryColor)
-        .fontSize(20)
+        .fontSize(16) // Reduced font size
         .font("Helvetica")
         .text("This certifies that", { align: "center" });
 
       // Student's Name with larger font size
       doc
         .moveDown(0.5)
-        .fontSize(30)
+        .fontSize(24) // Reduced font size
         .font("Helvetica-Bold")
         .text(certificateName || "Student", {
           align: "center",
@@ -713,45 +740,39 @@ router.post(
       // Text "has successfully completed the course"
       doc
         .moveDown(0.5)
-        .fontSize(20)
+        .fontSize(16) // Reduced font size
         .text("has successfully completed the course:", { align: "center" });
 
       // Course Name
       doc
         .moveDown(0.5)
-        .fontSize(28)
+        .fontSize(24) // Reduced font size
         .font("Helvetica-Bold")
         .fillColor(accentColor)
         .text(course.courseName, { align: "center" });
 
-      // Optional decorative line
+      // Serial Number
       doc
         .moveDown(0.5)
-        .moveTo(margin, doc.y)
-        .lineTo(doc.page.width - margin, doc.y)
-        .strokeColor(accentColor)
-        .stroke();
+        .fontSize(16) // Reduced font size
+        .text(`Serial Number: ${serialNumber}`, { align: "center" });
+
+      // Verification Link
+      const verificationLink = `${process.env.VITE_BACKEND_URL}/verify-certificate/${serialNumber}`;
+      const qrCodeImage = await QRCode.toDataURL(verificationLink);
+
+      // Insert QR Code
+      doc.moveDown(1);
+      doc.image(qrCodeImage, { width: 100, align: "center" });
 
       // Issue Date
       doc
         .moveDown(1)
-        .fontSize(18)
+        .fontSize(16) // Reduced font size
         .fillColor(secondaryColor)
         .text("Issued on: " + new Date().toLocaleDateString(), {
           align: "center",
         });
-
-      // Signature (optional) - you can uncomment if needed
-      // doc
-      //     .moveDown(2)
-      //     .fontSize(16)
-      //     .fillColor(primaryColor)
-      //     .text("Signature", margin, doc.page.height - margin - 40, { align: "left" })
-      //     .moveTo(margin, doc.page.height - margin - 30)
-      //     .lineTo(margin + 150, doc.page.height - margin - 30)
-      //     .stroke();
-
-      // Organization/Institute Name (aligned right)
 
       // End the document
       doc.end();
@@ -770,7 +791,7 @@ router.post(
   }
 );
 
-// Fetch student analytics with date range
+// Get student analytics with date range
 router.get("/student-analytics", verifyToken, async (req, res) => {
   const { startDate, endDate } = req.query;
 
@@ -778,8 +799,6 @@ router.get("/student-analytics", verifyToken, async (req, res) => {
     const viewerStudent = await ViewerStudent.findOne({
       userId: req.user.identifier,
     }).populate("enrolledCourses.courseId");
-
-    // console.log("Viewer Student Data:", viewerStudent); // Log student data
 
     if (!viewerStudent) {
       return res.status(404).json({ message: "Student not found" });
@@ -797,7 +816,19 @@ router.get("/student-analytics", verifyToken, async (req, res) => {
 
     // Calculate analytics
     const analytics = viewerStudent.enrolledCourses.map((course) => {
-      const totalLessons = course.courseId.chapters.reduce(
+      const courseDetails = course.courseId; // Get the course details
+
+      // Check if courseDetails is valid
+      if (!courseDetails || !courseDetails.chapters) {
+        return {
+          courseName: courseDetails
+            ? courseDetails.courseName
+            : "Unknown Course",
+          progress: 0,
+        };
+      }
+
+      const totalLessons = courseDetails.chapters.reduce(
         (total, chapter) =>
           total + (chapter.lessons ? chapter.lessons.length : 0),
         0
@@ -806,15 +837,13 @@ router.get("/student-analytics", verifyToken, async (req, res) => {
       const completedLessons = course.tickedLessons.length;
 
       return {
-        courseName: course.courseId.courseName,
+        courseName: courseDetails.courseName,
         progress:
           totalLessons > 0
             ? Math.round((completedLessons / totalLessons) * 100)
             : 0,
       };
     });
-
-    // console.log("Analytics Data:", analytics); // Log analytics data
 
     // Return the analytics data
     res.status(200).json({
@@ -835,6 +864,87 @@ router.get("/student-analytics", verifyToken, async (req, res) => {
   } catch (error) {
     console.error("Error fetching student analytics:", error);
     res.status(500).json({ message: "Error fetching analytics" });
+  }
+});
+
+router.get("/verify-certificate/:serialNumber", async (req, res) => {
+  const { serialNumber } = req.params;
+
+  try {
+    // Find the course that has the given serial number
+    const course = await LearningCourse.findOne({
+      "certificateSerials.serialNumber": serialNumber,
+    }).populate("certificateSerials.studentId");
+
+    if (!course) {
+      return res.status(404).json({ message: "Certificate not found." });
+    }
+
+    // Find the student associated with the serial number
+    const student = course.certificateSerials.find(
+      (serial) => serial.serialNumber === serialNumber
+    );
+
+    if (!student) {
+      return res.status(404).json({ message: "Certificate not found." });
+    }
+
+    // Log the studentId being used to find the viewer student
+    // console.log("Student ID:", student.studentId._id);
+
+    // Find the viewer student to get the certificate name
+    const viewerStudent = await ViewerStudent.findOne({
+      userId: student.studentId.userId, // Ensure this matches the userId in ViewerStudent
+      "enrolledCourses.courseId": course._id,
+    });
+
+    // Log the viewerStudent query result
+    // console.log("Viewer Student:", viewerStudent);
+
+    if (!viewerStudent) {
+      return res.status(404).json({ message: "Viewer student not found." });
+    }
+
+    const certificateName =
+      viewerStudent.enrolledCourses.find(
+        (enrolled) => enrolled.courseId.toString() === course._id.toString()
+      )?.certificateName || "N/A"; // Default to "N/A" if not found
+
+    // Return the certificate details
+    res.status(200).json({
+      message: "Certificate is valid.",
+      courseName: course.courseName,
+      issuedDate: course.createdAt,
+      serialNumber: student.serialNumber,
+      certificateName, // Include the certificate name
+    });
+  } catch (error) {
+    console.error("Error verifying certificate:", error);
+    res.status(500).json({ message: "Error verifying certificate." });
+  }
+});
+
+// Fetch art forms
+router.get("/art-forms", async (req, res) => {
+  try {
+    const artForms = await ArtFormSpecialization.find({});
+    res.json(artForms.map((form) => form.artForm));
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching art forms", error });
+  }
+});
+
+// Fetch specializations based on art form
+router.get("/specializations", async (req, res) => {
+  const { artForm } = req.query; // Assuming artForm is passed as a query parameter
+  try {
+    const specializations = await ArtFormSpecialization.findOne({ artForm });
+    if (!specializations) {
+      return res.status(404).json({ message: "Art form not found" });
+    }
+    res.json(specializations.specializations);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching specializations", error });
   }
 });
 

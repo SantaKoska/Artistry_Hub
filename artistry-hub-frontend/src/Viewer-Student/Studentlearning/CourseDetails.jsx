@@ -243,6 +243,12 @@ const CourseDetails = ({
           </div>
         )}
       </div>
+
+      {isCertificateReady && (
+        <div className="mt-4">
+          <h3 className="text-lg font-semibold">Your Certificate is Ready!</h3>
+        </div>
+      )}
     </div>
   );
 };
