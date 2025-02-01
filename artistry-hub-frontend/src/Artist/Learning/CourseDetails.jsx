@@ -18,6 +18,9 @@ const CourseDetails = ({ courseId, setActiveSection, setSelectedCourse }) => {
   const [expandedLessonDescription, setExpandedLessonDescription] = useState(
     {}
   );
+  const [selectedChapter, setSelectedChapter] = useState(null);
+  const [selectedLesson, setSelectedLesson] = useState(null);
+  console.log(selectedLesson);
 
   useEffect(() => {
     const fetchCourseDetails = async () => {
@@ -67,6 +70,17 @@ const CourseDetails = ({ courseId, setActiveSection, setSelectedCourse }) => {
     }
   };
 
+  const handleChapterClick = (chapter) => {
+    setSelectedChapter(chapter);
+    setSelectedLesson(null);
+    setExpandedChapter(chapter._id);
+  };
+
+  const handleLessonClick = (lesson) => {
+    setSelectedLesson(lesson);
+    setExpandedLesson(lesson._id);
+  };
+
   const toggleChapter = (chapterId) => {
     setExpandedChapter(expandedChapter === chapterId ? null : chapterId);
   };
@@ -92,126 +106,129 @@ const CourseDetails = ({ courseId, setActiveSection, setSelectedCourse }) => {
   if (!course) return <p>Loading...</p>;
 
   return (
-    <div className="bg-gray-900 text-white rounded-lg p-8 shadow-lg">
-      <h1 className="text-5xl font-bold text-yellow-400 mb-6 border-b-2 border-yellow-400 pb-2">
-        {course.courseName}
-      </h1>
-      <div className="flex justify-between mb-6">
-        <button
-          onClick={handleEditClick}
-          className="bg-yellow-500 text-black p-3 rounded-lg hover:bg-yellow-400 transition duration-200"
-        >
-          <BiEdit className="w-5 h-5 inline" />
-        </button>
-        <button
-          onClick={handleDeleteClick}
-          className="bg-red-600 text-white p-3 rounded-lg hover:bg-red-500 transition duration-200"
-        >
-          <BiTrash className="w-5 h-5 inline" />
-        </button>
-      </div>
-      {course.chapters.map((chapter, index) => (
-        <div key={chapter._id} className="mb-6">
-          <h2
-            className="text-3xl font-semibold cursor-pointer flex items-center border-b-2 border-gray-700 pb-2"
-            onClick={() => toggleChapter(chapter._id)}
-          >
-            <span className="text-yellow-400">{`Chapter ${index + 1}: `}</span>
-            {chapter.title}
-            {expandedChapter === chapter._id ? (
-              <BiChevronUp className="ml-2" />
-            ) : (
-              <BiChevronDown className="ml-2" />
-            )}
-          </h2>
-          {expandedChapter === chapter._id && (
-            <div className="bg-gray-800 p-4 rounded-lg mb-2 ml-4">
-              <p className="text-gray-300 mb-2">
-                {chapter.description.length > 100 &&
-                !expandedChapterDescription[chapter._id]
-                  ? `${chapter.description.slice(0, 100)}... `
-                  : chapter.description}
-                {chapter.description.length > 100 && (
-                  <button
-                    className="text-blue-400 hover:underline"
-                    onClick={() => toggleChapterDescription(chapter._id)}
+    <div className="flex h-screen">
+      {/* Navigation Sidebar */}
+      <div className="w-1/4 bg-gray-800 p-4 overflow-y-auto">
+        {course.chapters.map((chapter, index) => (
+          <div key={chapter._id} className="mb-4">
+            <div
+              className={`flex items-center justify-between p-2 rounded cursor-pointer ${
+                selectedChapter?._id === chapter._id ? "bg-gray-700" : ""
+              }`}
+              onClick={() => handleChapterClick(chapter)}
+            >
+              <h2 className="text-xl font-semibold text-yellow-400">
+                {`Chapter ${index + 1}: ${chapter.title}`}
+              </h2>
+              {expandedChapter === chapter._id ? (
+                <BiChevronUp className="text-yellow-400" />
+              ) : (
+                <BiChevronDown className="text-yellow-400" />
+              )}
+            </div>
+            {expandedChapter === chapter._id && (
+              <div className="ml-4 mt-2">
+                {chapter.lessons.map((lesson, lessonIndex) => (
+                  <div
+                    key={lesson._id}
+                    className={`p-2 rounded cursor-pointer ${
+                      selectedLesson?._id === lesson._id ? "bg-gray-700" : ""
+                    }`}
+                    onClick={() => handleLessonClick(lesson)}
                   >
-                    {expandedChapterDescription[chapter._id]
-                      ? "Read Less"
-                      : "Read More"}
-                  </button>
-                )}
-              </p>
-              <div className="mt-2">
-                {chapter.lessons.map((lesson, index) => (
-                  <div key={lesson._id} className="mb-4">
-                    <h3
-                      className="text-xl font-bold cursor-pointer flex items-center"
-                      onClick={() => toggleLesson(lesson._id)}
-                    >
-                      <span className="text-yellow-400">{`Lesson ${
-                        index + 1
-                      }: `}</span>
-                      {lesson.title}
-                      <span className="ml-2">
-                        {expandedLesson === lesson._id ? (
-                          <BiChevronUp />
-                        ) : (
-                          <BiChevronDown />
-                        )}
-                      </span>
+                    <h3 className="text-lg text-gray-300">
+                      {`Lesson ${lessonIndex + 1}: ${lesson.title}`}
                     </h3>
-                    {expandedLesson === lesson._id && (
-                      <div className="bg-gray-700 p-4 rounded-lg mb-2 ml-4">
-                        <p className="text-gray-300 mb-2">
-                          {lesson.description.length > 100 &&
-                          !expandedLessonDescription[lesson._id]
-                            ? `${lesson.description.slice(0, 100)}... `
-                            : lesson.description}
-                          {lesson.description.length > 100 && (
-                            <button
-                              className="text-blue-400 hover:underline"
-                              onClick={() =>
-                                toggleLessonDescription(lesson._id)
-                              }
-                            >
-                              {expandedLessonDescription[lesson._id]
-                                ? "Read Less"
-                                : "Read More"}
-                            </button>
-                          )}
-                        </p>
-                        {lesson.mediaUrl && (
-                          <video
-                            src={`${import.meta.env.VITE_BACKEND_URL}${
-                              lesson.mediaUrl
-                            }`}
-                            controls
-                            className="w-full rounded-lg"
-                          />
-                        )}
-                        {lesson.noteUrl && (
-                          <div className="mt-4 flex items-center">
-                            <a
-                              href={lesson.noteUrl}
-                              className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-500 transition duration-200 flex items-center"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <BiDownload className="w-5 h-5 mr-2" />
-                              Download Note
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Content Area */}
+      <div className="w-3/4 bg-gray-900 text-white p-8 overflow-y-auto">
+        <div className="flex justify-between mb-6">
+          <h1 className="text-5xl font-bold text-yellow-400 border-b-2 border-yellow-400 pb-2">
+            {course.courseName}
+          </h1>
+          <div className="flex gap-2">
+            <button
+              onClick={handleEditClick}
+              className="bg-yellow-500 text-black p-3 rounded-lg hover:bg-yellow-400 transition duration-200"
+            >
+              <BiEdit className="w-5 h-5" />
+            </button>
+            <button
+              onClick={handleDeleteClick}
+              className="bg-red-600 text-white p-3 rounded-lg hover:bg-red-500 transition duration-200"
+            >
+              <BiTrash className="w-5 h-5" />
+            </button>
+          </div>
         </div>
-      ))}
+
+        {/* Display Chapter Content */}
+        {selectedChapter && !selectedLesson && (
+          <div className="mt-6">
+            <h2 className="text-3xl font-semibold mb-4">
+              {selectedChapter.title}
+            </h2>
+            <div className="bg-gray-800 p-4 rounded-lg">
+              <p className="text-gray-300">{selectedChapter.description}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Display Lesson Content */}
+        {selectedLesson && (
+          <div className="mt-6">
+            <h2 className="text-3xl font-semibold mb-4">
+              {selectedLesson.title}
+            </h2>
+            <div className="space-y-6">
+              {selectedLesson.mediaUrl && (
+                <div className="bg-gray-800 p-4 rounded-lg">
+                  <h3 className="text-xl font-semibold mb-2">Video</h3>
+                  <video
+                    controls
+                    className="w-full rounded"
+                    src={`${import.meta.env.VITE_BACKEND_URL}${
+                      selectedLesson.mediaUrl
+                    }`}
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              )}
+
+              {selectedLesson.description && (
+                <div className="bg-gray-800 p-4 rounded-lg">
+                  <h3 className="text-xl font-semibold mb-2">Description</h3>
+                  <p className="text-gray-300">{selectedLesson.description}</p>
+                </div>
+              )}
+
+              {selectedLesson.noteUrl && (
+                <div className="bg-gray-800 p-4 rounded-lg">
+                  <h3 className="text-xl font-semibold mb-2">Notes</h3>
+                  <a
+                    href={`${import.meta.env.VITE_BACKEND_URL}${
+                      selectedLesson.noteUrl
+                    }`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-yellow-400 hover:text-yellow-300 flex items-center gap-2"
+                  >
+                    <BiDownload /> Download Notes
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

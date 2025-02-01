@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import Modal from "react-modal";
 import { useNavigate } from "react-router-dom";
+import { FaTrash } from "react-icons/fa";
 
 Modal.setAppElement("#root");
 
@@ -180,7 +181,7 @@ const StudentProfile = () => {
             onClick={() => handleOpenConfirmationModal(post._id)}
             className="text-red-400 hover:text-red-300 transition-colors duration-300"
           >
-            Delete
+            <FaTrash className="text-red-500" />
           </button>
         </div>
       </div>

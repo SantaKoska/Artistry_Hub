@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import Modal from "react-modal";
 import { useNavigate } from "react-router-dom";
+import { FaTrash } from "react-icons/fa";
 
 Modal.setAppElement("#root");
 
@@ -157,7 +158,7 @@ const InstitutionProfile = () => {
           onClick={() => handleOpenConfirmationModal(post._id)}
           className="mt-2 text-red-500 font-semibold rounded-full bg-white hover:bg-red-500 hover:text-white py-2 px-4 transition-colors duration-400"
         >
-          Delete Post
+          <FaTrash className="text-red-500" />
         </button>
       </div>
     );

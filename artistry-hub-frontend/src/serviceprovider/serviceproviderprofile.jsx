@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Modal from "react-modal";
 import { toast } from "react-toastify";
+import { FaTrash } from "react-icons/fa";
 
 const ServiceProviderProfile = () => {
   const [profile, setProfile] = useState(null);
@@ -176,7 +177,7 @@ const ServiceProviderProfile = () => {
           onClick={() => handleOpenConfirmationModal(post._id)}
           className="mt-2 text-red-500 font-semibold rounded-full bg-white hover:bg-red-500 hover:text-white py-2 px-4 transition-colors duration-400"
         >
-          Delete Post
+          <FaTrash className="text-red-500" />
         </button>
       </div>
     );
