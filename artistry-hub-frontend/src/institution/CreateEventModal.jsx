@@ -196,9 +196,24 @@ const CreateEventModal = ({ onClose, onSuccess }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-gray-800 rounded-lg p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-6 text-yellow-400">
+        <h2 className="text-2xl font-bold mb-2 text-yellow-400">
           Create New Event
         </h2>
+
+        <div className="mb-6 p-4 bg-gray-700 rounded-lg border border-yellow-400">
+          <p className="text-yellow-400 font-semibold mb-2">
+            Important Reminder:
+          </p>
+          <ul className="text-gray-300 text-sm list-disc list-inside space-y-1">
+            <li>Please review all fields carefully before submission</li>
+            <li>Event details cannot be modified after creation</li>
+            <li>Only event posters can be edited or deleted later</li>
+            <li>
+              For external events, registration data will not be available
+            </li>
+          </ul>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1 text-white">

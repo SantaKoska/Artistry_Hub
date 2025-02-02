@@ -99,7 +99,7 @@ router.post("/instrument-service", verifyToken, async (req, res) => {
     // Only proceed with AI call if there's at least one valid keyword
     const completion = await client.chat.completions.create({
       model: "klusterai/Meta-Llama-3.1-8B-Instruct-Turbo",
-      max_completion_tokens: 5000,
+      max_completion_tokens: 2000,
       temperature: 1,
       top_p: 1,
       messages: messages,

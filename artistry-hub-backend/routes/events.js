@@ -4,6 +4,8 @@ const multer = require("multer");
 const Event = require("../models/EventModel");
 const { verifyToken } = require("../utils/tokendec");
 const Job = require("../models/JobModel");
+const path = require("path");
+const fs = require("fs");
 
 // Configure multer for poster uploads
 const storage = multer.diskStorage({
@@ -115,15 +117,17 @@ router.post(
 router.get("/", verifyToken, async (req, res) => {
   try {
     const { targetAudience, artForm, specialization } = req.query;
+    const userRole = req.user.role; // Get user's role from token
 
     let query = {
       lastRegistrationDate: { $gte: new Date() }, // Only show active events
+      $or: [
+        { targetAudience: userRole }, // Match exact role
+        { targetAudience: "both" }, // Or show if it's for both
+      ],
     };
 
-    if (targetAudience) {
-      query.targetAudience = { $in: [targetAudience, "both"] };
-    }
-
+    // Only add optional filters if they exist
     if (artForm) {
       query.artForm = artForm;
     }
@@ -158,15 +162,17 @@ router.get("/institution", verifyToken, async (req, res) => {
       institutionId: req.user.identifier,
     }).sort({ createdAt: -1 });
 
-    const statistics = events.map((event) => ({
-      eventName: event.eventName,
-      totalRegistrations: event.registrations.length,
-      registrationsByDate: event.registrations.reduce((acc, reg) => {
-        const date = reg.registrationDate.toISOString().split("T")[0];
-        acc[date] = (acc[date] || 0) + 1;
-        return acc;
-      }, {}),
-    }));
+    const statistics = events
+      .filter((event) => event.registrationType !== "external") // Only include non-external events
+      .map((event) => ({
+        eventName: event.eventName,
+        totalRegistrations: event.registrations.length,
+        registrationsByDate: event.registrations.reduce((acc, reg) => {
+          const date = reg.registrationDate.toISOString().split("T")[0];
+          acc[date] = (acc[date] || 0) + 1;
+          return acc;
+        }, {}),
+      }));
 
     res.json({ events, statistics });
   } catch (error) {
@@ -202,14 +208,9 @@ router.post("/:eventId/register", verifyToken, async (req, res) => {
         .json({ message: "You have already registered for this event" });
     }
 
-    // Validate user details if required
-    if (event.registrationType === "internal" && !req.body.userDetails) {
-      return res.status(400).json({ message: "User details are required" });
-    }
-
     event.registrations.push({
       userId: req.user.identifier,
-      userDetails: req.body.userDetails,
+      userDetails: req.body.userDetails || "",
     });
 
     await event.save();
@@ -262,6 +263,13 @@ router.get(
         return res.status(403).json({ message: "Unauthorized access" });
       }
 
+      // Prevent download for external events
+      if (event.registrationType === "external") {
+        return res
+          .status(400)
+          .json({ message: "Download not available for external events" });
+      }
+
       // Create CSV content
       const csvRows = ["Username,Email,Registration Date,Additional Details"];
       event.registrations.forEach((reg) => {
@@ -282,6 +290,104 @@ router.get(
       res
         .status(500)
         .json({ message: "Error downloading registrations", error });
+    }
+  }
+);
+
+// Delete event
+router.delete("/:eventId", verifyToken, async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.eventId);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (event.institutionId.toString() !== req.user.identifier) {
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to delete this event" });
+    }
+
+    // Delete associated poster files
+    event.posters.forEach((poster) => {
+      const filePath = path.join(__dirname, "..", poster);
+      fs.unlink(filePath, (err) => {
+        if (err) console.error("Error deleting poster:", err);
+      });
+    });
+
+    await event.deleteOne();
+    res.json({ message: "Event deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting event", error });
+  }
+});
+
+// Update event posters
+router.patch(
+  "/:eventId/posters",
+  verifyToken,
+  upload.array("posters", 5),
+  async (req, res) => {
+    try {
+      const event = await Event.findById(req.params.eventId);
+
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+
+      if (event.institutionId.toString() !== req.user.identifier) {
+        return res
+          .status(403)
+          .json({ message: "Unauthorized to update this event" });
+      }
+
+      const newPosters = req.files.map((file) => `/events/${file.filename}`);
+      event.posters = [...event.posters, ...newPosters];
+      await event.save();
+
+      res.json({ posters: event.posters });
+    } catch (error) {
+      res.status(500).json({ message: "Error updating posters", error });
+    }
+  }
+);
+
+// Delete event poster
+router.delete(
+  "/:eventId/posters/:posterIndex",
+  verifyToken,
+  async (req, res) => {
+    try {
+      const event = await Event.findById(req.params.eventId);
+
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+
+      if (event.institutionId.toString() !== req.user.identifier) {
+        return res
+          .status(403)
+          .json({ message: "Unauthorized to update this event" });
+      }
+
+      const posterIndex = parseInt(req.params.posterIndex);
+      const posterPath = event.posters[posterIndex];
+
+      if (posterPath) {
+        const filePath = path.join(__dirname, "..", posterPath);
+        fs.unlink(filePath, (err) => {
+          if (err) console.error("Error deleting poster:", err);
+        });
+
+        event.posters.splice(posterIndex, 1);
+        await event.save();
+      }
+
+      res.json({ posters: event.posters });
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting poster", error });
     }
   }
 );

@@ -100,6 +100,7 @@ const Opportunities = () => {
     e.preventDefault();
     const token = localStorage.getItem("token");
     const formData = new FormData(e.target);
+    const comments = formData.get("comments");
 
     try {
       const endpoint =
@@ -107,13 +108,31 @@ const Opportunities = () => {
           ? `/jobs/${selectedItem._id}/apply`
           : `/events/${selectedItem._id}/register`;
 
+      // Create the appropriate payload based on type
+      let payload;
+      if (selectedItem.type === "job") {
+        if (!formData.get("resume")) {
+          toast.error("Please upload a resume");
+          return;
+        }
+        payload = formData;
+      } else {
+        // For events, always send comments (can be empty)
+        payload = {
+          userDetails: comments || "",
+        };
+      }
+
       await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}${endpoint}`,
-        formData,
+        payload,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
+            "Content-Type":
+              selectedItem.type === "job"
+                ? "multipart/form-data"
+                : "application/json",
           },
         }
       );
@@ -122,6 +141,7 @@ const Opportunities = () => {
       setShowRegistrationModal(false);
       fetchOpportunities();
     } catch (error) {
+      console.error("Registration error details:", error.response?.data);
       toast.error(
         error.response?.data?.message ||
           `Error applying for ${selectedItem.type}`

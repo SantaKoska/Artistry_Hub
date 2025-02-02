@@ -16,6 +16,7 @@ import { toast } from "react-toastify";
 import CreateJobModal from "./CreateJobModal";
 import CreateEventModal from "./CreateEventModal";
 import Modal from "react-modal";
+import { FiEdit2, FiTrash2 } from "react-icons/fi";
 
 // Register ChartJS components
 ChartJS.register(
@@ -39,6 +40,10 @@ const InstitutionOpportunities = () => {
   const [eventStats, setEventStats] = useState([]);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [showEditPosters, setShowEditPosters] = useState(false);
+  const [newPosters, setNewPosters] = useState([]);
+  const [posterPreviews, setPosterPreviews] = useState([]);
 
   useEffect(() => {
     fetchOpportunities();
@@ -147,6 +152,112 @@ const InstitutionOpportunities = () => {
   const handleItemClick = (item, type) => {
     setSelectedItem({ ...item, type });
     setShowDetailsModal(true);
+  };
+
+  const handlePosterUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const currentPosters = selectedItem?.posters?.length || 0;
+
+    if (files.length + currentPosters > 5) {
+      toast.error("Maximum 5 posters allowed");
+      return;
+    }
+
+    const validTypes = ["image/jpeg", "image/png", "image/jpg"];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    const invalidFiles = files.filter(
+      (file) => !validTypes.includes(file.type) || file.size > maxSize
+    );
+
+    if (invalidFiles.length > 0) {
+      toast.error("Only JPG/PNG files under 5MB are allowed");
+      return;
+    }
+
+    setNewPosters([...newPosters, ...files]);
+    const newPreviews = files.map((file) => URL.createObjectURL(file));
+    setPosterPreviews([...posterPreviews, ...newPreviews]);
+  };
+
+  const handleDeletePoster = async (index) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(
+        `${import.meta.env.VITE_BACKEND_URL}/events/${
+          selectedItem._id
+        }/posters/${index}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const updatedItem = { ...selectedItem };
+      updatedItem.posters.splice(index, 1);
+      setSelectedItem(updatedItem);
+      toast.success("Poster deleted successfully");
+    } catch (error) {
+      toast.error("Error deleting poster");
+    }
+  };
+
+  const handleSavePosters = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      newPosters.forEach((poster) => {
+        formData.append("posters", poster);
+      });
+
+      const response = await axios.patch(
+        `${import.meta.env.VITE_BACKEND_URL}/events/${
+          selectedItem._id
+        }/posters`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      setSelectedItem({ ...selectedItem, posters: response.data.posters });
+      setNewPosters([]);
+      setPosterPreviews([]);
+      setShowEditPosters(false);
+      toast.success("Posters updated successfully");
+    } catch (error) {
+      toast.error("Error updating posters");
+    }
+  };
+
+  const handleDelete = async (item, type) => {
+    try {
+      const token = localStorage.getItem("token");
+      const endpoint = type === "job" ? "jobs" : "events";
+
+      await axios.delete(
+        `${import.meta.env.VITE_BACKEND_URL}/${endpoint}/${item._id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      // Update local state to remove the deleted item
+      if (type === "job") {
+        setJobs(jobs.filter((job) => job._id !== item._id));
+      } else {
+        setEvents(events.filter((event) => event._id !== item._id));
+      }
+
+      setShowConfirmDelete(false);
+      setShowDetailsModal(false);
+      toast.success(`${type === "job" ? "Job" : "Event"} deleted successfully`);
+    } catch (error) {
+      toast.error(`Error deleting ${type}`);
+      console.error("Delete error:", error);
+    }
   };
 
   return (
@@ -279,24 +390,40 @@ const InstitutionOpportunities = () => {
                   ? selectedItem.jobTitle
                   : selectedItem.eventName}
               </h2>
-              <button
-                onClick={() => setShowDetailsModal(false)}
-                className="text-gray-400 hover:text-white"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <div className="flex space-x-2">
+                {selectedItem.type === "event" && (
+                  <button
+                    onClick={() => setShowEditPosters(true)}
+                    className="text-yellow-400 hover:text-yellow-500"
+                  >
+                    <FiEdit2 size={20} />
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowConfirmDelete(true)}
+                  className="text-red-500 hover:text-red-600"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+                  <FiTrash2 size={20} />
+                </button>
+                <button
+                  onClick={() => setShowDetailsModal(false)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -390,18 +517,173 @@ const InstitutionOpportunities = () => {
                     </div>
                   )}
 
-                <button
-                  onClick={() => downloadRegistrantsData(selectedItem)}
-                  className="w-full bg-yellow-400 text-black px-6 py-3 rounded-lg font-semibold hover:bg-yellow-500 transition-colors"
-                >
-                  Download{" "}
-                  {selectedItem.type === "job" ? "Applicants" : "Registrants"}{" "}
-                  Data
-                </button>
+                {selectedItem &&
+                  selectedItem.registrationType !== "external" && (
+                    <button
+                      onClick={() => downloadRegistrantsData(selectedItem)}
+                      className="w-full bg-yellow-400 text-black px-6 py-3 rounded-lg font-semibold hover:bg-yellow-500 transition-colors"
+                    >
+                      Download{" "}
+                      {selectedItem.type === "job"
+                        ? "Applicants"
+                        : "Registrants"}{" "}
+                      Data
+                    </button>
+                  )}
               </div>
             </div>
           </div>
         )}
+      </Modal>
+
+      <Modal
+        isOpen={showEditPosters}
+        onRequestClose={() => {
+          setShowEditPosters(false);
+          setNewPosters([]);
+          setPosterPreviews([]);
+        }}
+        className="modal bg-gray-800 rounded-lg p-8 w-full max-w-2xl mx-auto mt-20"
+        overlayClassName="overlay fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center"
+      >
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold text-yellow-400">
+              Edit Event Posters
+            </h2>
+            <button
+              onClick={() => {
+                setShowEditPosters(false);
+                setNewPosters([]);
+                setPosterPreviews([]);
+              }}
+              className="text-gray-400 hover:text-white"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Current Posters</h3>
+            <div className="grid grid-cols-3 gap-4">
+              {selectedItem?.posters?.map((poster, index) => (
+                <div key={index} className="relative">
+                  <img
+                    src={`${import.meta.env.VITE_BACKEND_URL}${poster}`}
+                    alt={`Event poster ${index + 1}`}
+                    className="w-full h-32 object-cover rounded"
+                  />
+                  <button
+                    onClick={() => handleDeletePoster(index)}
+                    className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1"
+                  >
+                    <FiTrash2 className="text-white" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Add New Posters</h3>
+            <div className="grid grid-cols-3 gap-4">
+              {posterPreviews.map((preview, index) => (
+                <div key={index} className="relative">
+                  <img
+                    src={preview}
+                    alt={`New poster ${index + 1}`}
+                    className="w-full h-32 object-cover rounded"
+                  />
+                  <button
+                    onClick={() => {
+                      setNewPosters(newPosters.filter((_, i) => i !== index));
+                      setPosterPreviews(
+                        posterPreviews.filter((_, i) => i !== index)
+                      );
+                    }}
+                    className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1"
+                  >
+                    <FiTrash2 className="text-white" />
+                  </button>
+                </div>
+              ))}
+              {(selectedItem?.posters?.length || 0) + newPosters.length < 5 && (
+                <label className="border-2 border-dashed border-gray-400 rounded flex items-center justify-center h-32 cursor-pointer hover:border-yellow-400">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePosterUpload}
+                    className="hidden"
+                    multiple
+                  />
+                  <span className="text-gray-400">+ Add Poster</span>
+                </label>
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-4">
+            <button
+              onClick={() => {
+                setShowEditPosters(false);
+                setNewPosters([]);
+                setPosterPreviews([]);
+              }}
+              className="px-4 py-2 bg-gray-600 text-white rounded"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSavePosters}
+              className="px-4 py-2 bg-yellow-400 text-black rounded"
+              disabled={newPosters.length === 0}
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showConfirmDelete}
+        onRequestClose={() => setShowConfirmDelete(false)}
+        className="modal bg-gray-800 rounded-lg p-8 w-full max-w-md mx-auto mt-20"
+        overlayClassName="overlay fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center"
+      >
+        <h2 className="text-xl font-bold mb-4">Confirm Delete</h2>
+        <p className="mb-6">
+          Are you sure you want to delete this {selectedItem?.type}? This action
+          cannot be undone.
+        </p>
+        <div className="flex justify-end space-x-4">
+          <button
+            onClick={() => setShowConfirmDelete(false)}
+            className="px-4 py-2 bg-gray-600 text-white rounded"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              handleDelete(selectedItem, selectedItem.type);
+              setShowDetailsModal(false);
+            }}
+            className="px-4 py-2 bg-red-500 text-white rounded"
+          >
+            Delete
+          </button>
+        </div>
       </Modal>
 
       {showCreateJobModal && (

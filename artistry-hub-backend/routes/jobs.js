@@ -67,16 +67,17 @@ router.post("/create", verifyToken, validateJob, async (req, res) => {
 router.get("/", verifyToken, async (req, res) => {
   try {
     const { targetRole, artForm, specialization, jobType } = req.query;
+    const userRole = req.user.role; // Get user's role from token
 
     let query = {
       lastDate: { $gte: new Date() }, // Only show active jobs
+      $or: [
+        { targetRole: userRole }, // Match exact role
+        { targetRole: "both" }, // Or show if it's for both
+      ],
     };
 
-    // Only add filters if they exist
-    if (targetRole) {
-      query.targetRole = { $in: [targetRole, "both"] };
-    }
-
+    // Only add optional filters if they exist
     if (artForm) {
       query.artForm = artForm;
     }
@@ -89,7 +90,6 @@ router.get("/", verifyToken, async (req, res) => {
       query.jobType = jobType;
     }
 
-    // Add error handling for the populate operation
     const jobs = await Job.find(query)
       .populate({
         path: "institutionId",
@@ -174,19 +174,21 @@ router.get("/institution", verifyToken, async (req, res) => {
       createdAt: -1,
     });
 
-    const statistics = jobs.map((job) => ({
-      jobTitle: job.jobTitle,
-      totalApplications: job.applications.length,
-      applicationsByStatus: job.applications.reduce((acc, app) => {
-        acc[app.status] = (acc[app.status] || 0) + 1;
-        return acc;
-      }, {}),
-      applicationsByDate: job.applications.reduce((acc, app) => {
-        const date = app.applicationDate.toISOString().split("T")[0];
-        acc[date] = (acc[date] || 0) + 1;
-        return acc;
-      }, {}),
-    }));
+    const statistics = jobs
+      .filter((job) => job.registrationType !== "external") // Only include non-external jobs
+      .map((job) => ({
+        jobTitle: job.jobTitle,
+        totalApplications: job.applications.length,
+        applicationsByStatus: job.applications.reduce((acc, app) => {
+          acc[app.status] = (acc[app.status] || 0) + 1;
+          return acc;
+        }, {}),
+        applicationsByDate: job.applications.reduce((acc, app) => {
+          const date = app.applicationDate.toISOString().split("T")[0];
+          acc[date] = (acc[date] || 0) + 1;
+          return acc;
+        }, {}),
+      }));
 
     res.json({ jobs, statistics });
   } catch (error) {
@@ -211,10 +213,16 @@ router.get("/:jobId/applications/download", verifyToken, async (req, res) => {
       return res.status(403).json({ message: "Unauthorized access" });
     }
 
+    // Prevent download for external jobs
+    if (job.registrationType === "external") {
+      return res
+        .status(400)
+        .json({ message: "Download not available for external jobs" });
+    }
+
     // Create CSV content
     const csvRows = ["Username,Email,Application Date,Resume Link"];
     job.applications.forEach((app) => {
-      // Add VITE_BACKEND_URL to resume link if it exists
       const resumeLink = app.resume
         ? `${process.env.VITE_BACKEND_URL}${app.resume}`
         : "N/A";
@@ -234,6 +242,28 @@ router.get("/:jobId/applications/download", verifyToken, async (req, res) => {
     res.send(csvRows.join("\n"));
   } catch (error) {
     res.status(500).json({ message: "Error downloading applications", error });
+  }
+});
+
+// Delete job
+router.delete("/:jobId", verifyToken, async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.jobId);
+
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    if (job.institutionId.toString() !== req.user.identifier) {
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to delete this job" });
+    }
+
+    await job.deleteOne();
+    res.json({ message: "Job deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting job", error });
   }
 });
 
