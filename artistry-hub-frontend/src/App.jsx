@@ -33,6 +33,8 @@ import InstitutionBase from "./institution/InstitutionBase";
 import InstitutionHome from "./institution/InstitutionHome";
 import InstitutionProfile from "./institution/InstitutionProfile";
 import CertificateVerification from "./Viewer-Student/CertificateVerification";
+import InstitutionOpportunities from "./institution/InstitutionOpportunities";
+import Opportunities from "./common/Opportunities";
 
 function App() {
   return (
@@ -86,6 +88,7 @@ function App() {
               element={<ArtistCreateServiceRequest />}
             />
             <Route path="Message" element={<MessagePage />} />
+            <Route path="opportunities" element={<Opportunities />} />
           </Route>
 
           {/* This is for Viewer-Students */}
@@ -105,6 +108,7 @@ function App() {
               element={<StudentCreateServiceRequest />}
             />
             <Route path="learning" element={<StudentDashboard />} />
+            <Route path="opportunities" element={<Opportunities />} />
           </Route>
 
           <Route
@@ -138,6 +142,10 @@ function App() {
             <Route index element={<InstitutionHome />} />
             <Route path="institutionprofile" element={<InstitutionProfile />} />
             <Route path="Message" element={<MessagePage />} />
+            <Route
+              path="opportunities"
+              element={<InstitutionOpportunities />}
+            />
           </Route>
 
           <Route path="reset-password/:token" element={<ResetPassword />} />

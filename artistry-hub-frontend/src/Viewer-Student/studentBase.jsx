@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { FaHome, FaBook, FaPlus, FaUser, FaEnvelope } from "react-icons/fa";
+import {
+  FaHome,
+  FaBook,
+  FaPlus,
+  FaUser,
+  FaEnvelope,
+  FaBriefcase,
+} from "react-icons/fa";
 import { Outlet, Link } from "react-router-dom";
 import Logo from "../assets/LOGO.png";
 import CreatePost from "../common/createPost"; // Import the CreatePost component
@@ -129,6 +136,10 @@ const StudentBase = () => {
                     S
                   </span>
                 ),
+              },
+              {
+                to: "/viewer-student-home/opportunities",
+                icon: <FaBriefcase size={24} />,
               },
             ].map(({ to, icon }, index) => (
               <div

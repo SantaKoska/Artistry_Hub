@@ -199,4 +199,28 @@ router.get("/specializations/:artForm", (req, res) => {
     .catch((err) => res.status(500).json({ error: "Error fetching data" }));
 });
 
+router.get("/art-forms", async (req, res) => {
+  try {
+    const artForms = await ArtFormSpecialization.find({});
+    res.json(artForms.map((form) => form.artForm));
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching art forms", error });
+  }
+});
+
+// Endpoint to get specializations based on art form
+router.get("/art-forms/:artForm", async (req, res) => {
+  try {
+    const artForm = await ArtFormSpecialization.findOne({
+      artForm: req.params.artForm,
+    });
+    if (!artForm) {
+      return res.status(404).json({ message: "Art form not found" });
+    }
+    res.json(artForm);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching specializations", error });
+  }
+});
+
 module.exports = router;

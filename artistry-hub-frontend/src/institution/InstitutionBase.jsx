@@ -112,28 +112,17 @@ const InstitutionBase = () => {
             {[
               { to: "/institution-Home", icon: <FaHome size={24} /> },
               {
-                to: "/institution-Home/my-courses",
-                icon: <FaBook size={24} />,
-              },
-              {
                 icon: (
                   <FaPlus
                     size={24}
-                    onClick={() => setShowCreatePostModal(true)} // Show modal on click
+                    onClick={() => setShowCreatePostModal(true)}
                     id="create-post-button"
                   />
                 ),
               },
               {
-                to: "/institution-Home/Service-Request",
-                icon: (
-                  <span
-                    id="service-request"
-                    className="text-2xl font-bold leading-none hover:text-yellow-400 transition-colors duration-300"
-                  >
-                    S
-                  </span>
-                ),
+                to: "/institution-Home/opportunities",
+                icon: <FaBriefcase size={24} />,
               },
             ].map(({ to, icon }, index) => (
               <div
