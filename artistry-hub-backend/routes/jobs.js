@@ -66,28 +66,32 @@ router.post("/create", verifyToken, validateJob, async (req, res) => {
 // Get all jobs (with filters)
 router.get("/", verifyToken, async (req, res) => {
   try {
-    const { targetRole, artForm, specialization, jobType } = req.query;
-    const userRole = req.user.role; // Get user's role from token
+    const { targetRole, artForm, specialization, jobType, sortBy } = req.query;
+    const userRole = req.user.role;
 
     let query = {
-      lastDate: { $gte: new Date() }, // Only show active jobs
-      $or: [
-        { targetRole: userRole }, // Match exact role
-        { targetRole: "both" }, // Or show if it's for both
-      ],
+      lastDate: { $gte: new Date() },
+      $or: [{ targetRole: userRole }, { targetRole: "both" }],
     };
 
-    // Only add optional filters if they exist
-    if (artForm) {
-      query.artForm = artForm;
-    }
+    // Add filters if they exist
+    if (artForm) query.artForm = artForm;
+    if (specialization) query.specialization = specialization;
+    if (jobType) query.jobType = jobType;
 
-    if (specialization) {
-      query.specialization = specialization;
-    }
-
-    if (jobType) {
-      query.jobType = jobType;
+    // Define sort options
+    let sortOption = {};
+    switch (sortBy) {
+      case "oldest":
+        sortOption = { createdAt: 1 };
+        break;
+      case "closing-soon":
+        sortOption = { lastDate: 1 };
+        break;
+      case "newest":
+      default:
+        sortOption = { createdAt: -1 };
+        break;
     }
 
     const jobs = await Job.find(query)
@@ -96,7 +100,7 @@ router.get("/", verifyToken, async (req, res) => {
         select: "userName profilePicture",
         options: { strictPopulate: false },
       })
-      .sort({ createdAt: -1 })
+      .sort(sortOption)
       .lean();
 
     res.json(jobs);

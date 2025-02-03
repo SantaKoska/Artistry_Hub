@@ -279,101 +279,110 @@ const ArtistCreateServiceRequest = () => {
               key={request._id}
               className="bg-gray-800 p-6 rounded-lg shadow-lg transition-transform transform hover:scale-105"
             >
-              <h2 className="text-xl font-semibold text-yellow-500 mb-2">
-                {request.description}
-              </h2>
-              {request.images && request.images.length > 0 && (
-                <div className="mt-2 flex space-x-2 overflow-x-auto">
-                  {request.images.map((img, index) => (
-                    <div key={index} className="relative">
-                      <img
-                        src={`${import.meta.env.VITE_BACKEND_URL}${img}`}
-                        alt={`request image ${index}`}
-                        className="w-24 h-24 object-cover border border-yellow-500 rounded-md"
-                      />
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h2 className="text-xl font-semibold text-yellow-500 mb-2">
+                    {request.description}
+                  </h2>
+                  {request.images && request.images.length > 0 && (
+                    <div className="mt-2 flex space-x-2 overflow-x-auto">
+                      {request.images.map((img, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={`${import.meta.env.VITE_BACKEND_URL}${img}`}
+                            alt={`request image ${index}`}
+                            className="w-24 h-24 object-cover border border-yellow-500 rounded-md"
+                          />
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
+                </div>
+                <div className="flex flex-col gap-2 ml-4">
+                  <button
+                    onClick={() => handleEdit(request)}
+                    className="bg-yellow-500 text-black p-2 rounded-lg hover:bg-yellow-600 transition-all duration-300"
+                    title="Edit"
+                  >
+                    <BiEdit className="text-xl" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(request._id)}
+                    className="bg-red-600 text-white p-2 rounded-lg hover:bg-red-700 transition-all duration-300"
+                    title="Delete"
+                  >
+                    <BiTrash className="text-xl" />
+                  </button>
+                  <button
+                    onClick={() => handleFetchProviders(request._id)}
+                    className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-all duration-300"
+                    title="View Providers"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {viewProviders && (
+                <div className="mt-2 text-yellow-500">
+                  {acceptedProviders.length > 0 ? (
+                    <>
+                      <h3 className="text-lg font-medium text-yellow-500">
+                        Accepted Providers:
+                      </h3>
+                      <ul className="list-disc pl-5">
+                        {acceptedProviders.map((provider) => (
+                          <li
+                            key={provider._id}
+                            className="mt-1 flex justify-between"
+                          >
+                            <div className="flex items-center mb-4">
+                              <img
+                                src={`${import.meta.env.VITE_BACKEND_URL}${
+                                  provider.profilePicture
+                                }`}
+                                alt={provider.userName}
+                                className="w-12 h-12 rounded-full object-cover border-2 border-yellow-500"
+                              />
+                              <div className="ml-4">
+                                <Link to={`/profile/${provider.userName}`}>
+                                  <p className="font-bold text-lg text-yellow-500 hover:underline">
+                                    {provider.userName}
+                                  </p>
+                                </Link>
+                              </div>
+                            </div>
+                            {request.status !== "Accepted" && (
+                              <button
+                                onClick={() =>
+                                  handleConfirmSelection(
+                                    request._id,
+                                    provider._id
+                                  )
+                                }
+                                className="text-white bg-emerald-600 px-4 py-2 rounded-lg font-medium shadow-md hover:bg-emerald-700 hover:shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-1"
+                              >
+                                Select
+                              </button>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  ) : (
+                    <p className="text-red-500 font-light">
+                      No providers have accepted this request yet.
+                    </p>
+                  )}
                 </div>
               )}
-              <div className="mt-4 flex space-x-4">
-                <button
-                  onClick={() => handleEdit(request)}
-                  className="bg-yellow-500 text-black p-2 rounded-lg hover:bg-yellow-600 flex items-center transition-all duration-300"
-                >
-                  <BiEdit className="mr-2" />
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(request._id)}
-                  className="bg-red-600 text-white p-2 rounded-lg hover:bg-red-700 flex items-center transition-all duration-300"
-                >
-                  <BiTrash className="mr-2" />
-                  Delete
-                </button>
-              </div>
-
-              <div className="mt-4">
-                <button
-                  onClick={() => handleFetchProviders(request._id)}
-                  className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-all duration-300"
-                >
-                  View Providers
-                </button>
-
-                {viewProviders && (
-                  <div className="mt-2 text-yellow-500">
-                    {acceptedProviders.length > 0 ? (
-                      <>
-                        <h3 className="text-lg font-medium text-yellow-500">
-                          Accepted Providers:
-                        </h3>
-                        <ul className="list-disc pl-5">
-                          {acceptedProviders.map((provider) => (
-                            <li
-                              key={provider._id}
-                              className="mt-1 flex justify-between"
-                            >
-                              <div className="flex items-center mb-4">
-                                <img
-                                  src={`${import.meta.env.VITE_BACKEND_URL}${
-                                    provider.profilePicture
-                                  }`}
-                                  alt={provider.userName}
-                                  className="w-12 h-12 rounded-full object-cover border-2 border-yellow-500"
-                                />
-                                <div className="ml-4">
-                                  <Link to={`/profile/${provider.userName}`}>
-                                    <p className="font-bold text-lg text-yellow-500 hover:underline">
-                                      {provider.userName}
-                                    </p>
-                                  </Link>
-                                </div>
-                              </div>
-                              {request.status !== "Accepted" && (
-                                <button
-                                  onClick={() =>
-                                    handleConfirmSelection(
-                                      request._id,
-                                      provider._id
-                                    )
-                                  }
-                                  className="text-white bg-emerald-600 px-4 py-2 rounded-lg font-medium shadow-md hover:bg-emerald-700 hover:shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-1"
-                                >
-                                  Select
-                                </button>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      </>
-                    ) : (
-                      <p className="text-red-500 font-light">
-                        No providers have accepted this request yet.
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
             </li>
           ))}
         </ul>

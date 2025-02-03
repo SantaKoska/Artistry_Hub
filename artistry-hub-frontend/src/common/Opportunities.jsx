@@ -14,6 +14,7 @@ const Opportunities = () => {
     artForm: "",
     specialization: "",
     targetAudience: "",
+    sortBy: "newest",
   });
   const [artForms, setArtForms] = useState([]);
   const [specializations, setSpecializations] = useState([]);
@@ -48,12 +49,14 @@ const Opportunities = () => {
         artForm: filters.artForm || undefined,
         specialization: filters.specialization || undefined,
         targetRole: filters.targetAudience || undefined,
+        sortBy: filters.sortBy,
       };
 
       const eventFilters = {
         artForm: filters.artForm || undefined,
         specialization: filters.specialization || undefined,
         targetAudience: filters.targetAudience || undefined,
+        sortBy: filters.sortBy,
       };
 
       // Remove undefined values
@@ -155,7 +158,7 @@ const Opportunities = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="bg-slate-900 p-10 shadow-xl backdrop-filter backdrop-blur-md bg-opacity-40 w-full max-w-screen-xl mx-auto mt-16 rounded-xl">
       {/* Filters Section */}
       <div className="mb-8 bg-gray-800 p-4 rounded-lg">
         <h2 className="text-xl font-bold mb-4">Filters</h2>
@@ -174,7 +177,15 @@ const Opportunities = () => {
               </option>
             ))}
           </select>
-          {/* Add more filter options */}
+          <select
+            value={filters.sortBy}
+            onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
+            className="bg-gray-700 rounded p-2"
+          >
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="closing-soon">Closing Soon</option>
+          </select>
         </div>
       </div>
 

@@ -116,24 +116,31 @@ router.post(
 // Get all events (with filters)
 router.get("/", verifyToken, async (req, res) => {
   try {
-    const { targetAudience, artForm, specialization } = req.query;
-    const userRole = req.user.role; // Get user's role from token
+    const { targetAudience, artForm, specialization, sortBy } = req.query;
+    const userRole = req.user.role;
 
     let query = {
-      lastRegistrationDate: { $gte: new Date() }, // Only show active events
-      $or: [
-        { targetAudience: userRole }, // Match exact role
-        { targetAudience: "both" }, // Or show if it's for both
-      ],
+      lastRegistrationDate: { $gte: new Date() },
+      $or: [{ targetAudience: userRole }, { targetAudience: "both" }],
     };
 
-    // Only add optional filters if they exist
-    if (artForm) {
-      query.artForm = artForm;
-    }
+    // Add filters if they exist
+    if (artForm) query.artForm = artForm;
+    if (specialization) query.specialization = specialization;
 
-    if (specialization) {
-      query.specialization = specialization;
+    // Define sort options
+    let sortOption = {};
+    switch (sortBy) {
+      case "oldest":
+        sortOption = { createdAt: 1 };
+        break;
+      case "closing-soon":
+        sortOption = { lastRegistrationDate: 1 };
+        break;
+      case "newest":
+      default:
+        sortOption = { createdAt: -1 };
+        break;
     }
 
     const events = await Event.find(query)
@@ -142,7 +149,7 @@ router.get("/", verifyToken, async (req, res) => {
         select: "userName profilePicture",
         options: { strictPopulate: false },
       })
-      .sort({ createdAt: -1 })
+      .sort(sortOption)
       .lean();
 
     res.json(events);

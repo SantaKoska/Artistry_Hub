@@ -173,33 +173,45 @@ const StudentCreateServiceRequest = () => {
       ) : (
         <ul className="space-y-4">
           {serviceRequests.map((request) => (
-            <li key={request._id} className="bg-gray-800 p-4 rounded-md">
-              <p className="text-white">{request.description}</p>
-              {request.images && request.images.length > 0 && (
-                <div className="mt-2 flex space-x-2">
-                  {request.images.map((img, index) => (
-                    <img
-                      key={index}
-                      src={`${import.meta.env.VITE_BACKEND_URL}${img}`}
-                      alt={`request image ${index}`}
-                      className="w-20 h-20 object-cover border border-gray-300 rounded-md"
-                    />
-                  ))}
+            <li
+              key={request._id}
+              className="bg-gray-800 p-6 rounded-lg shadow-lg transition-transform transform hover:scale-105"
+            >
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h2 className="text-xl font-semibold text-white mb-2">
+                    {request.description}
+                  </h2>
+                  {request.images && request.images.length > 0 && (
+                    <div className="mt-2 flex space-x-2 overflow-x-auto">
+                      {request.images.map((img, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={`${import.meta.env.VITE_BACKEND_URL}${img}`}
+                            alt={`request image ${index}`}
+                            className="w-24 h-24 object-cover border border-yellow-500 rounded-md"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-              <div className="mt-4 flex space-x-4">
-                <button
-                  onClick={() => handleEdit(request)}
-                  className="bg-yellow-400 text-black p-2 rounded-lg hover:bg-yellow-500 flex items-center"
-                >
-                  <BiEdit className="w-5 h-5 mr-2" /> {/* Edit icon */}
-                </button>
-                <button
-                  onClick={() => handleDelete(request._id)}
-                  className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 flex items-center"
-                >
-                  <BiTrash className="w-5 h-5 mr-2" /> {/* Delete icon */}
-                </button>
+                <div className="flex flex-col gap-2 ml-4">
+                  <button
+                    onClick={() => handleEdit(request)}
+                    className="bg-yellow-400 text-black p-2 rounded-lg hover:bg-yellow-500 transition-all duration-300"
+                    title="Edit"
+                  >
+                    <BiEdit className="text-xl" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(request._id)}
+                    className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-all duration-300"
+                    title="Delete"
+                  >
+                    <BiTrash className="text-xl" />
+                  </button>
+                </div>
               </div>
             </li>
           ))}

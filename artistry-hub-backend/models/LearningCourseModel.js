@@ -70,6 +70,10 @@ const LearningCourseSchema = new mongoose.Schema(
           type: String,
           required: false,
         },
+        issueDate: {
+          type: Date,
+          required: true,
+        },
       },
     ],
   },

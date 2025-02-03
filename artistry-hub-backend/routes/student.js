@@ -672,21 +672,26 @@ router.post(
       );
 
       let serialNumber;
-      if (existingSerial) {
-        // Use the existing serial number
-        serialNumber = existingSerial.serialNumber;
-      } else {
-        // Generate a new unique serial number
-        serialNumber = await generateUniqueSerial();
+      let issueDate;
 
-        // Store the new serial number in the LearningCourse model
+      if (existingSerial) {
+        // Use the existing serial number and issue date
+        serialNumber = existingSerial.serialNumber;
+        issueDate = existingSerial.issueDate;
+      } else {
+        // Generate a new unique serial number and set current date
+        serialNumber = await generateUniqueSerial();
+        issueDate = new Date();
+
+        // Store the new serial number and issue date in the LearningCourse model
         course.certificateSerials.push({
           studentId: viewerStudent._id,
           serialNumber: serialNumber,
+          issueDate: issueDate,
         });
       }
 
-      await course.save(); // Save the updated course
+      await course.save();
 
       // Create a PDF document
       const doc = new PDFDocument({ size: "A4", layout: "landscape" });
@@ -768,9 +773,9 @@ router.post(
       // Issue Date
       doc
         .moveDown(1)
-        .fontSize(16) // Reduced font size
+        .fontSize(16)
         .fillColor(secondaryColor)
-        .text("Issued on: " + new Date().toLocaleDateString(), {
+        .text("Issued on: " + issueDate.toLocaleDateString(), {
           align: "center",
         });
 
@@ -871,7 +876,6 @@ router.get("/verify-certificate/:serialNumber", async (req, res) => {
   const { serialNumber } = req.params;
 
   try {
-    // Find the course that has the given serial number
     const course = await LearningCourse.findOne({
       "certificateSerials.serialNumber": serialNumber,
     }).populate("certificateSerials.studentId");
@@ -880,26 +884,19 @@ router.get("/verify-certificate/:serialNumber", async (req, res) => {
       return res.status(404).json({ message: "Certificate not found." });
     }
 
-    // Find the student associated with the serial number
-    const student = course.certificateSerials.find(
+    // Find the certificate serial entry for this serial number
+    const certificateSerial = course.certificateSerials.find(
       (serial) => serial.serialNumber === serialNumber
     );
 
-    if (!student) {
+    if (!certificateSerial) {
       return res.status(404).json({ message: "Certificate not found." });
     }
 
-    // Log the studentId being used to find the viewer student
-    // console.log("Student ID:", student.studentId._id);
-
-    // Find the viewer student to get the certificate name
     const viewerStudent = await ViewerStudent.findOne({
-      userId: student.studentId.userId, // Ensure this matches the userId in ViewerStudent
+      userId: certificateSerial.studentId.userId,
       "enrolledCourses.courseId": course._id,
     });
-
-    // Log the viewerStudent query result
-    // console.log("Viewer Student:", viewerStudent);
 
     if (!viewerStudent) {
       return res.status(404).json({ message: "Viewer student not found." });
@@ -908,15 +905,15 @@ router.get("/verify-certificate/:serialNumber", async (req, res) => {
     const certificateName =
       viewerStudent.enrolledCourses.find(
         (enrolled) => enrolled.courseId.toString() === course._id.toString()
-      )?.certificateName || "N/A"; // Default to "N/A" if not found
+      )?.certificateName || "N/A";
 
-    // Return the certificate details
+    // Return the certificate details with the correct issue date
     res.status(200).json({
       message: "Certificate is valid.",
       courseName: course.courseName,
-      issuedDate: course.createdAt,
-      serialNumber: student.serialNumber,
-      certificateName, // Include the certificate name
+      issueDate: certificateSerial.issueDate, // Use the certificate's issue date
+      serialNumber: certificateSerial.serialNumber,
+      certificateName,
     });
   } catch (error) {
     console.error("Error verifying certificate:", error);

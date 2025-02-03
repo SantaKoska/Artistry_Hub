@@ -12,6 +12,7 @@ const CertificateVerification = () => {
   const { serialNumber } = useParams();
   const [certificateDetails, setCertificateDetails] = useState(null);
   const [error, setError] = useState(null);
+  console.log(certificateDetails);
   useEffect(() => {
     const verifyCertificate = async () => {
       try {
@@ -81,7 +82,7 @@ const CertificateVerification = () => {
           />
           Issued Date:{" "}
           <strong>
-            {new Date(certificateDetails.issuedDate).toLocaleDateString()}
+            {new Date(certificateDetails.issueDate).toLocaleDateString()}
           </strong>
         </p>
         <p style={{ fontSize: "18px", margin: "10px 0", color: "black" }}>
