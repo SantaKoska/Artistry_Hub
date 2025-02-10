@@ -40,6 +40,7 @@ router.get("/institution-profile", verifyToken, async (req, res) => {
       profilePicture: profile.profilePicture,
       followerCount,
       postsinfo,
+      numberOfPosts: postsinfo.length,
       registeredUnder: institution.registeredUnder,
       registrationID: institution.registrationID,
       location: location
@@ -153,6 +154,7 @@ router.put(
 router.get("/institution-homeposts", verifyToken, async (req, res) => {
   try {
     const userId = req.user.identifier;
+    const { mediaType, sortBy } = req.query;
 
     // Get posts from followed institutions
     const followedInstitutions = await Follower.find({
@@ -162,21 +164,67 @@ router.get("/institution-homeposts", verifyToken, async (req, res) => {
       (f) => f.followingId
     );
 
-    // Fetch the latest 10 posts from followed institutions
-    const followedPosts = await Post.find({
+    // Build the query based on filters
+    let query = {
       user: { $in: followedInstitutionIds },
-    })
-      .populate("user")
-      .sort({ timestamp: -1 })
-      .limit(10);
+    };
 
-    // Fetch the latest 10 posts from other institutions
-    const nonFollowedPosts = await Post.find({
+    // Add mediaType filter if specified
+    if (mediaType && mediaType !== "all") {
+      query.mediaType = mediaType;
+    }
+
+    // Create the base query
+    let followedPostsQuery = Post.find(query).populate("user");
+
+    // Apply sorting
+    switch (sortBy) {
+      case "trending":
+        followedPostsQuery = followedPostsQuery.sort({
+          likes: -1,
+          timestamp: -1,
+        });
+        break;
+      case "oldest":
+        followedPostsQuery = followedPostsQuery.sort({ timestamp: 1 });
+        break;
+      case "newest":
+      default:
+        followedPostsQuery = followedPostsQuery.sort({ timestamp: -1 });
+        break;
+    }
+
+    const followedPosts = await followedPostsQuery.limit(10);
+
+    // Similar query for non-followed posts
+    let nonFollowedQuery = {
       user: { $nin: followedInstitutionIds.concat([userId]) },
-    })
-      .populate("user")
-      .sort({ timestamp: -1 })
-      .limit(100);
+    };
+
+    if (mediaType && mediaType !== "all") {
+      nonFollowedQuery.mediaType = mediaType;
+    }
+
+    let nonFollowedPostsQuery = Post.find(nonFollowedQuery).populate("user");
+
+    // Apply the same sorting
+    switch (sortBy) {
+      case "trending":
+        nonFollowedPostsQuery = nonFollowedPostsQuery.sort({
+          likes: -1,
+          timestamp: -1,
+        });
+        break;
+      case "oldest":
+        nonFollowedPostsQuery = nonFollowedPostsQuery.sort({ timestamp: 1 });
+        break;
+      case "newest":
+      default:
+        nonFollowedPostsQuery = nonFollowedPostsQuery.sort({ timestamp: -1 });
+        break;
+    }
+
+    const nonFollowedPosts = await nonFollowedPostsQuery.limit(100);
 
     // Combine posts
     const posts = [...followedPosts, ...nonFollowedPosts];

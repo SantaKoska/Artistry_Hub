@@ -48,6 +48,7 @@ router.get("/student-profile", verifyToken, async (req, res) => {
       userName: profile.userName, // Fetching username from User model
       followerCount,
       postsinfo,
+      numberOfPosts: postsinfo.length,
     });
   } catch (error) {
     console.log("Error fetching profile:", error);
@@ -135,6 +136,7 @@ router.put(
 router.get("/homeposts", verifyToken, async (req, res) => {
   try {
     const userId = req.user.identifier;
+    const { mediaType, sortBy } = req.query;
 
     // Get posts by users followed by the logged-in user
     const followedUsers = await Follower.find({ followerId: userId }).select(
@@ -142,21 +144,69 @@ router.get("/homeposts", verifyToken, async (req, res) => {
     );
     const followedUserIds = followedUsers.map((f) => f.followingId);
 
-    // Fetch the latest 10 posts from followed users
-    const followedPosts = await Post.find({ user: { $in: followedUserIds } })
-      .populate("user")
-      .sort({ timestamp: -1 }) // Sort by timestamp in descending order
-      .limit(10);
+    // Build the query based on filters
+    let query = {
+      user: { $in: followedUserIds },
+    };
 
-    // Fetch the latest 10 posts from users not followed by the logged-in user
-    const nonFollowedPosts = await Post.find({
-      user: { $nin: followedUserIds.concat([userId]) }, // Posts by others except the user
-    })
-      .populate("user")
-      .sort({ timestamp: -1 }) // Sort by timestamp in descending order
-      .limit(100);
+    // Add mediaType filter if specified
+    if (mediaType && mediaType !== "all") {
+      query.mediaType = mediaType;
+    }
 
-    // Combine the two sets of posts
+    // Create the base query
+    let followedPostsQuery = Post.find(query).populate("user");
+
+    // Apply sorting
+    switch (sortBy) {
+      case "trending":
+        followedPostsQuery = followedPostsQuery.sort({
+          likes: -1,
+          timestamp: -1,
+        });
+        break;
+      case "oldest":
+        followedPostsQuery = followedPostsQuery.sort({ timestamp: 1 });
+        break;
+      case "newest":
+      default:
+        followedPostsQuery = followedPostsQuery.sort({ timestamp: -1 });
+        break;
+    }
+
+    const followedPosts = await followedPostsQuery.limit(10);
+
+    // Similar query for non-followed posts
+    let nonFollowedQuery = {
+      user: { $nin: followedUserIds.concat([userId]) },
+    };
+
+    if (mediaType && mediaType !== "all") {
+      nonFollowedQuery.mediaType = mediaType;
+    }
+
+    let nonFollowedPostsQuery = Post.find(nonFollowedQuery).populate("user");
+
+    // Apply the same sorting
+    switch (sortBy) {
+      case "trending":
+        nonFollowedPostsQuery = nonFollowedPostsQuery.sort({
+          likes: -1,
+          timestamp: -1,
+        });
+        break;
+      case "oldest":
+        nonFollowedPostsQuery = nonFollowedPostsQuery.sort({ timestamp: 1 });
+        break;
+      case "newest":
+      default:
+        nonFollowedPostsQuery = nonFollowedPostsQuery.sort({ timestamp: -1 });
+        break;
+    }
+
+    const nonFollowedPosts = await nonFollowedPostsQuery.limit(100);
+
+    // Combine the posts
     const posts = [...followedPosts, ...nonFollowedPosts];
 
     res.json({ posts, userId });

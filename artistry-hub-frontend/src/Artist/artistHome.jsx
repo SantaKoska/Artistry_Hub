@@ -11,40 +11,45 @@ const ArtistHome = () => {
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [expandedPosts, setExpandedPosts] = useState(new Set());
   const [userId, setUserId] = useState(null);
+  const [mediaFilter, setMediaFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/artist/homeposts`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        // console.log(response);
-
-        const { posts, userId: fetchedUserId } = response.data;
-        const likedPostIds = new Set(
-          posts
-            .map((post) =>
-              post.likedBy.includes(fetchedUserId) ? post._id : null
-            )
-            .filter(Boolean)
-        );
-
-        setPosts(posts);
-        setLikedPosts(likedPostIds);
-        setUserId(fetchedUserId);
-      } catch (error) {
-        console.error("Error fetching posts:", error);
-      }
-    };
     fetchPosts();
-  }, [token]);
+  }, [token, mediaFilter, sortBy]);
+
+  const fetchPosts = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/artist/homeposts`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: {
+            mediaType: mediaFilter,
+            sortBy: sortBy,
+          },
+        }
+      );
+
+      const { posts, userId: fetchedUserId } = response.data;
+      const likedPostIds = new Set(
+        posts
+          .map((post) =>
+            post.likedBy.includes(fetchedUserId) ? post._id : null
+          )
+          .filter(Boolean)
+      );
+
+      setPosts(posts);
+      setLikedPosts(likedPostIds);
+      setUserId(fetchedUserId);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    }
+  };
 
   const handleLike = async (postId) => {
     try {
@@ -105,6 +110,33 @@ const ArtistHome = () => {
       )}
 
       <div className="w-3/4">
+        <div className="max-w-3xl mx-auto mb-6 p-4 bg-zinc-900 rounded-xl border border-yellow-500/20">
+          <div className="flex flex-wrap gap-4 justify-between items-center">
+            <div className="flex gap-4">
+              <select
+                value={mediaFilter}
+                onChange={(e) => setMediaFilter(e.target.value)}
+                className="bg-zinc-800 text-gray-300 px-4 py-2 rounded-lg border border-yellow-500/20 focus:border-yellow-500/40 focus:outline-none"
+              >
+                <option value="all">All Media</option>
+                <option value="image">Images</option>
+                <option value="video">Videos</option>
+                <option value="audio">Audio</option>
+              </select>
+
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-zinc-800 text-gray-300 px-4 py-2 rounded-lg border border-yellow-500/20 focus:border-yellow-500/40 focus:outline-none"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="trending">Trending</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
         <div className="grid gap-6 grid-cols-1 w-full max-w-3xl mx-auto">
           {posts.length > 0 ? (
             posts.map((post) => (

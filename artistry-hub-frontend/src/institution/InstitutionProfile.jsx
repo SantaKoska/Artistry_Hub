@@ -165,68 +165,139 @@ const InstitutionProfile = () => {
   };
 
   return (
-    <div className="bg-slate-800 rounded-md p-8 shadow-lg backdrop-blur-md bg-opacity-30 max-w-screen-lg mx-auto">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black p-4 md:p-8">
       {profile && (
-        <>
-          <div className="flex flex-col md:flex-row gap-10 items-center">
-            <div className="flex flex-col items-center">
-              <img
-                src={`${import.meta.env.VITE_BACKEND_URL}${
-                  profile.profilePicture
-                }`}
-                alt="Institution Logo"
-                className="w-60 h-48 rounded-full mb-4"
-              />
-              <h1 className="text-5xl font-semibold text-yellow-400 mt-4">
-                {profile.userName}
-              </h1>
-            </div>
-            <div className="text-white space-y-6 w-full">
-              <div className="flex justify-between md:justify-start gap-10">
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-yellow-400">
-                    Followers
-                  </p>
-                  <p>{profile.followerCount || 0}</p>
+        <div className="max-w-7xl mx-auto">
+          {/* Profile Header Section */}
+          <div className="bg-gray-800 rounded-xl p-6 md:p-8 shadow-2xl">
+            <div className="flex flex-col md:flex-row gap-8">
+              {/* Left Column - Profile Picture & Quick Actions */}
+              <div className="flex flex-col items-center md:w-1/3">
+                <div className="relative group">
+                  <img
+                    src={`${import.meta.env.VITE_BACKEND_URL}${
+                      profile.profilePicture
+                    }`}
+                    alt="Institution Logo"
+                    className="w-48 h-48 rounded-full object-cover border-4 border-yellow-400 transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <button
+                    onClick={handleOpenModal}
+                    className="absolute bottom-2 right-2 bg-yellow-400 p-2 rounded-full hover:bg-yellow-500 transition-colors"
+                    title="Edit Profile"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                      />
+                    </svg>
+                  </button>
                 </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-yellow-400">Posts</p>
-                  <p>{posts.length}</p>
+
+                <h1 className="text-3xl font-bold text-yellow-400 mt-4">
+                  {profile.userName}
+                </h1>
+
+                {/* Stats Cards */}
+                <div className="flex gap-6 mt-6">
+                  <div className="text-center bg-gray-700 rounded-lg p-4 w-32">
+                    <p className="text-2xl font-bold text-yellow-400">
+                      {profile.followerCount}
+                    </p>
+                    <p className="text-gray-300">Followers</p>
+                  </div>
+                  <div className="text-center bg-gray-700 rounded-lg p-4 w-32">
+                    <p className="text-2xl font-bold text-yellow-400">
+                      {profile.numberOfPosts}
+                    </p>
+                    <p className="text-gray-300">Posts</p>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col gap-3 w-full mt-6">
+                  <button
+                    onClick={handleOpenLogoutModal}
+                    className="w-full py-2 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-semibold"
+                  >
+                    Logout
+                  </button>
                 </div>
               </div>
-              <p className="text-xl font-semibold">
-                Description: {profile.description}
-              </p>
-              <p className="text-xl font-semibold">
-                Registered Under: {profile.registeredUnder}
-              </p>
-              <p className="text-xl font-semibold">
-                Registration ID: {profile.registrationID}
-              </p>
-              <div className="flex flex-col gap-4">
-                <button
-                  onClick={handleOpenModal}
-                  className="w-full md:w-64 text-lg font-semibold bg-white text-black hover:bg-emerald-900 hover:text-white py-2 rounded-full transition-colors duration-400"
-                >
-                  Edit Profile
-                </button>
-                <button
-                  onClick={handleOpenLogoutModal}
-                  className="w-full md:w-64 text-lg font-semibold bg-red-500 text-white hover:bg-red-600 py-2 rounded-full transition-colors duration-400"
-                >
-                  Logout
-                </button>
+
+              {/* Right Column - Profile Info */}
+              <div className="md:w-2/3 space-y-6">
+                <div className="bg-gray-700 rounded-lg p-6">
+                  <h2 className="text-xl font-semibold text-yellow-400 mb-4">
+                    About Us
+                  </h2>
+                  <p className="text-gray-200 leading-relaxed">
+                    {profile.description || "No description available"}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-gray-700 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold text-yellow-400 mb-2">
+                      Registered Under
+                    </h3>
+                    <p className="text-gray-200">{profile.registeredUnder}</p>
+                  </div>
+                  <div className="bg-gray-700 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold text-yellow-400 mb-2">
+                      Registration ID
+                    </h3>
+                    <p className="text-gray-200">{profile.registrationID}</p>
+                  </div>
+                </div>
+
+                <div className="bg-gray-700 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-yellow-400 mb-2">
+                    Location
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <p className="text-gray-200">
+                      <span className="text-yellow-400">District:</span>{" "}
+                      {profile.location?.district}
+                    </p>
+                    <p className="text-gray-200">
+                      <span className="text-yellow-400">State:</span>{" "}
+                      {profile.location?.state}
+                    </p>
+                    <p className="text-gray-200">
+                      <span className="text-yellow-400">Country:</span>{" "}
+                      {profile.location?.country}
+                    </p>
+                    <p className="text-gray-200">
+                      <span className="text-yellow-400">Postal Code:</span>{" "}
+                      {profile.location?.postalCode}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="mt-10">
-            <h2 className="text-3xl text-white mb-4">Posts</h2>
+          {/* Posts Section */}
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold text-yellow-400 mb-6">
+              Our Posts
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {posts.length > 0 ? (
                 posts.map((post) => <Post key={post._id} post={post} />)
               ) : (
-                <p className="text-white">No posts available.</p>
+                <p className="text-gray-400 col-span-full text-center">
+                  No posts available.
+                </p>
               )}
             </div>
           </div>
@@ -428,7 +499,7 @@ const InstitutionProfile = () => {
               </div>
             </form>
           </Modal>
-        </>
+        </div>
       )}
     </div>
   );
