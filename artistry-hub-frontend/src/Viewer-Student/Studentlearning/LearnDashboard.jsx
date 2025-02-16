@@ -3,6 +3,7 @@ import axios from "axios";
 import CourseDetails from "./CourseDetails"; // Import the CourseDetails component
 import StudentDashboard from "./StudentDashboard"; // Import the StudentDashboard component
 import { FaSearch } from "react-icons/fa"; // Importing a search icon
+import LiveClasses from "./LiveClasses";
 
 const LearnDashboard = () => {
   const [activeSection, setActiveSection] = useState("availableCourses");
@@ -145,12 +146,12 @@ const LearnDashboard = () => {
   });
 
   return (
-    <div className="min-h-screen bg-black p-8">
+    <div className="min-h-screen bg-gradient-to-b from-black to-zinc-900 p-8">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 max-w-screen-xl mx-auto">
         {/* Sidebar */}
-        <div className="bg-zinc-900 rounded-xl shadow-2xl p-6 border border-zinc-800">
+        <div className="bg-zinc-900/80 backdrop-blur-sm rounded-xl shadow-2xl p-6 border border-zinc-800 hover:border-zinc-700 transition-all duration-300">
           <h2 className="text-yellow-400 text-2xl font-bold mb-8 text-center">
-            Dashboard
+            Learning Hub
           </h2>
           <ul className="space-y-6">
             <li>
@@ -186,7 +187,7 @@ const LearnDashboard = () => {
             <li>
               <button
                 onClick={() => {
-                  setActiveSection("analytics"); // New section for analytics
+                  setActiveSection("analytics");
                   setActiveCourse(null);
                 }}
                 className={`text-lg font-semibold text-center block w-full transition-colors duration-300 ${
@@ -198,15 +199,27 @@ const LearnDashboard = () => {
                 Analytics
               </button>
             </li>
+            <li>
+              <button
+                onClick={() => setActiveSection("liveClasses")}
+                className={`text-lg font-semibold text-center block w-full transition-colors duration-300 ${
+                  activeSection === "liveClasses"
+                    ? "text-yellow-400"
+                    : "text-gray-400 hover:text-yellow-300"
+                }`}
+              >
+                Live Classes
+              </button>
+            </li>
           </ul>
         </div>
 
-        {/* Main Dashboard Content */}
+        {/* Main Content */}
         <div className="lg:col-span-3">
           {activeSection === "analytics" ? (
-            <StudentDashboard /> // Render StudentDashboard when analytics is active
+            <StudentDashboard />
           ) : (
-            <div className="bg-zinc-900 rounded-xl shadow-2xl p-8 border border-zinc-800">
+            <div className="bg-zinc-900/80 backdrop-blur-sm rounded-xl shadow-2xl p-8 border border-zinc-800">
               {activeCourse ? (
                 <CourseDetails
                   course={activeCourse}
@@ -219,79 +232,87 @@ const LearnDashboard = () => {
               ) : (
                 <>
                   {activeSection === "availableCourses" && (
-                    <div className="bg-zinc-900 rounded-xl shadow-2xl p-8 border border-zinc-800">
+                    <div>
                       <h1 className="text-4xl font-bold text-yellow-400 mb-8">
                         Available Courses
                       </h1>
-                      <div className="relative mb-4">
-                        <FaSearch className="absolute left-3 top-2 text-gray-400" />
-                        <input
-                          type="text"
-                          placeholder="Search by course name"
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-10 pr-4 py-2 rounded-md text-black bg-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition duration-200"
-                        />
-                      </div>
-                      <select
-                        value={selectedArtForm}
-                        onChange={(e) => setSelectedArtForm(e.target.value)}
-                        className="p-2 rounded-md text-black bg-gray-200 mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition duration-200"
-                      >
-                        <option value="">All Art Forms</option>
-                        {artForms.map((artForm) => (
-                          <option key={artForm} value={artForm}>
-                            {artForm}
-                          </option>
-                        ))}
-                      </select>
-                      <select
-                        value={selectedSpecialization}
-                        onChange={(e) =>
-                          setSelectedSpecialization(e.target.value)
-                        }
-                        className="p-2 rounded-md text-black bg-gray-200 mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition duration-200"
-                      >
-                        <option value="">All Specializations</option>
-                        {specializations.map((specialization) => (
-                          <option key={specialization} value={specialization}>
-                            {specialization}
-                          </option>
-                        ))}
-                      </select>
-                      <select
-                        value={selectedLevel}
-                        onChange={(e) => setSelectedLevel(e.target.value)}
-                        className="p-2 rounded-md text-black bg-gray-200 mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition duration-200"
-                      >
-                        <option value="">All Levels</option>
-                        {levels.map((level) => (
-                          <option key={level} value={level}>
-                            {level}
-                          </option>
-                        ))}
-                      </select>
 
-                      {filteredCourses.length > 0 ? (
-                        filteredCourses.map((course) => (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <div className="relative">
+                          <FaSearch className="absolute left-3 top-3.5 text-gray-400" />
+                          <input
+                            type="text"
+                            placeholder="Search courses..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-10 pr-4 py-3 rounded-lg text-black bg-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition duration-200"
+                          />
+                        </div>
+
+                        {/* Filters */}
+                        <select
+                          value={selectedArtForm}
+                          onChange={(e) => setSelectedArtForm(e.target.value)}
+                          className="w-full p-3 rounded-lg text-black bg-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition duration-200"
+                        >
+                          <option value="">Art Form</option>
+                          {artForms.map((artForm) => (
+                            <option key={artForm} value={artForm}>
+                              {artForm}
+                            </option>
+                          ))}
+                        </select>
+
+                        <select
+                          value={selectedSpecialization}
+                          onChange={(e) =>
+                            setSelectedSpecialization(e.target.value)
+                          }
+                          className="w-full p-3 rounded-lg text-black bg-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition duration-200"
+                        >
+                          <option value="">Specialization</option>
+                          {specializations.map((spec) => (
+                            <option key={spec} value={spec}>
+                              {spec}
+                            </option>
+                          ))}
+                        </select>
+
+                        <select
+                          value={selectedLevel}
+                          onChange={(e) => setSelectedLevel(e.target.value)}
+                          className="w-full p-3 rounded-lg text-black bg-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition duration-200"
+                        >
+                          <option value="">Level</option>
+                          {levels.map((level) => (
+                            <option key={level} value={level}>
+                              {level}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {filteredCourses.map((course) => (
                           <div
                             key={course._id}
-                            className="mb-6 cursor-pointer bg-zinc-800 hover:bg-zinc-700 p-6 rounded-xl transition-all duration-300 border border-zinc-700"
                             onClick={() => setActiveCourse(course)}
+                            className="group cursor-pointer bg-zinc-800/50 p-6 rounded-xl transition-all duration-300 border border-zinc-700 hover:border-yellow-400/50 hover:bg-zinc-700/50"
                           >
-                            <h2 className="text-2xl font-bold text-white mb-2">
+                            <h2 className="text-2xl font-bold text-white mb-4 group-hover:text-yellow-400">
                               {course.courseName}
                             </h2>
-                            <p className="text-gray-300">
-                              Level: {course.level}
-                            </p>
+                            <div className="flex gap-3">
+                              <span className="px-3 py-1 rounded-full bg-yellow-400/10 text-yellow-400 text-sm">
+                                {course.level}
+                              </span>
+                              <span className="px-3 py-1 rounded-full bg-zinc-700/50 text-gray-300 text-sm">
+                                {course.artForm}
+                              </span>
+                            </div>
                           </div>
-                        ))
-                      ) : (
-                        <p className="text-gray-400 text-center">
-                          No available courses at the moment.
-                        </p>
-                      )}
+                        ))}
+                      </div>
                     </div>
                   )}
 
@@ -341,6 +362,7 @@ const LearnDashboard = () => {
                       )}
                     </div>
                   )}
+                  {activeSection === "liveClasses" && <LiveClasses />}
                 </>
               )}
             </div>

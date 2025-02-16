@@ -19,6 +19,7 @@ const comment = require("./routes/comments");
 const instrumentservice = require("./routes/instrumentServiceAssistant");
 const events = require("./routes/events");
 const jobs = require("./routes/jobs");
+const liveClassRoutes = require("./routes/liveClass");
 
 //for env
 require("dotenv").config();
@@ -96,6 +97,8 @@ app.use("/events", express.static(path.join(__dirname, "events")));
 
 app.use("/resumes", express.static(path.join(__dirname, "resumes")));
 
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 // serve post images, videos, and audio files
 app.use("/storage", express.static(path.join(__dirname, "../storage")));
 //default route
@@ -134,6 +137,8 @@ app.use("/instrumentservice", instrumentservice);
 app.use("/events", events);
 
 app.use("/jobs", jobs);
+
+app.use("/live-classes", liveClassRoutes);
 
 //the app losening to the port
 app.listen(8000, () => {

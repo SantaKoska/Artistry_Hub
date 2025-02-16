@@ -70,7 +70,7 @@ const UserSchema = new mongoose.Schema(
 
 // virtual for counting the number of posts
 UserSchema.virtual("numberOfPosts").get(function () {
-  return this.posts.length;
+  return this.posts ? this.posts.length : 0;
 });
 
 // method for counting the number of followers
