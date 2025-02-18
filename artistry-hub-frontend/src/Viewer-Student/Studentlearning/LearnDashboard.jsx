@@ -3,7 +3,6 @@ import axios from "axios";
 import CourseDetails from "./CourseDetails"; // Import the CourseDetails component
 import StudentDashboard from "./StudentDashboard"; // Import the StudentDashboard component
 import { FaSearch } from "react-icons/fa"; // Importing a search icon
-import LiveClasses from "./LiveClasses";
 
 const LearnDashboard = () => {
   const [activeSection, setActiveSection] = useState("availableCourses");
@@ -197,18 +196,6 @@ const LearnDashboard = () => {
                 }`}
               >
                 Analytics
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => setActiveSection("liveClasses")}
-                className={`text-lg font-semibold text-center block w-full transition-colors duration-300 ${
-                  activeSection === "liveClasses"
-                    ? "text-yellow-400"
-                    : "text-gray-400 hover:text-yellow-300"
-                }`}
-              >
-                Live Classes
               </button>
             </li>
           </ul>

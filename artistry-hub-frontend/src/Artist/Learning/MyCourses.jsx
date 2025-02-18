@@ -5,7 +5,6 @@ import CourseDetails from "./CourseDetails";
 import axios from "axios";
 import { BiEdit, BiTrash } from "react-icons/bi";
 import Dashboard from "./Dashboard";
-import LiveClasses from "./LiveClasses";
 
 const MyCourses = () => {
   const [courses, setCourses] = useState([]);
@@ -143,18 +142,6 @@ const MyCourses = () => {
           </li>
           <li>
             <button
-              onClick={() => setActiveSection("liveClasses")}
-              className={`text-lg font-semibold ${
-                activeSection === "liveClasses"
-                  ? "text-yellow-400"
-                  : "text-gray-300 hover:text-yellow-500"
-              }`}
-            >
-              Live Classes
-            </button>
-          </li>
-          <li>
-            <button
               onClick={() => setActiveSection("addCourse")}
               className={`text-lg font-semibold ${
                 activeSection === "addCourse"
@@ -284,8 +271,6 @@ const MyCourses = () => {
             />
           </div>
         )}
-
-        {activeSection === "liveClasses" && <LiveClasses />}
       </div>
     </div>
   );
