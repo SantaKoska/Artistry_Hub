@@ -19,6 +19,7 @@ const comment = require("./routes/comments");
 const instrumentservice = require("./routes/instrumentServiceAssistant");
 const events = require("./routes/events");
 const jobs = require("./routes/jobs");
+const liveClassRoutes = require("./routes/liveClass");
 
 //for env
 require("dotenv").config();
@@ -136,6 +137,9 @@ app.use("/instrumentservice", instrumentservice);
 app.use("/events", events);
 
 app.use("/jobs", jobs);
+
+// Using the live class routes
+app.use("/live-classes", liveClassRoutes);
 
 //the app losening to the port
 app.listen(8000, () => {
