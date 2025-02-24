@@ -147,23 +147,20 @@ const LearnDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black to-zinc-900 p-8">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 max-w-screen-xl mx-auto">
-        {/* Sidebar */}
-        <div className="bg-zinc-900/80 backdrop-blur-sm rounded-xl shadow-2xl p-6 border border-zinc-800 hover:border-zinc-700 transition-all duration-300">
-          <h2 className="text-yellow-400 text-2xl font-bold mb-8 text-center">
-            Learning Hub
-          </h2>
-          <ul className="space-y-6">
+      <div className="max-w-screen-xl mx-auto">
+        {/* Updated Top Navigation Bar */}
+        <nav className="bg-gray-800 rounded-lg shadow-lg p-4 mb-8">
+          <ul className="flex justify-around">
             <li>
               <button
                 onClick={() => {
                   setActiveSection("availableCourses");
                   setActiveCourse(null);
                 }}
-                className={`text-lg font-semibold text-center block w-full transition-colors duration-300 ${
+                className={`text-lg font-semibold ${
                   activeSection === "availableCourses"
                     ? "text-yellow-400"
-                    : "text-gray-400 hover:text-yellow-300"
+                    : "text-gray-300 hover:text-yellow-500"
                 }`}
               >
                 Available Courses
@@ -175,10 +172,10 @@ const LearnDashboard = () => {
                   setActiveSection("myCourses");
                   setActiveCourse(null);
                 }}
-                className={`text-lg font-semibold text-center block w-full transition-colors duration-300 ${
+                className={`text-lg font-semibold ${
                   activeSection === "myCourses"
                     ? "text-yellow-400"
-                    : "text-gray-400 hover:text-yellow-300"
+                    : "text-gray-300 hover:text-yellow-500"
                 }`}
               >
                 My Courses
@@ -190,10 +187,10 @@ const LearnDashboard = () => {
                   setActiveSection("liveClasses");
                   setActiveCourse(null);
                 }}
-                className={`text-lg font-semibold text-center block w-full transition-colors duration-300 ${
+                className={`text-lg font-semibold ${
                   activeSection === "liveClasses"
                     ? "text-yellow-400"
-                    : "text-gray-400 hover:text-yellow-300"
+                    : "text-gray-300 hover:text-yellow-500"
                 }`}
               >
                 Live Classes
@@ -205,20 +202,20 @@ const LearnDashboard = () => {
                   setActiveSection("analytics");
                   setActiveCourse(null);
                 }}
-                className={`text-lg font-semibold text-center block w-full transition-colors duration-300 ${
+                className={`text-lg font-semibold ${
                   activeSection === "analytics"
                     ? "text-yellow-400"
-                    : "text-gray-400 hover:text-yellow-300"
+                    : "text-gray-300 hover:text-yellow-500"
                 }`}
               >
                 Analytics
               </button>
             </li>
           </ul>
-        </div>
+        </nav>
 
         {/* Main Content */}
-        <div className="lg:col-span-3">
+        <div className="bg-zinc-900/80 backdrop-blur-sm rounded-xl shadow-2xl p-8 border border-zinc-800">
           {activeSection === "analytics" ? (
             <StudentDashboard />
           ) : (

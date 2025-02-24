@@ -164,9 +164,11 @@ router.get("/artist", verifyToken, async (req, res) => {
 router.get("/student/available", verifyToken, async (req, res) => {
   try {
     const studentId = req.user.identifier;
+    const currentDate = new Date();
+
     const liveClasses = await LiveClass.find({
       enrolledStudents: { $ne: studentId },
-      finalEnrollmentDate: { $gt: new Date() }, // Only show classes with future enrollment dates
+      finalEnrollmentDate: { $gt: currentDate }, // Only show classes with future enrollment dates
     }).populate("artistId");
     res.status(200).json(liveClasses);
   } catch (error) {
@@ -193,11 +195,18 @@ router.get("/student/enrolled", verifyToken, async (req, res) => {
 router.post("/enroll/:id", verifyToken, async (req, res) => {
   try {
     const liveClassId = req.params.id;
-    const studentId = req.user.identifier; // Assuming the student's ID is in the token
+    const studentId = req.user.identifier;
 
     const liveClass = await LiveClass.findById(liveClassId);
     if (!liveClass) {
       return res.status(404).json({ message: "Live class not found" });
+    }
+
+    // Check if enrollment date has passed
+    if (new Date() > new Date(liveClass.finalEnrollmentDate)) {
+      return res.status(400).json({
+        message: "Enrollment period has ended for this class",
+      });
     }
 
     // Check if the student is already enrolled
@@ -228,6 +237,13 @@ router.post("/unenroll/:id", verifyToken, async (req, res) => {
     const liveClass = await LiveClass.findById(liveClassId);
     if (!liveClass) {
       return res.status(404).json({ message: "Live class not found" });
+    }
+
+    // Check if enrollment date has passed
+    if (new Date() > new Date(liveClass.finalEnrollmentDate)) {
+      return res.status(400).json({
+        message: "Cannot unenroll after the enrollment deadline",
+      });
     }
 
     // Check if the student is enrolled
@@ -261,6 +277,13 @@ router.delete("/:id", verifyToken, async (req, res) => {
       return res.status(404).json({ message: "Live class not found" });
     }
 
+    // Check if enrollment date has passed
+    if (new Date() > new Date(liveClass.finalEnrollmentDate)) {
+      return res.status(400).json({
+        message: "Cannot delete class after enrollment deadline",
+      });
+    }
+
     // Verify that the user is the owner of the class
     if (liveClass.artistId.toString() !== req.user.identifier) {
       return res
@@ -287,6 +310,13 @@ router.put(
 
       if (!liveClass) {
         return res.status(404).json({ message: "Live class not found" });
+      }
+
+      // Check if enrollment date has passed
+      if (new Date() > new Date(liveClass.finalEnrollmentDate)) {
+        return res.status(400).json({
+          message: "Cannot edit class after enrollment deadline",
+        });
       }
 
       // Verify that the user is the owner of the class

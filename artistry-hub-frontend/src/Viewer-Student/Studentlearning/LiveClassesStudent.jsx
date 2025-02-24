@@ -38,6 +38,14 @@ const LiveClasses = () => {
 
   const handleEnrollAction = async (liveClassId) => {
     try {
+      // Check if enrollment date has passed
+      const selectedClassData = liveClasses.find((c) => c._id === liveClassId);
+      if (new Date() > new Date(selectedClassData.finalEnrollmentDate)) {
+        setMessage("Enrollment period has ended for this class");
+        setTimeout(() => setMessage(""), 3000);
+        return;
+      }
+
       const endpoint = viewMode === "enrolled" ? "unenroll" : "enroll";
       await axios.post(
         `${
@@ -75,12 +83,17 @@ const LiveClasses = () => {
     } catch (error) {
       console.error("Error with enrollment action:", error);
       setMessage(
-        viewMode === "enrolled"
-          ? "Failed to unenroll. Please try again later."
-          : "Failed to enroll. Please try again later."
+        error.response?.data?.message ||
+          (viewMode === "enrolled"
+            ? "Failed to unenroll. Please try again later."
+            : "Failed to enroll. Please try again later.")
       );
       setTimeout(() => setMessage(""), 3000);
     }
+  };
+
+  const isEnrollmentOpen = (finalDate) => {
+    return new Date() <= new Date(finalDate);
   };
 
   const filteredClasses = liveClasses;
@@ -137,8 +150,17 @@ const LiveClasses = () => {
         isOpen={isDetailsModalOpen}
         onRequestClose={() => setIsDetailsModalOpen(false)}
         className="modal"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 backdrop-blur-sm"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center backdrop-blur-sm"
         style={{
+          overlay: {
+            position: "fixed",
+            inset: "0px",
+            backgroundColor: "rgba(0, 0, 0, 0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backdropFilter: "blur(4px)",
+          },
           content: {
             position: "relative",
             top: "auto",
@@ -147,20 +169,50 @@ const LiveClasses = () => {
             bottom: "auto",
             maxWidth: "900px",
             width: "100%",
+            margin: "2rem",
             padding: "0",
             border: "none",
             borderRadius: "1rem",
             backgroundColor: "#1a1a1a",
             color: "white",
             boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+            overflow: "auto",
+            maxHeight: "calc(100vh - 4rem)", // Ensures modal stays within viewport with margin
           },
         }}
       >
         {selectedClass && (
           <div className="relative">
-            <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-yellow-400/20 to-transparent z-0" />
+            <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-yellow-400/20 to-transparent" />
+            <div className="relative p-8">
+              <div className="mb-6 p-4 bg-black/30 rounded-lg border border-yellow-400/20 backdrop-blur-sm">
+                <p className="text-yellow-400 font-semibold mb-2">
+                  ✨ Important Notes:
+                </p>
+                <ul className="text-gray-300 text-sm list-none space-y-2">
+                  <li className="flex items-center gap-2">
+                    <span className="text-yellow-400">⚠️</span> You cannot
+                    enroll/unenroll after the enrollment deadline
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-yellow-400">📅</span> Make sure to
+                    enroll before{" "}
+                    {format(
+                      new Date(selectedClass.finalEnrollmentDate),
+                      "MMM dd, yyyy"
+                    )}
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-yellow-400">📌</span> Classes will be
+                    conducted on: {selectedClass.classDays.join(", ")}
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-yellow-400">⏰</span> Class timing:{" "}
+                    {selectedClass.startTime} - {selectedClass.endTime}
+                  </li>
+                </ul>
+              </div>
 
-            <div className="relative z-10 p-8">
               <div className="flex justify-between items-start mb-6">
                 <h2 className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
                   {selectedClass.className}
@@ -323,6 +375,22 @@ const LiveClasses = () => {
                   </div>
                   <span className="bg-gray-700 px-3 py-1 rounded-full text-yellow-400">
                     View Details
+                  </span>
+                </div>
+                <div className="mt-4 text-sm">
+                  <span
+                    className={`${
+                      isEnrollmentOpen(liveClass.finalEnrollmentDate)
+                        ? "text-green-400"
+                        : "text-red-400"
+                    }`}
+                  >
+                    {isEnrollmentOpen(liveClass.finalEnrollmentDate)
+                      ? `Enrollment closes: ${format(
+                          new Date(liveClass.finalEnrollmentDate),
+                          "MMM dd, yyyy"
+                        )}`
+                      : "Enrollment closed"}
                   </span>
                 </div>
               </div>

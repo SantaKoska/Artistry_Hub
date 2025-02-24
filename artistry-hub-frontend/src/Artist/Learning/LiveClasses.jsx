@@ -33,8 +33,17 @@ const LiveClasses = () => {
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
+  const isEnrollmentOpen = (finalDate) => {
+    return new Date() <= new Date(finalDate);
+  };
+
   const handleDelete = async (e) => {
-    e.stopPropagation(); // Prevent modal from opening when clicking delete
+    e.stopPropagation();
+
+    if (!isEnrollmentOpen(selectedClass.finalEnrollmentDate)) {
+      alert("Cannot delete class after enrollment deadline");
+      return;
+    }
 
     if (!window.confirm("Are you sure you want to delete this class?")) {
       return;
@@ -48,18 +57,23 @@ const LiveClasses = () => {
         }
       );
 
-      // Update the live classes list
       setLiveClasses(liveClasses.filter((c) => c._id !== selectedClass._id));
       setIsDetailsModalOpen(false);
       setSelectedClass(null);
     } catch (error) {
       console.error("Error deleting live class:", error);
-      alert("Failed to delete live class");
+      alert(error.response?.data?.message || "Failed to delete live class");
     }
   };
 
   const handleEdit = async (e) => {
-    e.stopPropagation(); // Prevent details modal from opening
+    e.stopPropagation();
+
+    if (!isEnrollmentOpen(selectedClass.finalEnrollmentDate)) {
+      alert("Cannot edit class after enrollment deadline");
+      return;
+    }
+
     setIsEditModalOpen(true);
   };
 
@@ -138,7 +152,38 @@ const LiveClasses = () => {
               />
             </svg>
           </button>
-          <CreateLiveClass closeModal={closeModal} />
+          <CreateLiveClass
+            closeModal={closeModal}
+            quickTips={
+              <div className="bg-gray-800/50 rounded-xl p-4 mt-4">
+                <h4 className="font-semibold text-yellow-400 mb-2">
+                  Quick Tips:
+                </h4>
+                <ul className="list-disc list-inside space-y-1 text-sm text-gray-300">
+                  <li>Set a reasonable enrollment deadline</li>
+                  <li>
+                    Course cannot be edited or deleted after enrollment deadline
+                  </li>
+                  <li>Students cannot enroll or unenroll after the deadline</li>
+                  <li>
+                    Course will not appear in available courses after deadline
+                  </li>
+                  <li>
+                    Make sure to include all necessary details before the
+                    deadline
+                  </li>
+                  <li>
+                    Once the enrollment deadline passes, you cannot modify or
+                    remove the course
+                  </li>
+                  <li>
+                    All course content and schedule changes must be made before
+                    the deadline
+                  </li>
+                </ul>
+              </div>
+            }
+          />
         </div>
       </Modal>
 
@@ -177,8 +222,19 @@ const LiveClasses = () => {
                 <div className="flex gap-3">
                   <button
                     onClick={handleEdit}
-                    className="p-2.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 transition-all duration-300"
-                    title="Edit Class"
+                    className={`p-2.5 rounded-lg transition-all duration-300 ${
+                      isEnrollmentOpen(selectedClass.finalEnrollmentDate)
+                        ? "bg-blue-500/10 hover:bg-blue-500/20 text-blue-400"
+                        : "bg-gray-500/10 text-gray-400 cursor-not-allowed"
+                    }`}
+                    title={
+                      isEnrollmentOpen(selectedClass.finalEnrollmentDate)
+                        ? "Edit Class"
+                        : "Cannot edit after enrollment deadline"
+                    }
+                    disabled={
+                      !isEnrollmentOpen(selectedClass.finalEnrollmentDate)
+                    }
                   >
                     <svg
                       className="w-5 h-5"
@@ -196,8 +252,19 @@ const LiveClasses = () => {
                   </button>
                   <button
                     onClick={handleDelete}
-                    className="p-2.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-all duration-300"
-                    title="Delete Class"
+                    className={`p-2.5 rounded-lg transition-all duration-300 ${
+                      isEnrollmentOpen(selectedClass.finalEnrollmentDate)
+                        ? "bg-red-500/10 hover:bg-red-500/20 text-red-400"
+                        : "bg-gray-500/10 text-gray-400 cursor-not-allowed"
+                    }`}
+                    title={
+                      isEnrollmentOpen(selectedClass.finalEnrollmentDate)
+                        ? "Delete Class"
+                        : "Cannot delete after enrollment deadline"
+                    }
+                    disabled={
+                      !isEnrollmentOpen(selectedClass.finalEnrollmentDate)
+                    }
                   >
                     <svg
                       className="w-5 h-5"
@@ -297,6 +364,23 @@ const LiveClasses = () => {
                   </div>
                 </div>
               </div>
+
+              <div className="mt-4 text-sm">
+                <span
+                  className={`${
+                    isEnrollmentOpen(selectedClass.finalEnrollmentDate)
+                      ? "text-green-400"
+                      : "text-red-400"
+                  }`}
+                >
+                  {isEnrollmentOpen(selectedClass.finalEnrollmentDate)
+                    ? `Enrollment closes: ${format(
+                        new Date(selectedClass.finalEnrollmentDate),
+                        "MMM dd, yyyy"
+                      )}`
+                    : "Enrollment closed - Cannot edit or delete"}
+                </span>
+              </div>
             </div>
           </div>
         )}
@@ -371,6 +455,17 @@ const LiveClasses = () => {
                   alt={liveClass.className}
                   className="w-full h-56 object-cover rounded-t-xl group-hover:opacity-90 transition-opacity"
                 />
+                <div
+                  className={`absolute top-4 left-4 px-3 py-1 rounded-full text-sm font-semibold ${
+                    isEnrollmentOpen(liveClass.finalEnrollmentDate)
+                      ? "bg-green-500 text-white"
+                      : "bg-red-500 text-white"
+                  }`}
+                >
+                  {isEnrollmentOpen(liveClass.finalEnrollmentDate)
+                    ? "Enrollment Open"
+                    : "Enrollment Closed"}
+                </div>
                 <div className="absolute top-4 right-4 bg-yellow-400 text-black px-3 py-1 rounded-full text-sm font-semibold">
                   {liveClass.artForm}
                 </div>
@@ -401,6 +496,22 @@ const LiveClasses = () => {
                   </div>
                   <span className="bg-gray-700 px-3 py-1 rounded-full text-yellow-400">
                     View Details
+                  </span>
+                </div>
+                <div className="mt-4 text-sm">
+                  <span
+                    className={`${
+                      isEnrollmentOpen(liveClass.finalEnrollmentDate)
+                        ? "text-green-400"
+                        : "text-red-400"
+                    }`}
+                  >
+                    {isEnrollmentOpen(liveClass.finalEnrollmentDate)
+                      ? `Enrollment closes: ${format(
+                          new Date(liveClass.finalEnrollmentDate),
+                          "MMM dd, yyyy"
+                        )}`
+                      : "Enrollment closed - Cannot edit or delete"}
                   </span>
                 </div>
               </div>

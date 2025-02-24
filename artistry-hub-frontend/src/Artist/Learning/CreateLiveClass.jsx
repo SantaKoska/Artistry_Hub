@@ -375,8 +375,8 @@ const CreateLiveClass = ({
         <p className="text-yellow-400 font-semibold mb-2">✨ Quick Tips:</p>
         <ul className="text-gray-300 text-sm list-none space-y-2">
           <li className="flex items-center gap-2">
-            <span className="text-yellow-400">📝</span> Fill in all details to
-            create your class
+            <span className="text-yellow-400">📝</span> Fill in all details
+            carefully before the enrollment deadline
           </li>
           <li className="flex items-center gap-2">
             <span className="text-yellow-400">⏰</span> Classes run between 1-3
@@ -385,6 +385,22 @@ const CreateLiveClass = ({
           <li className="flex items-center gap-2">
             <span className="text-yellow-400">🎨</span> Add engaging cover photo
             and trailer
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="text-yellow-400">⚠️</span> Course cannot be edited
+            or deleted after enrollment deadline
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="text-yellow-400">🔒</span> Students cannot
+            enroll/unenroll after deadline
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="text-yellow-400">👥</span> Course will not appear
+            in available courses after deadline
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="text-yellow-400">📌</span> Make sure to include all
+            necessary details before the deadline
           </li>
         </ul>
       </div>
