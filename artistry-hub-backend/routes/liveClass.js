@@ -148,14 +148,44 @@ router.get("/art-forms/:artForm", async (req, res) => {
   }
 });
 
-// Get all live classes
-router.get("/", async (req, res) => {
+// Get all live classes for artists (their own classes)
+router.get("/artist", verifyToken, async (req, res) => {
   try {
-    const liveClasses = await LiveClass.find().populate("artistId");
+    const artistId = req.user.identifier;
+    const liveClasses = await LiveClass.find({ artistId }).populate("artistId");
     res.status(200).json(liveClasses);
   } catch (error) {
-    console.error("Error fetching live classes:", error);
+    console.error("Error fetching artist's live classes:", error);
     res.status(500).json({ message: "Error fetching live classes", error });
+  }
+});
+
+// Get all live classes for students (excluding enrolled classes)
+router.get("/student/available", verifyToken, async (req, res) => {
+  try {
+    const studentId = req.user.identifier;
+    const liveClasses = await LiveClass.find({
+      enrolledStudents: { $ne: studentId },
+      finalEnrollmentDate: { $gt: new Date() }, // Only show classes with future enrollment dates
+    }).populate("artistId");
+    res.status(200).json(liveClasses);
+  } catch (error) {
+    console.error("Error fetching available live classes:", error);
+    res.status(500).json({ message: "Error fetching live classes", error });
+  }
+});
+
+// Get enrolled live classes for students
+router.get("/student/enrolled", verifyToken, async (req, res) => {
+  try {
+    const studentId = req.user.identifier;
+    const liveClasses = await LiveClass.find({
+      enrolledStudents: studentId,
+    }).populate("artistId");
+    res.status(200).json(liveClasses);
+  } catch (error) {
+    console.error("Error fetching enrolled live classes:", error);
+    res.status(500).json({ message: "Error fetching enrolled classes", error });
   }
 });
 
@@ -186,6 +216,39 @@ router.post("/enroll/:id", verifyToken, async (req, res) => {
   } catch (error) {
     console.error("Error enrolling in live class:", error);
     res.status(500).json({ message: "Error enrolling in live class", error });
+  }
+});
+
+// Unenroll from a live class
+router.post("/unenroll/:id", verifyToken, async (req, res) => {
+  try {
+    const liveClassId = req.params.id;
+    const studentId = req.user.identifier;
+
+    const liveClass = await LiveClass.findById(liveClassId);
+    if (!liveClass) {
+      return res.status(404).json({ message: "Live class not found" });
+    }
+
+    // Check if the student is enrolled
+    if (!liveClass.enrolledStudents.includes(studentId)) {
+      return res.status(400).json({ message: "Not enrolled in this class" });
+    }
+
+    // Remove student from enrolledStudents array
+    liveClass.enrolledStudents = liveClass.enrolledStudents.filter(
+      (id) => id.toString() !== studentId.toString()
+    );
+    await liveClass.save();
+
+    res
+      .status(200)
+      .json({ message: "Successfully unenrolled from the live class" });
+  } catch (error) {
+    console.error("Error unenrolling from live class:", error);
+    res
+      .status(500)
+      .json({ message: "Error unenrolling from live class", error });
   }
 });
 

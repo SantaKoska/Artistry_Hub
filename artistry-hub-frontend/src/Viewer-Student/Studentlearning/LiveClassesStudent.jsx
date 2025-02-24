@@ -9,13 +9,17 @@ const LiveClasses = () => {
   const [message, setMessage] = useState("");
   const [selectedClass, setSelectedClass] = useState(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [viewMode, setViewMode] = useState("available");
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     const fetchLiveClasses = async () => {
       try {
+        const endpoint = viewMode === "enrolled" ? "enrolled" : "available";
         const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/live-classes`,
+          `${
+            import.meta.env.VITE_BACKEND_URL
+          }/live-classes/student/${endpoint}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -30,29 +34,56 @@ const LiveClasses = () => {
     };
 
     fetchLiveClasses();
-  }, [token]);
+  }, [token, viewMode]);
 
-  const handleEnroll = async (liveClassId) => {
+  const handleEnrollAction = async (liveClassId) => {
     try {
+      const endpoint = viewMode === "enrolled" ? "unenroll" : "enroll";
       await axios.post(
         `${
           import.meta.env.VITE_BACKEND_URL
-        }/live-classes/enroll/${liveClassId}`,
+        }/live-classes/${endpoint}/${liveClassId}`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
       setMessage(
-        "Successfully enrolled! Check your dashboard for class details."
+        viewMode === "enrolled"
+          ? "Successfully unenrolled from the class!"
+          : "Successfully enrolled! Check your dashboard for class details."
       );
+
+      // Refresh the classes list
+      const refreshEndpoint =
+        viewMode === "enrolled" ? "enrolled" : "available";
+      const response = await axios.get(
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/live-classes/student/${refreshEndpoint}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setLiveClasses(response.data);
+
+      // Close the modal
+      setIsDetailsModalOpen(false);
+
       setTimeout(() => setMessage(""), 3000);
     } catch (error) {
-      console.error("Error enrolling in live class:", error);
-      setMessage("Failed to enroll. Please try again later.");
+      console.error("Error with enrollment action:", error);
+      setMessage(
+        viewMode === "enrolled"
+          ? "Failed to unenroll. Please try again later."
+          : "Failed to enroll. Please try again later."
+      );
       setTimeout(() => setMessage(""), 3000);
     }
   };
+
+  const filteredClasses = liveClasses;
 
   return (
     <div className="bg-gradient-to-br from-gray-900 to-black text-white rounded-xl p-8 shadow-2xl">
@@ -64,6 +95,29 @@ const LiveClasses = () => {
           <p className="text-gray-400 mt-2">
             Explore and enroll in upcoming live sessions
           </p>
+        </div>
+
+        <div className="flex gap-4">
+          <button
+            onClick={() => setViewMode("available")}
+            className={`px-6 py-2 rounded-lg transition-all duration-300 ${
+              viewMode === "available"
+                ? "bg-gradient-to-r from-yellow-400 to-orange-500 text-black"
+                : "bg-gray-800 text-gray-400"
+            }`}
+          >
+            Available Classes
+          </button>
+          <button
+            onClick={() => setViewMode("enrolled")}
+            className={`px-6 py-2 rounded-lg transition-all duration-300 ${
+              viewMode === "enrolled"
+                ? "bg-gradient-to-r from-yellow-400 to-orange-500 text-black"
+                : "bg-gray-800 text-gray-400"
+            }`}
+          >
+            My Enrolled Classes
+          </button>
         </div>
       </div>
 
@@ -193,12 +247,15 @@ const LiveClasses = () => {
                   </div>
 
                   <button
-                    onClick={() => handleEnroll(selectedClass._id)}
-                    className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 
-                    hover:to-orange-600 text-black font-semibold py-3 px-6 rounded-xl transform hover:scale-105 
-                    transition-all duration-200 shadow-lg"
+                    onClick={() => handleEnrollAction(selectedClass._id)}
+                    className={`w-full ${
+                      viewMode === "enrolled"
+                        ? "bg-red-500 hover:bg-red-600"
+                        : "bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600"
+                    } text-black font-semibold py-3 px-6 rounded-xl transform hover:scale-105 
+                    transition-all duration-200 shadow-lg`}
                   >
-                    Enroll Now
+                    {viewMode === "enrolled" ? "Unenroll" : "Enroll Now"}
                   </button>
                 </div>
               </div>
@@ -211,9 +268,9 @@ const LiveClasses = () => {
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-400"></div>
         </div>
-      ) : liveClasses.length > 0 ? (
+      ) : filteredClasses.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {liveClasses.map((liveClass) => (
+          {filteredClasses.map((liveClass) => (
             <div
               key={liveClass._id}
               onClick={() => {
@@ -234,6 +291,11 @@ const LiveClasses = () => {
                 <div className="absolute top-4 right-4 bg-yellow-400 text-black px-3 py-1 rounded-full text-sm font-semibold">
                   {liveClass.artForm}
                 </div>
+                {viewMode === "enrolled" && (
+                  <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                    Enrolled
+                  </div>
+                )}
               </div>
               <div className="p-6">
                 <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 mb-3">
@@ -285,10 +347,14 @@ const LiveClasses = () => {
             </svg>
           </div>
           <h3 className="text-2xl font-bold text-yellow-400 mb-2">
-            No Live Classes Available
+            {viewMode === "enrolled"
+              ? "No Enrolled Classes"
+              : "No Available Classes"}
           </h3>
           <p className="text-gray-400 max-w-md mx-auto">
-            Check back later for new and exciting live classes!
+            {viewMode === "enrolled"
+              ? "You haven't enrolled in any classes yet."
+              : "Check back later for new and exciting live classes!"}
           </p>
         </div>
       )}

@@ -16,7 +16,7 @@ const LiveClasses = () => {
     const fetchLiveClasses = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/live-classes`,
+          `${import.meta.env.VITE_BACKEND_URL}/live-classes/artist`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
