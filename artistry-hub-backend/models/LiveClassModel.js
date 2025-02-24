@@ -4,7 +4,7 @@ const liveClassSchema = new mongoose.Schema(
   {
     artistId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Artist",
+      ref: "User",
       required: true,
     },
     className: {

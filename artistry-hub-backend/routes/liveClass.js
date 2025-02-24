@@ -152,7 +152,9 @@ router.get("/art-forms/:artForm", async (req, res) => {
 router.get("/artist", verifyToken, async (req, res) => {
   try {
     const artistId = req.user.identifier;
-    const liveClasses = await LiveClass.find({ artistId }).populate("artistId");
+    const liveClasses = await LiveClass.find({ artistId })
+      .populate("artistId")
+      .populate("enrolledStudents", "userName profilePicture");
     res.status(200).json(liveClasses);
   } catch (error) {
     console.error("Error fetching artist's live classes:", error);
@@ -168,8 +170,11 @@ router.get("/student/available", verifyToken, async (req, res) => {
 
     const liveClasses = await LiveClass.find({
       enrolledStudents: { $ne: studentId },
-      finalEnrollmentDate: { $gt: currentDate }, // Only show classes with future enrollment dates
-    }).populate("artistId");
+      finalEnrollmentDate: { $gt: currentDate },
+    }).populate({
+      path: "artistId",
+      select: "userName profilePicture bio email", // Add any other artist fields you want
+    });
     res.status(200).json(liveClasses);
   } catch (error) {
     console.error("Error fetching available live classes:", error);
@@ -183,7 +188,10 @@ router.get("/student/enrolled", verifyToken, async (req, res) => {
     const studentId = req.user.identifier;
     const liveClasses = await LiveClass.find({
       enrolledStudents: studentId,
-    }).populate("artistId");
+    }).populate({
+      path: "artistId",
+      select: "userName profilePicture bio email", // Add any other artist fields you want
+    });
     res.status(200).json(liveClasses);
   } catch (error) {
     console.error("Error fetching enrolled live classes:", error);

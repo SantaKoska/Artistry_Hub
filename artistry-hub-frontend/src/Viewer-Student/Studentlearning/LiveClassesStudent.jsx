@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Modal from "react-modal";
 import { format } from "date-fns";
+import { Link } from "react-router-dom";
 
 const LiveClasses = () => {
   const [liveClasses, setLiveClasses] = useState([]);
@@ -24,6 +25,7 @@ const LiveClasses = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+        console.log("Live classes response:", response.data);
         setLiveClasses(response.data);
       } catch (error) {
         console.error("Error fetching live classes:", error);
@@ -97,6 +99,12 @@ const LiveClasses = () => {
   };
 
   const filteredClasses = liveClasses;
+
+  const handleClassSelection = (liveClass) => {
+    console.log("Selected class details:", liveClass);
+    setSelectedClass(liveClass);
+    setIsDetailsModalOpen(true);
+  };
 
   return (
     <div className="bg-gradient-to-br from-gray-900 to-black text-white rounded-xl p-8 shadow-2xl">
@@ -239,6 +247,42 @@ const LiveClasses = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">
+                  <div className="bg-gray-800/50 rounded-xl p-6 mb-4">
+                    <div className="flex items-center gap-4">
+                      {selectedClass.artistId ? (
+                        <>
+                          <img
+                            src={`${import.meta.env.VITE_BACKEND_URL}${
+                              selectedClass.artistId.profilePicture
+                            }`}
+                            alt={selectedClass.artistId.userName}
+                            className="w-16 h-16 rounded-full object-cover border-2 border-yellow-500/30"
+                          />
+                          <div>
+                            <h3 className="text-xl font-semibold text-yellow-400">
+                              {selectedClass.artistId.userName}
+                            </h3>
+                            <Link
+                              to={`/profile/${selectedClass.artistId.userName}`}
+                              className="text-sm text-gray-400 hover:text-yellow-400 transition-colors"
+                            >
+                              View Profile
+                            </Link>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-gray-400">
+                          Artist information unavailable
+                        </div>
+                      )}
+                    </div>
+                    {selectedClass.artistId && (
+                      <p className="mt-4 text-gray-300">
+                        {selectedClass.artistId.bio}
+                      </p>
+                    )}
+                  </div>
+
                   <div className="relative rounded-xl overflow-hidden shadow-2xl">
                     <video
                       className="w-full aspect-video object-cover"
@@ -325,10 +369,7 @@ const LiveClasses = () => {
           {filteredClasses.map((liveClass) => (
             <div
               key={liveClass._id}
-              onClick={() => {
-                setSelectedClass(liveClass);
-                setIsDetailsModalOpen(true);
-              }}
+              onClick={() => handleClassSelection(liveClass)}
               className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-xl shadow-lg hover:shadow-2xl 
               transition-all duration-300 cursor-pointer transform hover:-translate-y-2 group"
             >

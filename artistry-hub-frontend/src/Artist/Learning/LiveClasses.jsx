@@ -3,6 +3,7 @@ import axios from "axios";
 import CreateLiveClass from "./CreateLiveClass";
 import Modal from "react-modal";
 import { format } from "date-fns";
+import { Link } from "react-router-dom";
 
 const LiveClasses = () => {
   const [liveClasses, setLiveClasses] = useState([]);
@@ -193,6 +194,17 @@ const LiveClasses = () => {
         className="modal"
         overlayClassName="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 backdrop-blur-sm"
         style={{
+          overlay: {
+            position: "fixed",
+            inset: "0px",
+            backgroundColor: "rgba(0, 0, 0, 0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backdropFilter: "blur(4px)",
+            padding: "2rem",
+            zIndex: 1000,
+          },
           content: {
             position: "relative",
             top: "auto",
@@ -201,12 +213,15 @@ const LiveClasses = () => {
             bottom: "auto",
             maxWidth: "900px",
             width: "100%",
+            margin: "auto",
             padding: "0",
             border: "none",
             borderRadius: "1rem",
             backgroundColor: "#1a1a1a",
             color: "white",
             boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+            overflow: "auto",
+            maxHeight: "calc(100vh - 8rem)",
           },
         }}
       >
@@ -214,7 +229,10 @@ const LiveClasses = () => {
           <div className="relative">
             <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-yellow-400/20 to-transparent z-0" />
 
-            <div className="relative z-10 p-8">
+            <div
+              className="relative z-10 p-8 overflow-y-auto"
+              style={{ maxHeight: "calc(100vh - 10rem)" }}
+            >
               <div className="flex justify-between items-start mb-6">
                 <h2 className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
                   {selectedClass.className}
@@ -361,6 +379,40 @@ const LiveClasses = () => {
                         )}
                       />
                     </div>
+                  </div>
+
+                  <div className="bg-gray-800/50 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-yellow-400 mb-4">
+                      Enrolled Students (
+                      {selectedClass.enrolledStudents?.length || 0})
+                    </h3>
+                    {selectedClass.enrolledStudents?.length > 0 ? (
+                      <div className="space-y-4">
+                        {selectedClass.enrolledStudents.map((student) => (
+                          <Link
+                            key={student._id}
+                            to={`/profile/${student.userName}`}
+                            className="flex items-center p-3 rounded-lg bg-gray-900/50 hover:bg-gray-900/70 
+                              transition-all duration-300 border border-yellow-500/10 hover:border-yellow-500/30"
+                          >
+                            <img
+                              src={`${import.meta.env.VITE_BACKEND_URL}${
+                                student.profilePicture
+                              }`}
+                              alt={student.userName}
+                              className="w-10 h-10 rounded-full object-cover border-2 border-yellow-500/30"
+                            />
+                            <span className="ml-3 text-gray-300 hover:text-yellow-400 transition-colors">
+                              {student.userName}
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-gray-400 text-center py-4">
+                        No students enrolled yet
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
