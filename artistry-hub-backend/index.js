@@ -97,10 +97,14 @@ app.use("/events", express.static(path.join(__dirname, "events")));
 
 app.use("/resumes", express.static(path.join(__dirname, "resumes")));
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use(
+  "/uploads/liveClasses",
+  express.static(path.join(__dirname, "uploads/liveClasses"))
+);
 
 // serve post images, videos, and audio files
 app.use("/storage", express.static(path.join(__dirname, "../storage")));
+
 //default route
 app.get("/", (req, res) => {
   res.send("I am Working");

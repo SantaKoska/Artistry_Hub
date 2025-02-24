@@ -3,7 +3,7 @@ import axios from "axios";
 import CourseDetails from "./CourseDetails"; // Import the CourseDetails component
 import StudentDashboard from "./StudentDashboard"; // Import the StudentDashboard component
 import { FaSearch } from "react-icons/fa"; // Importing a search icon
-import LiveClasses from "./LiveClasses"; // Import the LiveClasses component
+import LiveClasses from "./LiveClassesStudent"; // Import the LiveClasses component
 
 const LearnDashboard = () => {
   const [activeSection, setActiveSection] = useState("availableCourses");

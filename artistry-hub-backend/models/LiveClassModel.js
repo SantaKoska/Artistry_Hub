@@ -55,12 +55,6 @@ const liveClassSchema = new mongoose.Schema(
         "Sunday",
       ], // Example enum values
     },
-    classDuration: {
-      type: Number, // Duration in hours
-      required: true,
-      min: 1,
-      max: 3,
-    },
     startTime: {
       type: String, // e.g., "09:00 AM"
       required: true,
