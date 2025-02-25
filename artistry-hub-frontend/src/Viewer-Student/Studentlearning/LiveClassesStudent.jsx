@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Modal from "react-modal";
 import { format } from "date-fns";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const LiveClasses = () => {
   const [liveClasses, setLiveClasses] = useState([]);
@@ -12,6 +12,7 @@ const LiveClasses = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState("available");
   const token = localStorage.getItem("token");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchLiveClasses = async () => {
@@ -112,6 +113,10 @@ const LiveClasses = () => {
     setIsDetailsModalOpen(true);
   };
 
+  const handleJoinTestClass = () => {
+    navigate("/live-class-room/test-123?role=student");
+  };
+
   return (
     <div className="bg-gradient-to-br from-gray-900 to-black text-white rounded-xl p-8 shadow-2xl">
       <div className="flex justify-between items-center mb-8">
@@ -144,6 +149,26 @@ const LiveClasses = () => {
             }`}
           >
             My Enrolled Classes
+          </button>
+          <button
+            onClick={handleJoinTestClass}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-full 
+            flex items-center gap-2 transform hover:scale-105 transition-all duration-200 shadow-lg"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+              />
+            </svg>
+            Join Test Class
           </button>
         </div>
       </div>

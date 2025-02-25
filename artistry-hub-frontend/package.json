@@ -13,6 +13,7 @@
     "@ffmpeg/ffmpeg": "^0.12.10",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
+    "agora-rtc-react": "^2.3.0",
     "axios": "^1.7.5",
     "chart.js": "^4.4.7",
     "date-fns": "^4.1.0",

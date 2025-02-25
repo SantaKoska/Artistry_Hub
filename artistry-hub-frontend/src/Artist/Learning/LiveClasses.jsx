@@ -3,7 +3,7 @@ import axios from "axios";
 import CreateLiveClass from "./CreateLiveClass";
 import Modal from "react-modal";
 import { format } from "date-fns";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const LiveClasses = () => {
   const [liveClasses, setLiveClasses] = useState([]);
@@ -12,6 +12,7 @@ const LiveClasses = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const token = localStorage.getItem("token");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchLiveClasses = async () => {
@@ -84,6 +85,10 @@ const LiveClasses = () => {
     setIsEditModalOpen(true);
   };
 
+  const handleStartTestClass = () => {
+    navigate("/live-class-room/test-123?role=artist");
+  };
+
   return (
     <div className="bg-gradient-to-br from-gray-900 to-black text-white rounded-xl p-8 shadow-2xl">
       <div className="flex justify-between items-center mb-8">
@@ -95,27 +100,49 @@ const LiveClasses = () => {
             Manage your upcoming live sessions
           </p>
         </div>
-        <button
-          onClick={openModal}
-          className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 
-          text-black font-semibold py-3 px-6 rounded-full flex items-center gap-2 transform hover:scale-105 
-          transition-all duration-200 shadow-lg"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        <div className="flex gap-4">
+          <button
+            onClick={handleStartTestClass}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-full 
+            flex items-center gap-2 transform hover:scale-105 transition-all duration-200 shadow-lg"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          Create Live Class
-        </button>
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+              />
+            </svg>
+            Start Test Class
+          </button>
+          <button
+            onClick={openModal}
+            className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 
+            text-black font-semibold py-3 px-6 rounded-full flex items-center gap-2 transform hover:scale-105 
+            transition-all duration-200 shadow-lg"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Create Live Class
+          </button>
+        </div>
       </div>
 
       <Modal

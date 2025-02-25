@@ -35,6 +35,7 @@ import InstitutionProfile from "./institution/InstitutionProfile";
 import CertificateVerification from "./Viewer-Student/CertificateVerification";
 import InstitutionOpportunities from "./institution/InstitutionOpportunities";
 import Opportunities from "./common/Opportunities";
+import LiveClassRoom from "./components/LiveClassRoom";
 
 function App() {
   return (
@@ -153,6 +154,14 @@ function App() {
           <Route
             path="/verify-certificate/:serialNumber"
             element={<CertificateVerification />}
+          />
+          <Route
+            path="/live-class-room/:classId"
+            element={
+              <LiveClassRoom
+                isArtist={location.search.includes("role=artist")}
+              />
+            }
           />
         </Routes>
       </div>

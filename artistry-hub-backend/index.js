@@ -30,6 +30,7 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "https://artistry-hub-1.onrender.com",
+  "http://192.168.32.220:5173",
 ];
 
 // Configure CORS
