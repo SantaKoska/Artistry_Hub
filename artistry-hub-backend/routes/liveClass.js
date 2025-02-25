@@ -5,6 +5,7 @@ const { verifyToken } = require("../utils/tokendec");
 const multer = require("multer");
 const path = require("path");
 const ArtFormSpecialization = require("../models/ArtFormSpecializationModels");
+const { isBefore, addHours } = require("date-fns");
 
 // Set up multer for file uploads
 const storage = multer.diskStorage({
@@ -124,6 +125,10 @@ router.post(
         endTime,
         finalEnrollmentDate,
       });
+
+      // Generate initial class dates
+      const initialClassDates = newLiveClass.generateNextClassDates();
+      newLiveClass.classDates = initialClassDates;
 
       await newLiveClass.save();
       res.status(201).json(newLiveClass);
@@ -425,6 +430,15 @@ router.put(
           finalEnrollmentDate || liveClass.finalEnrollmentDate,
       };
 
+      // Regenerate class dates if classDays or times have changed
+      if (classDays || startTime || endTime) {
+        const tempClass = new LiveClass({
+          ...liveClass.toObject(),
+          ...updateData,
+        });
+        updateData.classDates = tempClass.generateNextClassDates();
+      }
+
       // Add new files if they exist
       if (req.files?.coverPhoto) {
         updateData.coverPhoto = `/uploads/liveClasses/${req.files.coverPhoto[0].filename}`;
@@ -446,5 +460,59 @@ router.put(
     }
   }
 );
+
+// Fix the cancel class route
+router.post("/cancel-class/:classId/:dateId", verifyToken, async (req, res) => {
+  try {
+    const { classId, dateId } = req.params;
+    const liveClass = await LiveClass.findById(classId);
+
+    if (!liveClass) {
+      return res.status(404).json({ message: "Live class not found" });
+    }
+
+    // Find the specific class date
+    const classDate = liveClass.classDates.id(dateId);
+    if (!classDate) {
+      return res.status(404).json({ message: "Class date not found" });
+    }
+
+    // Check if trying to cancel less than 24 hours before
+    const classDateTime = new Date(classDate.date);
+    if (isBefore(classDateTime, addHours(new Date(), 24))) {
+      return res.status(400).json({
+        message:
+          "Classes cannot be cancelled less than 24 hours before start time",
+      });
+    }
+
+    // Mark the class as cancelled
+    classDate.status = "cancelled";
+
+    // Get the last scheduled date
+    const scheduledDates = liveClass.classDates
+      .filter((d) => d.status === "scheduled")
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    if (scheduledDates.length > 0) {
+      const lastScheduledDate = new Date(scheduledDates[0].date);
+      // Generate only one new date after the last scheduled date
+      const newDate = new Date(lastScheduledDate);
+      newDate.setDate(newDate.getDate() + 1); // Start from next day
+
+      const newDates = liveClass.generateNextClassDates(newDate);
+      // Add only the first generated date
+      if (newDates.length > 0) {
+        liveClass.classDates.push(newDates[0]);
+      }
+    }
+
+    await liveClass.save();
+    res.json({ message: "Class cancelled successfully" });
+  } catch (error) {
+    console.error("Error cancelling class:", error);
+    res.status(500).json({ message: "Error cancelling class", error });
+  }
+});
 
 module.exports = router;

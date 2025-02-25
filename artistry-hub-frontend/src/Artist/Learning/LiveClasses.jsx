@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import CreateLiveClass from "./CreateLiveClass";
 import Modal from "react-modal";
-import { format } from "date-fns";
+import { format, isBefore, addHours } from "date-fns";
 import { Link, useNavigate } from "react-router-dom";
 
 const LiveClasses = () => {
@@ -11,6 +11,7 @@ const LiveClasses = () => {
   const [selectedClass, setSelectedClass] = useState(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
@@ -82,12 +83,100 @@ const LiveClasses = () => {
       return;
     }
 
+    setIsDetailsModalOpen(false);
     setIsEditModalOpen(true);
   };
 
   const handleStartTestClass = () => {
     navigate("/live-class-room/test-123?role=artist");
   };
+
+  const handleCancelClass = async (classId, dateId) => {
+    try {
+      // First, find the class date to check the time
+      const classToCancel = liveClasses.find((c) => c._id === classId);
+      const classDate = classToCancel.classDates.find((d) => d._id === dateId);
+      const classDateTime = new Date(classDate.date);
+      const now = new Date();
+
+      if (isBefore(classDateTime, addHours(now, 24))) {
+        alert(
+          "Classes cannot be cancelled less than 24 hours before start time"
+        );
+        return;
+      }
+
+      const response = await axios.post(
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/live-classes/cancel-class/${classId}/${dateId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.status === 200) {
+        // Refresh the live classes data
+        const updatedClassesResponse = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/live-classes/artist`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setLiveClasses(updatedClassesResponse.data);
+        alert("Class cancelled successfully");
+      }
+    } catch (error) {
+      console.error("Error cancelling class:", error);
+      alert(error.response?.data?.message || "Failed to cancel class");
+    }
+  };
+
+  const isClassJoinable = (classDate) => {
+    const classDateTime = new Date(classDate);
+    const now = new Date();
+    const diffInMinutes = (classDateTime - now) / (1000 * 60);
+    return diffInMinutes <= 15 && diffInMinutes >= -60;
+  };
+
+  const renderClassDates = (liveClass) => (
+    <div className="mt-4 space-y-2">
+      <h3 className="text-yellow-400 font-semibold">Upcoming Classes:</h3>
+      {liveClass.classDates
+        .filter((cd) => cd.status === "scheduled")
+        .map((classDate) => (
+          <div
+            key={classDate._id}
+            className="flex justify-between items-center bg-gray-800 p-2 rounded"
+          >
+            <span>
+              {format(new Date(classDate.date), "MMM dd, yyyy 'at' h:mm a")}
+            </span>
+            <div className="flex gap-2">
+              {isClassJoinable(classDate.date) ? (
+                <Link
+                  to={`/live-class-room/${liveClass._id}?role=artist`}
+                  className="bg-green-500 text-white px-3 py-1 rounded"
+                >
+                  Join Class
+                </Link>
+              ) : (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent modal from opening
+                    handleCancelClass(liveClass._id, classDate._id);
+                  }}
+                  className="bg-red-500 text-white px-3 py-1 rounded"
+                  disabled={isBefore(
+                    new Date(classDate.date),
+                    addHours(new Date(), 24)
+                  )}
+                >
+                  Cancel Class
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+    </div>
+  );
 
   return (
     <div className="bg-gradient-to-br from-gray-900 to-black text-white rounded-xl p-8 shadow-2xl">
@@ -466,6 +555,8 @@ const LiveClasses = () => {
                     : "Enrollment closed - Cannot edit or delete"}
                 </span>
               </div>
+
+              {renderClassDates(selectedClass)}
             </div>
           </div>
         )}

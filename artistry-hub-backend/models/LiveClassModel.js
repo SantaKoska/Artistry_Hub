@@ -67,9 +67,51 @@ const liveClassSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    classDates: [
+      {
+        date: {
+          type: Date,
+          required: true,
+        },
+        status: {
+          type: String,
+          enum: ["scheduled", "cancelled", "completed"],
+          default: "scheduled",
+        },
+      },
+    ],
   },
   { timestamps: true }
 );
+
+// Add a method to generate next 4 class dates
+liveClassSchema.methods.generateNextClassDates = function (
+  startFromDate = new Date()
+) {
+  const dates = [];
+  let currentDate = new Date(startFromDate);
+  const daysMap = {
+    Sunday: 0,
+    Monday: 1,
+    Tuesday: 2,
+    Wednesday: 3,
+    Thursday: 4,
+    Friday: 5,
+    Saturday: 6,
+  };
+
+  while (dates.length < 4) {
+    if (this.classDays.includes(Object.keys(daysMap)[currentDate.getDay()])) {
+      dates.push({
+        date: new Date(currentDate),
+        status: "scheduled",
+      });
+    }
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return dates;
+};
 
 const LiveClass = mongoose.model("LiveClass", liveClassSchema);
 

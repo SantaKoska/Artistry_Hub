@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Modal from "react-modal";
-import { format } from "date-fns";
+import { format, isBefore, addHours, addMinutes } from "date-fns";
 import { Link, useNavigate } from "react-router-dom";
 
 const LiveClasses = () => {
@@ -116,6 +116,41 @@ const LiveClasses = () => {
   const handleJoinTestClass = () => {
     navigate("/live-class-room/test-123?role=student");
   };
+
+  // Add function to check if class is joinable
+  const isClassJoinable = (classDate) => {
+    const classDateTime = new Date(classDate);
+    const now = new Date();
+    const diffInMinutes = (classDateTime - now) / (1000 * 60);
+    return diffInMinutes <= 15 && diffInMinutes >= -60;
+  };
+
+  // Add this to your existing class card render
+  const renderClassDates = (liveClass) => (
+    <div className="mt-4 space-y-2">
+      <h3 className="text-yellow-400 font-semibold">Upcoming Classes:</h3>
+      {liveClass.classDates
+        .filter((cd) => cd.status === "scheduled")
+        .map((classDate) => (
+          <div
+            key={classDate._id}
+            className="flex justify-between items-center bg-gray-800 p-2 rounded"
+          >
+            <span>
+              {format(new Date(classDate.date), "MMM dd, yyyy 'at' h:mm a")}
+            </span>
+            {isClassJoinable(classDate.date) && (
+              <Link
+                to={`/live-class-room/${liveClass._id}?role=student`}
+                className="bg-green-500 text-white px-3 py-1 rounded"
+              >
+                Join Class
+              </Link>
+            )}
+          </div>
+        ))}
+    </div>
+  );
 
   return (
     <div className="bg-gradient-to-br from-gray-900 to-black text-white rounded-xl p-8 shadow-2xl">
@@ -465,6 +500,7 @@ const LiveClasses = () => {
                       : "Enrollment closed"}
                   </span>
                 </div>
+                {renderClassDates(liveClass)}
               </div>
             </div>
           ))}
