@@ -35,7 +35,13 @@ const LiveClasses = () => {
   const closeModal = () => setIsModalOpen(false);
 
   const isEnrollmentOpen = (finalDate) => {
-    return new Date() <= new Date(finalDate);
+    const currentDate = new Date();
+    const finalEnrollmentDate = new Date(finalDate);
+
+    // Set the final date to end of day (23:59:59)
+    finalEnrollmentDate.setHours(23, 59, 59, 999);
+
+    return currentDate <= finalEnrollmentDate;
   };
 
   const handleDelete = async (e) => {

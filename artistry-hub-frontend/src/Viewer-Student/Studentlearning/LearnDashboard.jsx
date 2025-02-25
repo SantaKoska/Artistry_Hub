@@ -146,229 +146,214 @@ const LearnDashboard = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black to-zinc-900 p-8">
-      <div className="max-w-screen-xl mx-auto">
-        {/* Updated Top Navigation Bar */}
-        <nav className="bg-gray-800 rounded-lg shadow-lg p-4 mb-8">
-          <ul className="flex justify-around">
-            <li>
-              <button
-                onClick={() => {
-                  setActiveSection("availableCourses");
-                  setActiveCourse(null);
-                }}
-                className={`text-lg font-semibold ${
-                  activeSection === "availableCourses"
-                    ? "text-yellow-400"
-                    : "text-gray-300 hover:text-yellow-500"
-                }`}
-              >
-                Available Courses
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  setActiveSection("myCourses");
-                  setActiveCourse(null);
-                }}
-                className={`text-lg font-semibold ${
-                  activeSection === "myCourses"
-                    ? "text-yellow-400"
-                    : "text-gray-300 hover:text-yellow-500"
-                }`}
-              >
-                My Courses
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  setActiveSection("liveClasses");
-                  setActiveCourse(null);
-                }}
-                className={`text-lg font-semibold ${
-                  activeSection === "liveClasses"
-                    ? "text-yellow-400"
-                    : "text-gray-300 hover:text-yellow-500"
-                }`}
-              >
-                Live Classes
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  setActiveSection("analytics");
-                  setActiveCourse(null);
-                }}
-                className={`text-lg font-semibold ${
-                  activeSection === "analytics"
-                    ? "text-yellow-400"
-                    : "text-gray-300 hover:text-yellow-500"
-                }`}
-              >
-                Analytics
-              </button>
-            </li>
-          </ul>
-        </nav>
+    <div className="bg-black text-white rounded-md p-4 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30 max-w-screen-xl w-full mx-auto">
+      {/* Updated Navigation Bar */}
+      <nav className="bg-gray-800 rounded-lg shadow-lg p-4 mb-4">
+        <ul className="flex justify-around">
+          <li>
+            <button
+              onClick={() => {
+                setActiveSection("availableCourses");
+                setActiveCourse(null);
+              }}
+              className={`text-lg font-semibold ${
+                activeSection === "availableCourses"
+                  ? "text-yellow-400"
+                  : "text-gray-300 hover:text-yellow-500"
+              }`}
+            >
+              Available Courses
+            </button>
+          </li>
+          <li>
+            <button
+              onClick={() => {
+                setActiveSection("myCourses");
+                setActiveCourse(null);
+              }}
+              className={`text-lg font-semibold ${
+                activeSection === "myCourses"
+                  ? "text-yellow-400"
+                  : "text-gray-300 hover:text-yellow-500"
+              }`}
+            >
+              My Courses
+            </button>
+          </li>
+          <li>
+            <button
+              onClick={() => {
+                setActiveSection("liveClasses");
+                setActiveCourse(null);
+              }}
+              className={`text-lg font-semibold ${
+                activeSection === "liveClasses"
+                  ? "text-yellow-400"
+                  : "text-gray-300 hover:text-yellow-500"
+              }`}
+            >
+              Live Classes
+            </button>
+          </li>
+          <li>
+            <button
+              onClick={() => {
+                setActiveSection("analytics");
+                setActiveCourse(null);
+              }}
+              className={`text-lg font-semibold ${
+                activeSection === "analytics"
+                  ? "text-yellow-400"
+                  : "text-gray-300 hover:text-yellow-500"
+              }`}
+            >
+              Analytics
+            </button>
+          </li>
+        </ul>
+      </nav>
 
-        {/* Main Content */}
-        <div className="bg-zinc-900/80 backdrop-blur-sm rounded-xl shadow-2xl p-8 border border-zinc-800">
-          {activeSection === "analytics" ? (
-            <StudentDashboard />
-          ) : (
-            <div className="bg-zinc-900/80 backdrop-blur-sm rounded-xl shadow-2xl p-8 border border-zinc-800">
-              {activeCourse ? (
-                <CourseDetails
-                  course={activeCourse}
-                  onBack={() => setActiveCourse(null)}
-                  isEnrolled={enrolledCourses.some(
-                    (course) => course._id === activeCourse._id
-                  )}
-                  fetchEnrolledCourses={fetchEnrolledCourses}
-                />
-              ) : (
-                <>
-                  {activeSection === "availableCourses" && (
-                    <div>
-                      <h1 className="text-4xl font-bold text-yellow-400 mb-8">
-                        Available Courses
-                      </h1>
+      {/* Updated Main Content Container */}
+      <div className="bg-gray-800 rounded-md p-4 shadow-lg backdrop-filter backdrop-blur-md bg-opacity-30">
+        {activeSection === "analytics" ? (
+          <StudentDashboard />
+        ) : (
+          <div className="space-y-6">
+            {activeCourse ? (
+              <CourseDetails
+                course={activeCourse}
+                onBack={() => setActiveCourse(null)}
+                isEnrolled={enrolledCourses.some(
+                  (course) => course._id === activeCourse._id
+                )}
+                fetchEnrolledCourses={fetchEnrolledCourses}
+              />
+            ) : (
+              <>
+                {activeSection === "availableCourses" && (
+                  <div>
+                    <h1 className="text-3xl font-bold text-yellow-400 mb-4">
+                      Available Courses
+                    </h1>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        <div className="relative">
-                          <FaSearch className="absolute left-3 top-3.5 text-gray-400" />
-                          <input
-                            type="text"
-                            placeholder="Search courses..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 rounded-lg text-black bg-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition duration-200"
-                          />
+                    {/* Updated Filter Section */}
+                    <div className="mb-4 flex flex-wrap gap-2">
+                      <input
+                        type="text"
+                        placeholder="Search courses..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="p-2 rounded-md text-black"
+                      />
+                      <select
+                        value={selectedArtForm}
+                        onChange={(e) => setSelectedArtForm(e.target.value)}
+                        className="p-2 rounded-md text-black"
+                      >
+                        <option value="">All Art Forms</option>
+                        {artForms.map((artForm) => (
+                          <option key={artForm} value={artForm}>
+                            {artForm}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        value={selectedSpecialization}
+                        onChange={(e) =>
+                          setSelectedSpecialization(e.target.value)
+                        }
+                        className="p-2 rounded-md text-black"
+                      >
+                        <option value="">All Specializations</option>
+                        {specializations.map((spec) => (
+                          <option key={spec} value={spec}>
+                            {spec}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        value={selectedLevel}
+                        onChange={(e) => setSelectedLevel(e.target.value)}
+                        className="p-2 rounded-md text-black"
+                      >
+                        <option value="">All Levels</option>
+                        {levels.map((level) => (
+                          <option key={level} value={level}>
+                            {level}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Updated Course Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {filteredCourses.map((course) => (
+                        <div
+                          key={course._id}
+                          onClick={() => setActiveCourse(course)}
+                          className="bg-gray-700 p-4 rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer"
+                        >
+                          <h2 className="text-lg font-bold text-yellow-500 mb-2">
+                            {course.courseName}
+                          </h2>
+                          <div className="flex gap-2 flex-wrap">
+                            <span className="px-2 py-1 bg-gray-600 rounded-full text-sm">
+                              {course.level}
+                            </span>
+                            <span className="px-2 py-1 bg-gray-600 rounded-full text-sm">
+                              {course.artForm}
+                            </span>
+                          </div>
                         </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-                        {/* Filters */}
-                        <select
-                          value={selectedArtForm}
-                          onChange={(e) => setSelectedArtForm(e.target.value)}
-                          className="w-full p-3 rounded-lg text-black bg-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition duration-200"
-                        >
-                          <option value="">Art Form</option>
-                          {artForms.map((artForm) => (
-                            <option key={artForm} value={artForm}>
-                              {artForm}
-                            </option>
-                          ))}
-                        </select>
-
-                        <select
-                          value={selectedSpecialization}
-                          onChange={(e) =>
-                            setSelectedSpecialization(e.target.value)
-                          }
-                          className="w-full p-3 rounded-lg text-black bg-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition duration-200"
-                        >
-                          <option value="">Specialization</option>
-                          {specializations.map((spec) => (
-                            <option key={spec} value={spec}>
-                              {spec}
-                            </option>
-                          ))}
-                        </select>
-
-                        <select
-                          value={selectedLevel}
-                          onChange={(e) => setSelectedLevel(e.target.value)}
-                          className="w-full p-3 rounded-lg text-black bg-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition duration-200"
-                        >
-                          <option value="">Level</option>
-                          {levels.map((level) => (
-                            <option key={level} value={level}>
-                              {level}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {filteredCourses.map((course) => (
+                {/* Updated My Courses Section */}
+                {activeSection === "myCourses" && (
+                  <div>
+                    <h1 className="text-3xl font-bold text-yellow-400 mb-4">
+                      My Courses
+                    </h1>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {enrolledCourses.length > 0 ? (
+                        enrolledCourses.map((course) => (
                           <div
                             key={course._id}
                             onClick={() => setActiveCourse(course)}
-                            className="group cursor-pointer bg-zinc-800/50 p-6 rounded-xl transition-all duration-300 border border-zinc-700 hover:border-yellow-400/50 hover:bg-zinc-700/50"
+                            className="bg-gray-700 p-4 rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer"
                           >
-                            <h2 className="text-2xl font-bold text-white mb-4 group-hover:text-yellow-400">
+                            <h2 className="text-lg font-bold text-yellow-500 mb-2">
                               {course.courseName}
                             </h2>
-                            <div className="flex gap-3">
-                              <span className="px-3 py-1 rounded-full bg-yellow-400/10 text-yellow-400 text-sm">
-                                {course.level}
-                              </span>
-                              <span className="px-3 py-1 rounded-full bg-zinc-700/50 text-gray-300 text-sm">
-                                {course.artForm}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {activeSection === "myCourses" && (
-                    <div>
-                      <h1 className="text-4xl font-bold text-yellow-400 mb-8">
-                        My Courses
-                      </h1>
-                      {enrolledCourses.length > 0 ? (
-                        enrolledCourses.map((course, idx) => (
-                          <div
-                            key={idx}
-                            className="mb-6 cursor-pointer bg-zinc-800 hover:bg-zinc-700 p-6 rounded-xl transition-all duration-300 border border-zinc-700"
-                            onClick={() => setActiveCourse(course)}
-                          >
-                            <h2 className="text-2xl font-bold text-white mb-2">
-                              {course.courseName}
-                            </h2>
-                            <p className="text-gray-300 mb-4">
-                              Level: {course.level}
+                            <p className="text-gray-300 mb-2">
+                              Progress: {courseProgress[course._id] || 0}%
                             </p>
-
-                            {/* Progress Bar */}
-                            <div className="relative pt-1">
-                              <div className="flex mb-2 items-center justify-between">
-                                <span className="text-sm font-semibold inline-block py-1 px-2 uppercase rounded-full text-yellow-400 bg-yellow-400/10">
-                                  Progress: {courseProgress[course._id] || 0}%
-                                </span>
-                              </div>
-                              <div className="overflow-hidden h-2 mb-1 text-xs flex rounded-full bg-zinc-700">
-                                <div
-                                  style={{
-                                    width: `${
-                                      courseProgress[course._id] || 0
-                                    }%`,
-                                  }}
-                                  className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-yellow-400 transition-all duration-500 rounded-full"
-                                ></div>
-                              </div>
+                            <div className="w-full bg-gray-600 rounded-full h-2.5">
+                              <div
+                                className="bg-yellow-400 h-2.5 rounded-full"
+                                style={{
+                                  width: `${courseProgress[course._id] || 0}%`,
+                                }}
+                              ></div>
                             </div>
                           </div>
                         ))
                       ) : (
-                        <p className="text-gray-400 text-center">
+                        <p className="text-gray-400 col-span-3 text-center">
                           You have not enrolled in any courses yet.
                         </p>
                       )}
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {activeSection === "liveClasses" && <LiveClasses />}
-                </>
-              )}
-            </div>
-          )}
-        </div>
+                {activeSection === "liveClasses" && <LiveClasses />}
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -33,6 +33,17 @@ const getMinutesFrom12Hour = (time12h) => {
   return hours * 60 + minutes;
 };
 
+// Helper function to check if enrollment period is active
+const isEnrollmentActive = (enrollmentDate) => {
+  const currentDate = new Date();
+  const finalDate = new Date(enrollmentDate);
+
+  // Set the final date to end of day (23:59:59)
+  finalDate.setHours(23, 59, 59, 999);
+
+  return currentDate <= finalDate;
+};
+
 // Create a new live class
 router.post(
   "/create",
@@ -211,7 +222,7 @@ router.post("/enroll/:id", verifyToken, async (req, res) => {
     }
 
     // Check if enrollment date has passed
-    if (new Date() > new Date(liveClass.finalEnrollmentDate)) {
+    if (!isEnrollmentActive(liveClass.finalEnrollmentDate)) {
       return res.status(400).json({
         message: "Enrollment period has ended for this class",
       });
@@ -248,7 +259,7 @@ router.post("/unenroll/:id", verifyToken, async (req, res) => {
     }
 
     // Check if enrollment date has passed
-    if (new Date() > new Date(liveClass.finalEnrollmentDate)) {
+    if (!isEnrollmentActive(liveClass.finalEnrollmentDate)) {
       return res.status(400).json({
         message: "Cannot unenroll after the enrollment deadline",
       });
@@ -286,7 +297,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
     }
 
     // Check if enrollment date has passed
-    if (new Date() > new Date(liveClass.finalEnrollmentDate)) {
+    if (!isEnrollmentActive(liveClass.finalEnrollmentDate)) {
       return res.status(400).json({
         message: "Cannot delete class after enrollment deadline",
       });
@@ -321,7 +332,7 @@ router.put(
       }
 
       // Check if enrollment date has passed
-      if (new Date() > new Date(liveClass.finalEnrollmentDate)) {
+      if (!isEnrollmentActive(liveClass.finalEnrollmentDate)) {
         return res.status(400).json({
           message: "Cannot edit class after enrollment deadline",
         });
