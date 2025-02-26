@@ -489,19 +489,32 @@ router.post("/cancel-class/:classId/:dateId", verifyToken, async (req, res) => {
     // Mark the class as cancelled
     classDate.status = "cancelled";
 
-    // Get the last scheduled date
+    // Get all future scheduled dates (including the one being cancelled)
+    const cancelledDateTime = new Date(classDate.date).getTime();
     const scheduledDates = liveClass.classDates
-      .filter((d) => d.status === "scheduled")
-      .sort((a, b) => new Date(b.date) - new Date(a.date));
+      .filter(
+        (d) =>
+          d.status === "scheduled" &&
+          new Date(d.date).getTime() > cancelledDateTime
+      )
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
 
     if (scheduledDates.length > 0) {
-      const lastScheduledDate = new Date(scheduledDates[0].date);
-      // Generate only one new date after the last scheduled date
-      const newDate = new Date(lastScheduledDate);
-      newDate.setDate(newDate.getDate() + 1); // Start from next day
-
-      const newDates = liveClass.generateNextClassDates(newDate);
-      // Add only the first generated date
+      // There are future scheduled dates, generate from the last one
+      const lastScheduledDate = new Date(
+        scheduledDates[scheduledDates.length - 1].date
+      );
+      const startDate = new Date(lastScheduledDate);
+      startDate.setDate(startDate.getDate() + 1);
+      const newDates = liveClass.generateNextClassDates(startDate);
+      if (newDates.length > 0) {
+        liveClass.classDates.push(newDates[0]);
+      }
+    } else {
+      // No future scheduled dates, generate from the cancelled date
+      const startDate = new Date(cancelledDateTime);
+      startDate.setDate(startDate.getDate() + 7); // Add a week to ensure we get the next valid class day
+      const newDates = liveClass.generateNextClassDates(startDate);
       if (newDates.length > 0) {
         liveClass.classDates.push(newDates[0]);
       }
