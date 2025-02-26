@@ -5,6 +5,24 @@ import Modal from "react-modal";
 import { format, isBefore, addHours } from "date-fns";
 import { Link, useNavigate } from "react-router-dom";
 
+const getMinutesFromTime = (time) => {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+};
+
+const calculateDuration = (startTime, endTime) => {
+  const startMinutes = getMinutesFromTime(startTime);
+  const endMinutes = getMinutesFromTime(endTime);
+
+  // Handle case where end time is on the next day
+  const durationMinutes =
+    endMinutes < startMinutes
+      ? endMinutes + 24 * 60 - startMinutes
+      : endMinutes - startMinutes;
+
+  return durationMinutes;
+};
+
 const LiveClasses = () => {
   const [liveClasses, setLiveClasses] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -12,6 +30,13 @@ const LiveClasses = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
+  const [selectedClassDate, setSelectedClassDate] = useState(null);
+  const [rescheduleData, setRescheduleData] = useState({
+    startTime: "",
+    endTime: "",
+  });
+  const [timeError, setTimeError] = useState("");
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
@@ -129,11 +154,116 @@ const LiveClasses = () => {
     }
   };
 
+  const handleRescheduleClass = async (
+    classId,
+    dateId,
+    newStartTime,
+    newEndTime
+  ) => {
+    try {
+      const classToReschedule = liveClasses.find((c) => c._id === classId);
+      const classDate = classToReschedule.classDates.find(
+        (d) => d._id === dateId
+      );
+      const classDateTime = new Date(classDate.date);
+      const now = new Date();
+
+      if (isBefore(classDateTime, addHours(now, 24))) {
+        alert(
+          "Classes cannot be rescheduled less than 24 hours before start time"
+        );
+        return;
+      }
+
+      const response = await axios.post(
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/live-classes/reschedule-class/${classId}/${dateId}`,
+        { newStartTime, newEndTime },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.status === 200) {
+        // Refresh the live classes data
+        const updatedClassesResponse = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/live-classes/artist`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setLiveClasses(updatedClassesResponse.data);
+        alert("Class rescheduled successfully");
+      }
+    } catch (error) {
+      console.error("Error rescheduling class:", error);
+      alert(error.response?.data?.message || "Failed to reschedule class");
+    }
+  };
+
   const isClassJoinable = (classDate) => {
     const classDateTime = new Date(classDate);
     const now = new Date();
     const diffInMinutes = (classDateTime - now) / (1000 * 60);
     return diffInMinutes <= 15 && diffInMinutes >= -60;
+  };
+
+  const handleRescheduleSubmit = async (e) => {
+    e.preventDefault();
+
+    const duration = calculateDuration(
+      rescheduleData.startTime,
+      rescheduleData.endTime
+    );
+    if (duration < 60 || duration > 180) {
+      setTimeError("Class duration must be between 1 and 3 hours");
+      return;
+    }
+
+    try {
+      await handleRescheduleClass(
+        selectedClass._id,
+        selectedClassDate._id,
+        rescheduleData.startTime,
+        rescheduleData.endTime
+      );
+      setIsRescheduleModalOpen(false);
+      setRescheduleData({ startTime: "", endTime: "" });
+      setSelectedClassDate(null);
+      setTimeError("");
+    } catch (error) {
+      console.error("Error in reschedule submit:", error);
+    }
+  };
+
+  const handleTimeChange = (field, value) => {
+    const newRescheduleData = {
+      ...rescheduleData,
+      [field]: value,
+    };
+
+    setRescheduleData(newRescheduleData);
+
+    // Only validate if both times are set
+    if (newRescheduleData.startTime && newRescheduleData.endTime) {
+      const duration = calculateDuration(
+        newRescheduleData.startTime,
+        newRescheduleData.endTime
+      );
+      if (duration < 60 || duration > 180) {
+        setTimeError("Class duration must be between 1 and 3 hours");
+      } else {
+        setTimeError("");
+      }
+    }
+  };
+
+  const openRescheduleModal = (classDate) => {
+    setIsDetailsModalOpen(false);
+    setSelectedClassDate(classDate);
+    const date = new Date(classDate.date);
+    setRescheduleData({
+      startTime: format(date, "hh:mm a"),
+      endTime: format(addHours(date, 1), "hh:mm a"),
+    });
+    setIsRescheduleModalOpen(true);
   };
 
   const renderClassDates = (liveClass) => (
@@ -158,19 +288,34 @@ const LiveClasses = () => {
                   Join Class
                 </Link>
               ) : (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent modal from opening
-                    handleCancelClass(liveClass._id, classDate._id);
-                  }}
-                  className="bg-red-500 text-white px-3 py-1 rounded"
-                  disabled={isBefore(
-                    new Date(classDate.date),
-                    addHours(new Date(), 24)
-                  )}
-                >
-                  Cancel Class
-                </button>
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openRescheduleModal(classDate);
+                    }}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition-colors"
+                    disabled={isBefore(
+                      new Date(classDate.date),
+                      addHours(new Date(), 24)
+                    )}
+                  >
+                    Reschedule
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCancelClass(liveClass._id, classDate._id);
+                    }}
+                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition-colors"
+                    disabled={isBefore(
+                      new Date(classDate.date),
+                      addHours(new Date(), 24)
+                    )}
+                  >
+                    Cancel
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -608,6 +753,147 @@ const LiveClasses = () => {
             isEditing={true}
             liveClassData={selectedClass}
           />
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isRescheduleModalOpen}
+        onRequestClose={() => {
+          setIsRescheduleModalOpen(false);
+          setTimeError("");
+        }}
+        className="modal"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 backdrop-blur-sm"
+        style={{
+          content: {
+            position: "relative",
+            top: "auto",
+            left: "auto",
+            right: "auto",
+            bottom: "auto",
+            maxWidth: "500px",
+            width: "100%",
+            margin: "auto",
+            padding: "0",
+            border: "none",
+            borderRadius: "1rem",
+            backgroundColor: "#1a1a1a",
+            color: "white",
+          },
+        }}
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-yellow-400">
+              Reschedule Class
+            </h2>
+            <button
+              onClick={() => {
+                setIsRescheduleModalOpen(false);
+                setTimeError("");
+              }}
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          {selectedClassDate && (
+            <form onSubmit={handleRescheduleSubmit} className="space-y-6">
+              <div className="bg-gray-800/50 rounded-xl p-4">
+                <p className="text-gray-300 mb-4">
+                  Current class date:{" "}
+                  <span className="text-yellow-400">
+                    {format(new Date(selectedClassDate.date), "MMMM dd, yyyy")}
+                  </span>
+                </p>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      New Start Time
+                    </label>
+                    <input
+                      type="time"
+                      value={rescheduleData.startTime}
+                      onChange={(e) =>
+                        handleTimeChange("startTime", e.target.value)
+                      }
+                      className={`w-full bg-gray-700 border ${
+                        timeError ? "border-red-500" : "border-gray-600"
+                      } rounded-lg px-4 py-2 text-white focus:outline-none focus:border-yellow-400`}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      New End Time
+                    </label>
+                    <input
+                      type="time"
+                      value={rescheduleData.endTime}
+                      onChange={(e) =>
+                        handleTimeChange("endTime", e.target.value)
+                      }
+                      className={`w-full bg-gray-700 border ${
+                        timeError ? "border-red-500" : "border-gray-600"
+                      } rounded-lg px-4 py-2 text-white focus:outline-none focus:border-yellow-400`}
+                      required
+                    />
+                  </div>
+
+                  {timeError && (
+                    <div className="text-red-500 text-sm mt-2">{timeError}</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsRescheduleModalOpen(false);
+                    setTimeError("");
+                  }}
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className={`px-4 py-2 ${
+                    timeError
+                      ? "bg-gray-500 cursor-not-allowed"
+                      : "bg-yellow-500 hover:bg-yellow-600"
+                  } text-black font-semibold rounded-lg transition-colors`}
+                  disabled={!!timeError}
+                >
+                  Reschedule Class
+                </button>
+              </div>
+
+              <div className="mt-4 text-sm text-gray-400">
+                <p>
+                  Note: Classes can only be rescheduled up to 24 hours before
+                  the start time.
+                </p>
+                <p>Class duration must be between 1 and 3 hours.</p>
+              </div>
+            </form>
+          )}
         </div>
       </Modal>
 

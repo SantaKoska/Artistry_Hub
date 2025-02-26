@@ -84,6 +84,17 @@ const liveClassSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Helper function to convert 12-hour time to hours and minutes
+function parseTime12h(time12h) {
+  const [time, period] = time12h.split(" ");
+  let [hours, minutes] = time.split(":").map(Number);
+
+  if (period === "PM" && hours !== 12) hours += 12;
+  if (period === "AM" && hours === 12) hours = 0;
+
+  return { hours, minutes };
+}
+
 // Add a method to generate next 4 class dates
 liveClassSchema.methods.generateNextClassDates = function (
   startFromDate = new Date()
@@ -100,10 +111,17 @@ liveClassSchema.methods.generateNextClassDates = function (
     Saturday: 6,
   };
 
+  // Parse the class start time
+  const { hours, minutes } = parseTime12h(this.startTime);
+
   while (dates.length < 4) {
     if (this.classDays.includes(Object.keys(daysMap)[currentDate.getDay()])) {
+      const classDate = new Date(currentDate);
+      // Set the correct hours and minutes from the class start time
+      classDate.setHours(hours, minutes, 0, 0);
+
       dates.push({
-        date: new Date(currentDate),
+        date: classDate,
         status: "scheduled",
       });
     }

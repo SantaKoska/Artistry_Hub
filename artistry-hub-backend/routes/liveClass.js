@@ -515,4 +515,69 @@ router.post("/cancel-class/:classId/:dateId", verifyToken, async (req, res) => {
   }
 });
 
+// Add new route for rescheduling a class
+router.post(
+  "/reschedule-class/:classId/:dateId",
+  verifyToken,
+  async (req, res) => {
+    try {
+      const { classId, dateId } = req.params;
+      const { newStartTime, newEndTime } = req.body;
+      const liveClass = await LiveClass.findById(classId);
+
+      if (!liveClass) {
+        return res.status(404).json({ message: "Live class not found" });
+      }
+
+      // Find the specific class date
+      const classDate = liveClass.classDates.id(dateId);
+      if (!classDate) {
+        return res.status(404).json({ message: "Class date not found" });
+      }
+
+      // Check if trying to reschedule less than 24 hours before
+      const classDateTime = new Date(classDate.date);
+      if (isBefore(classDateTime, addHours(new Date(), 24))) {
+        return res.status(400).json({
+          message:
+            "Classes cannot be rescheduled less than 24 hours before start time",
+        });
+      }
+
+      // Validate time range (1-3 hours)
+      const startMinutes = getMinutesFrom12Hour(newStartTime);
+      const endMinutes = getMinutesFrom12Hour(newEndTime);
+      const durationMinutes =
+        endMinutes < startMinutes
+          ? endMinutes + 24 * 60 - startMinutes
+          : endMinutes - startMinutes;
+
+      if (durationMinutes < 60 || durationMinutes > 180) {
+        return res.status(400).json({
+          message: "Class duration must be between 1 and 3 hours",
+        });
+      }
+
+      // Update the class time
+      const newDate = new Date(classDate.date);
+      const [newHours, newMinutes] = newStartTime.split(":").map(Number);
+      newDate.setHours(newHours);
+      newDate.setMinutes(newMinutes);
+
+      classDate.date = newDate;
+      classDate.startTime = newStartTime;
+      classDate.endTime = newEndTime;
+
+      await liveClass.save();
+      res.json({
+        message: "Class rescheduled successfully",
+        updatedClass: liveClass,
+      });
+    } catch (error) {
+      console.error("Error rescheduling class:", error);
+      res.status(500).json({ message: "Error rescheduling class", error });
+    }
+  }
+);
+
 module.exports = router;
