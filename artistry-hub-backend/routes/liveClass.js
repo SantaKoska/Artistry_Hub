@@ -6,6 +6,9 @@ const multer = require("multer");
 const path = require("path");
 const ArtFormSpecialization = require("../models/ArtFormSpecializationModels");
 const { isBefore, addHours } = require("date-fns");
+const { sendClassNotification } = require("../utils/mailer");
+const schedule = require("node-schedule");
+const User = require("../models/UserModel");
 
 // Set up multer for file uploads
 const storage = multer.diskStorage({
@@ -43,6 +46,74 @@ const isEnrollmentActive = (enrollmentDate) => {
   finalDate.setHours(23, 59, 59, 999);
 
   return currentDate <= finalDate;
+};
+
+// Helper function to schedule class notifications
+const scheduleClassNotifications = async (
+  classDate,
+  liveClass,
+  students,
+  artist
+) => {
+  const classDateTime = new Date(classDate.date);
+
+  // Schedule 24-hour reminder
+  const reminder24h = new Date(classDateTime);
+  reminder24h.setDate(reminder24h.getDate() - 1);
+
+  // Schedule 15-minute reminder
+  const reminder15min = new Date(classDateTime);
+  reminder15min.setMinutes(reminder15min.getMinutes() - 15);
+
+  // Schedule notifications for students
+  for (const student of students) {
+    // 24-hour reminder
+    schedule.scheduleJob(reminder24h, async () => {
+      await sendClassNotification("classReminder24h", {
+        userName: student.userName,
+        className: liveClass.className,
+        dateTime: classDateTime,
+        artistName: artist.userName,
+        email: student.email,
+      });
+    });
+
+    // 15-minute reminder
+    schedule.scheduleJob(reminder15min, async () => {
+      const classLink = `${process.env.FRONTEND_URL}/live-class-room/${liveClass._id}?role=student`;
+      await sendClassNotification("classReminder15min", {
+        userName: student.userName,
+        className: liveClass.className,
+        dateTime: classDateTime,
+        artistName: artist.userName,
+        classLink,
+        email: student.email,
+      });
+    });
+  }
+
+  // Schedule notifications for artist
+  schedule.scheduleJob(reminder24h, async () => {
+    await sendClassNotification("classReminder24h", {
+      userName: artist.userName,
+      className: liveClass.className,
+      dateTime: classDateTime,
+      artistName: "your students",
+      email: artist.email,
+    });
+  });
+
+  schedule.scheduleJob(reminder15min, async () => {
+    const classLink = `${process.env.FRONTEND_URL}/live-class-room/${liveClass._id}?role=artist`;
+    await sendClassNotification("classReminder15min", {
+      userName: artist.userName,
+      className: liveClass.className,
+      dateTime: classDateTime,
+      artistName: "your students",
+      classLink,
+      email: artist.email,
+    });
+  });
 };
 
 // Create a new live class
@@ -129,6 +200,12 @@ router.post(
       // Generate initial class dates
       const initialClassDates = newLiveClass.generateNextClassDates();
       newLiveClass.classDates = initialClassDates;
+
+      // Schedule notifications for initial class dates
+      const artist = await User.findById(artistId);
+      for (const classDate of initialClassDates) {
+        await scheduleClassNotifications(classDate, newLiveClass, [], artist);
+      }
 
       await newLiveClass.save();
       res.status(201).json(newLiveClass);
@@ -461,11 +538,13 @@ router.put(
   }
 );
 
-// Fix the cancel class route
+// Update the cancel class route
 router.post("/cancel-class/:classId/:dateId", verifyToken, async (req, res) => {
   try {
     const { classId, dateId } = req.params;
-    const liveClass = await LiveClass.findById(classId);
+    const liveClass = await LiveClass.findById(classId)
+      .populate("artistId")
+      .populate("enrolledStudents");
 
     if (!liveClass) {
       return res.status(404).json({ message: "Live class not found" });
@@ -520,6 +599,28 @@ router.post("/cancel-class/:classId/:dateId", verifyToken, async (req, res) => {
       }
     }
 
+    // Send cancellation email to the artist
+    await sendClassNotification("classCancellation", {
+      userName: liveClass.artistId.userName,
+      className: liveClass.className,
+      dateTime: classDate.date,
+      artistName: "your",
+      reason: req.body.reason,
+      email: liveClass.artistId.email,
+    });
+
+    // Send cancellation emails to all enrolled students
+    for (const student of liveClass.enrolledStudents) {
+      await sendClassNotification("classCancellation", {
+        userName: student.userName,
+        className: liveClass.className,
+        dateTime: classDate.date,
+        artistName: liveClass.artistId.userName,
+        reason: req.body.reason,
+        email: student.email,
+      });
+    }
+
     await liveClass.save();
     res.json({ message: "Class cancelled successfully" });
   } catch (error) {
@@ -528,7 +629,7 @@ router.post("/cancel-class/:classId/:dateId", verifyToken, async (req, res) => {
   }
 });
 
-// Add new route for rescheduling a class
+// Update the reschedule class route
 router.post(
   "/reschedule-class/:classId/:dateId",
   verifyToken,
@@ -536,7 +637,9 @@ router.post(
     try {
       const { classId, dateId } = req.params;
       const { newStartTime, newEndTime } = req.body;
-      const liveClass = await LiveClass.findById(classId);
+      const liveClass = await LiveClass.findById(classId)
+        .populate("artistId")
+        .populate("enrolledStudents");
 
       if (!liveClass) {
         return res.status(404).json({ message: "Live class not found" });
@@ -577,9 +680,32 @@ router.post(
       newDate.setHours(newHours);
       newDate.setMinutes(newMinutes);
 
+      const oldDateTime = new Date(classDate.date);
       classDate.date = newDate;
       classDate.startTime = newStartTime;
       classDate.endTime = newEndTime;
+
+      // Send rescheduling email to the artist
+      await sendClassNotification("classRescheduled", {
+        userName: liveClass.artistId.userName,
+        className: liveClass.className,
+        oldDateTime: oldDateTime,
+        newDateTime: newDate,
+        artistName: "your students",
+        email: liveClass.artistId.email,
+      });
+
+      // Send rescheduling emails to all enrolled students
+      for (const student of liveClass.enrolledStudents) {
+        await sendClassNotification("classRescheduled", {
+          userName: student.userName,
+          className: liveClass.className,
+          oldDateTime: oldDateTime,
+          newDateTime: newDate,
+          artistName: liveClass.artistId.userName,
+          email: student.email,
+        });
+      }
 
       await liveClass.save();
       res.json({
