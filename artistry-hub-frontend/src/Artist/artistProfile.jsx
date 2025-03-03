@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Modal from "react-modal";
 import { useNavigate } from "react-router-dom";
 import { FaTrash } from "react-icons/fa";
+import * as faceapi from "face-api.js";
 
 Modal.setAppElement("#root");
 
@@ -21,6 +22,11 @@ const ArtistProfile = () => {
     userName: "",
     profilePicture: null,
   });
+  const [isFaceSetupModalOpen, setIsFaceSetupModalOpen] = useState(false);
+  const [faceAuthModalIsOpen, setFaceAuthModalIsOpen] = useState(false);
+  const [password, setPassword] = useState("");
+  const videoRef = useRef();
+  const canvasRef = useRef();
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
@@ -49,6 +55,22 @@ const ArtistProfile = () => {
 
     fetchProfile();
   }, [token]);
+
+  useEffect(() => {
+    const loadModels = async () => {
+      try {
+        const MODEL_URL = "/models";
+        await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+        console.log("Face detection models loaded successfully");
+      } catch (error) {
+        console.error("Error loading face detection models:", error);
+        toast.error("Failed to load face detection models");
+      }
+    };
+    loadModels();
+  }, []);
 
   const handleOpenModal = () => setModalIsOpen(true);
   const handleCloseModal = () => setModalIsOpen(false);
@@ -191,6 +213,120 @@ const ArtistProfile = () => {
     );
   };
 
+  const startFaceSetup = async () => {
+    if (profile.faceData) {
+      toast.info("Face data already exists. No need to capture again.");
+      return;
+    }
+
+    setIsFaceSetupModalOpen(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (error) {
+      toast.error("Unable to access camera");
+      console.error(error);
+    }
+  };
+
+  const captureFaceData = async () => {
+    if (!videoRef.current) return;
+
+    try {
+      const detections = await faceapi
+        .detectSingleFace(
+          videoRef.current,
+          new faceapi.TinyFaceDetectorOptions()
+        )
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+      if (!detections) {
+        toast.error(
+          "No face detected. Please ensure your face is clearly visible."
+        );
+        return;
+      }
+
+      // Convert face descriptor to Array for sending to server
+      const faceDescriptor = Array.from(detections.descriptor);
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/auth/setup-face-auth`,
+        { faceDescriptor },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.status === 200) {
+        toast.success("Face authentication setup successful");
+        setIsFaceSetupModalOpen(false);
+        // Stop the video stream
+        const stream = videoRef.current.srcObject;
+        if (stream) {
+          stream.getTracks().forEach((track) => track.stop());
+        }
+      }
+    } catch (error) {
+      toast.error("Error setting up face authentication");
+      console.error(error);
+    }
+  };
+
+  const handleFaceAuthToggle = async () => {
+    if (profile.isFaceAuthEnabled) {
+      // Confirm password to disable face authentication
+      if (!password) {
+        toast.error("Password is required");
+        return;
+      }
+
+      try {
+        const response = await axios.put(
+          `${import.meta.env.VITE_BACKEND_URL}/auth/disable-face-auth`,
+          { password },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (response.status === 200) {
+          toast.success("Face authentication disabled successfully");
+          setProfile((prev) => ({ ...prev, isFaceAuthEnabled: false }));
+        }
+      } catch (error) {
+        if (error.response && error.response.data && error.response.data.err) {
+          toast.error(error.response.data.err);
+        } else {
+          toast.error("An error occurred while disabling face authentication");
+        }
+      }
+    } else {
+      // Check if the user already has face data
+      if (profile.faceData) {
+        // Directly enable face authentication if face data exists
+        try {
+          await axios.post(
+            `${import.meta.env.VITE_BACKEND_URL}/auth/setup-face-auth`,
+            { faceDescriptor: [] }, // Pass an empty array or the existing face data
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          toast.success("Face authentication enabled successfully");
+          setProfile((prev) => ({ ...prev, isFaceAuthEnabled: true }));
+        } catch (error) {
+          toast.error("Error enabling face authentication");
+        }
+      } else {
+        // Open camera to capture face data
+        startFaceSetup();
+      }
+    }
+    setFaceAuthModalIsOpen(false);
+    setPassword("");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black p-4 md:p-8">
       {profile && (
@@ -256,6 +392,14 @@ const ArtistProfile = () => {
                     className="w-full py-2 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-semibold"
                   >
                     Logout
+                  </button>
+                  <button
+                    onClick={() => setFaceAuthModalIsOpen(true)}
+                    className="w-full py-2 px-4 bg-yellow-500 text-black rounded-lg hover:bg-yellow-600 transition-colors font-semibold"
+                  >
+                    {profile.isFaceAuthEnabled
+                      ? "Disable Face Authentication"
+                      : "Enable Face Authentication"}
                   </button>
                 </div>
               </div>
@@ -451,6 +595,97 @@ const ArtistProfile = () => {
                 </button>
               </div>
             </form>
+          </Modal>
+
+          <Modal
+            isOpen={isFaceSetupModalOpen}
+            onRequestClose={() => setIsFaceSetupModalOpen(false)}
+            className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-blur-md w-full md:w-2/3 mx-auto"
+            overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
+          >
+            <h2 className="text-white text-2xl mb-4">
+              Face Authentication Setup
+            </h2>
+            <div className="relative">
+              <video
+                ref={videoRef}
+                autoPlay
+                className="w-full rounded-lg"
+                style={{ maxWidth: "640px" }}
+              />
+              <canvas ref={canvasRef} className="absolute top-0 left-0" />
+            </div>
+            <div className="flex justify-between mt-4">
+              <button
+                onClick={() => {
+                  const stream = videoRef.current.srcObject;
+                  if (stream) {
+                    stream.getTracks().forEach((track) => track.stop());
+                  }
+                  setIsFaceSetupModalOpen(false);
+                }}
+                className="bg-gray-500 text-white rounded px-4 py-2"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={captureFaceData}
+                className="bg-yellow-500 text-black rounded px-4 py-2"
+              >
+                Capture Face Data
+              </button>
+            </div>
+          </Modal>
+
+          <Modal
+            isOpen={faceAuthModalIsOpen}
+            onRequestClose={() => {
+              setFaceAuthModalIsOpen(false);
+              setPassword("");
+            }}
+            className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-blur-md w-full md:w-1/3 mx-auto"
+            overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
+          >
+            <h2 className="text-white text-2xl mb-4">
+              {profile.isFaceAuthEnabled
+                ? "Disable Face Authentication"
+                : "Enable Face Authentication"}
+            </h2>
+            {profile.isFaceAuthEnabled ? (
+              <>
+                <p className="text-white">
+                  Please confirm your password to disable face authentication.
+                </p>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="bg-gray-700 rounded p-2 text-white"
+                  placeholder="Enter your password"
+                />
+              </>
+            ) : (
+              <p className="text-white">
+                You will be prompted to capture your face data.
+              </p>
+            )}
+            <div className="flex justify-between mt-4">
+              <button
+                onClick={() => {
+                  setFaceAuthModalIsOpen(false);
+                  setPassword("");
+                }}
+                className="bg-gray-500 text-white rounded px-4 py-2"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleFaceAuthToggle}
+                className="bg-yellow-500 text-black rounded px-4 py-2"
+              >
+                {profile.isFaceAuthEnabled ? "Disable" : "Enable"}
+              </button>
+            </div>
           </Modal>
         </div>
       )}

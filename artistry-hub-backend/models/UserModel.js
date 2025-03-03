@@ -60,6 +60,14 @@ const UserSchema = new mongoose.Schema(
       required: true,
       default: "bcrypt",
     },
+    faceData: {
+      type: Object,
+      default: null,
+    },
+    isFaceAuthEnabled: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

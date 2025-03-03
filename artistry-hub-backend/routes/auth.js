@@ -11,6 +11,8 @@ const OTPModel = require("../models/OTPModels");
 const { generateOTP, transporter } = require("../utils/mailer");
 const crypto = require("crypto");
 const argon2 = require("argon2");
+const { createKeyPair, encrypt, decrypt } = require("../utils/pqcrypto");
+const { verifyToken } = require("../utils/tokendec");
 
 const router = express.Router();
 
@@ -316,6 +318,92 @@ router.post("/reset-password/:token", async (req, res) => {
   await user.save();
 
   res.status(200).json({ message: "Password has been reset" });
+});
+
+// Add this route for disabling face authentication
+router.put("/disable-face-auth", verifyToken, async (req, res) => {
+  const userId = req.user.identifier;
+  const { password } = req.body; // Get password from request body
+
+  // Check if password is provided
+  if (!password) {
+    return res.status(400).json({ err: "Password is required" });
+  }
+
+  // Verify the user's password
+  const user = await User.findById(userId);
+  if (!user) {
+    return res.status(400).json({ err: "User not found" });
+  }
+
+  // Check the hashing algorithm
+  let isPasswordValid;
+  if (user.hashAlgorithm === "bcrypt") {
+    isPasswordValid = await bcrypt.compare(password, user.password);
+  } else if (user.hashAlgorithm === "argon2") {
+    isPasswordValid = await argon2.verify(user.password, password);
+  }
+
+  if (!isPasswordValid) {
+    return res.status(400).json({ err: "Invalid password" }); // Return error if password is incorrect
+  }
+
+  // Confirm password before disabling face authentication
+  try {
+    // Update user to disable face authentication
+    await User.findByIdAndUpdate(userId, {
+      faceData: undefined, // Clear face data
+      isFaceAuthEnabled: false,
+    });
+
+    res
+      .status(200)
+      .json({ message: "Face authentication disabled successfully" });
+  } catch (error) {
+    console.error("Error disabling face auth:", error);
+    res.status(500).json({ error: "Failed to disable face authentication" });
+  }
+});
+
+// Add this route for setting up or changing face authentication
+router.post("/setup-face-auth", verifyToken, async (req, res) => {
+  const { faceDescriptor } = req.body;
+  const userId = req.user.identifier;
+
+  // Check if the user already has face data
+  const user = await User.findById(userId);
+  if (user.faceData) {
+    // If face data exists, just enable face authentication
+    await User.findByIdAndUpdate(userId, {
+      isFaceAuthEnabled: true,
+    });
+    return res
+      .status(200)
+      .json({ message: "Face authentication enabled successfully" });
+  }
+
+  // If no face data exists, proceed to capture new face data
+  try {
+    // Generate PQ crypto keypair
+    const { publicKey, privateKey } = await createKeyPair();
+
+    // Encrypt face descriptor
+    const encryptedFaceData = await encrypt(
+      JSON.stringify(faceDescriptor),
+      publicKey
+    );
+
+    // Update user with encrypted face data and enable face authentication
+    await User.findByIdAndUpdate(userId, {
+      faceData: encryptedFaceData,
+      isFaceAuthEnabled: true,
+    });
+
+    res.status(200).json({ message: "Face authentication setup successful" });
+  } catch (error) {
+    console.error("Error setting up face auth:", error);
+    res.status(500).json({ error: "Failed to setup face authentication" });
+  }
 });
 
 module.exports = router;
