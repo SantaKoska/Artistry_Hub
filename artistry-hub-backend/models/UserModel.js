@@ -68,6 +68,14 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    privateKey: {
+      type: String,
+      required: false,
+    },
+    OG: {
+      type: Object,
+      default: null,
+    },
   },
   {
     timestamps: true,

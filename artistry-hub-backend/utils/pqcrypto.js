@@ -4,7 +4,9 @@ const crypto = require("crypto");
 // Generate PQ-safe key pair using Kyber
 async function createKeyPair() {
   try {
-    let [publicKey, privateKey] = kyber.KeyGen768(); // Correct Kyber key generation
+    let pk_sk = kyber.KeyGen768(); // Generate public and private key pair
+    let publicKey = pk_sk[0];
+    let privateKey = pk_sk[1];
 
     return {
       publicKey: Buffer.from(publicKey).toString("base64"),
@@ -16,28 +18,20 @@ async function createKeyPair() {
   }
 }
 
-// Encrypt data using Kyber + AES (Hybrid Encryption)
+// Encrypt data using Kyber
 async function encrypt(data, publicKey) {
   try {
-    const aesKey = crypto.randomBytes(32); // Generate a random 256-bit AES key
-    const iv = crypto.randomBytes(12);
+    const plaintext = Buffer.from(data, "utf8"); // Convert data to Buffer
+    let c_ss = kyber.Encrypt768(Buffer.from(publicKey, "base64"), plaintext); // Encrypt using public key
+    let ciphertext = c_ss[0];
+    let sharedSecret = c_ss[1];
 
-    // Encrypt the data using AES-GCM
-    const cipher = crypto.createCipheriv("aes-256-gcm", aesKey, iv);
-    let encryptedData = cipher.update(data, "utf8", "base64");
-    encryptedData += cipher.final("base64");
-    const authTag = cipher.getAuthTag();
+    // Log the encrypted data and other parameters
+    // console.log("Encrypted Data:", ciphertext.toString("base64"));
 
-    // Encapsulate AES key using Kyber
-    let [ciphertext, sharedSecret] = kyber.Encrypt768(
-      Buffer.from(publicKey, "base64")
-    );
-
+    // Store the encrypted data in the package
     return {
-      encryptedData,
-      iv: iv.toString("base64"),
-      authTag: authTag.toString("base64"),
-      encryptedKey: ciphertext.toString("base64"), // The PQ-encrypted AES key
+      encryptedData: ciphertext.toString("base64"),
     };
   } catch (error) {
     console.error("Error encrypting data:", error);
@@ -45,32 +39,27 @@ async function encrypt(data, publicKey) {
   }
 }
 
-// Decrypt data using Kyber + AES
+// Decrypt data using Kyber
 async function decrypt(encryptedPackage, privateKey) {
   try {
-    const encryptedKey = Buffer.from(encryptedPackage.encryptedKey, "base64");
-    const iv = Buffer.from(encryptedPackage.iv, "base64");
-    const authTag = Buffer.from(encryptedPackage.authTag, "base64");
+    // Ensure encryptedData is a string
+    if (typeof encryptedPackage.encryptedData !== "string") {
+      throw new TypeError("encryptedData must be a string");
+    }
 
-    // Decapsulate AES key using Kyber
+    const encryptedData = Buffer.from(encryptedPackage.encryptedData, "base64");
+
+    // Decapsulate data using Kyber
     const sharedSecret = kyber.Decrypt768(
-      encryptedKey,
+      encryptedData,
       Buffer.from(privateKey, "base64")
-    );
+    ); // Obtain the symmetric key
 
-    // Decrypt the data using AES-GCM
-    const decipher = crypto.createDecipheriv("aes-256-gcm", sharedSecret, iv);
-    decipher.setAuthTag(authTag);
-    let decrypted = decipher.update(
-      encryptedPackage.encryptedData,
-      "base64",
-      "utf8"
-    );
-    decrypted += decipher.final("utf8");
-
-    return decrypted;
+    // Convert the decrypted data to a string if it's a Buffer
+    return sharedSecret.toString("utf8"); // Ensure the decrypted data is returned as a string
   } catch (error) {
     console.error("Error decrypting data:", error);
+    console.error(error.stack);
     throw error;
   }
 }

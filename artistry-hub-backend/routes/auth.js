@@ -157,6 +157,60 @@ router.post("/login", async (req, res) => {
 
   return res.status(200).json(userToReturn);
 });
+
+// Add this route for face ID login
+router.post("/login/faceid", async (req, res) => {
+  const { email, faceDescriptor } = req.body; // Get email and faceDescriptor from request body
+
+  if (!email || !faceDescriptor) {
+    return res
+      .status(400)
+      .json({ err: "Email and face descriptor are required" });
+  }
+
+  // Find the user by email
+  const user = await User.findOne({ email: email });
+  if (!user || !user.isFaceAuthEnabled) {
+    return res
+      .status(400)
+      .json({ err: "User not found or face authentication not enabled" });
+  }
+
+  try {
+    // Compare the captured face descriptor with the original face data (OG)
+    const distance = calculateEuclideanDistance(user.OG, faceDescriptor);
+
+    // Define a threshold for similarity (you can adjust this value)
+    const threshold = 0.5; // 50% similarity
+
+    // Check if the distance is below the threshold
+    if (distance < threshold) {
+      // If they match, generate a token and return user details
+      const token = await getToken(user);
+      const role = user.role;
+
+      const userToReturn = { token, role };
+      delete userToReturn.password;
+
+      return res.status(200).json(userToReturn);
+    } else {
+      return res.status(400).json({ err: "Face data does not match" });
+    }
+  } catch (error) {
+    console.error("Error during face ID login:", error);
+    return res.status(500).json({ err: "Internal server error" });
+  }
+});
+
+// Function to calculate Euclidean distance
+function calculateEuclideanDistance(data1, data2) {
+  let sum = 0;
+  for (let i = 0; i < data1.length; i++) {
+    sum += Math.pow(data1[i] - data2[i], 2);
+  }
+  return Math.sqrt(sum);
+}
+
 //
 //
 //
@@ -370,33 +424,22 @@ router.post("/setup-face-auth", verifyToken, async (req, res) => {
   const { faceDescriptor } = req.body;
   const userId = req.user.identifier;
 
-  // Check if the user already has face data
-  const user = await User.findById(userId);
-  if (user.faceData) {
-    // If face data exists, just enable face authentication
-    await User.findByIdAndUpdate(userId, {
-      isFaceAuthEnabled: true,
-    });
-    return res
-      .status(200)
-      .json({ message: "Face authentication enabled successfully" });
-  }
+  // Generate a new key pair
+  const { publicKey, privateKey } = await createKeyPair();
 
-  // If no face data exists, proceed to capture new face data
+  // Encrypt the face descriptor before saving
+  const encryptedFaceDescriptor = await encrypt(
+    JSON.stringify(faceDescriptor),
+    publicKey
+  ); // Encrypt using public key
+
+  // Update user with encrypted face data, private key, and original face data
   try {
-    // Generate PQ crypto keypair
-    const { publicKey, privateKey } = await createKeyPair();
-
-    // Encrypt face descriptor
-    const encryptedFaceData = await encrypt(
-      JSON.stringify(faceDescriptor),
-      publicKey
-    );
-
-    // Update user with encrypted face data and enable face authentication
     await User.findByIdAndUpdate(userId, {
-      faceData: encryptedFaceData,
+      faceData: encryptedFaceDescriptor, // Store encrypted data
+      privateKey: privateKey, // Store the private key
       isFaceAuthEnabled: true,
+      OG: faceDescriptor, // Store original face data
     });
 
     res.status(200).json({ message: "Face authentication setup successful" });
