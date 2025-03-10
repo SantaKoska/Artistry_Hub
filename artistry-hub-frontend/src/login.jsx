@@ -55,8 +55,11 @@ const Login = () => {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        videoRef.current.style.display = "none";
+        setTimeout(captureFaceData, 500);
       }
     } catch (error) {
+      setIsFaceLogin(false); // Stop showing the scanning UI
       toast.error("Unable to access camera");
       console.error(error);
     }
@@ -66,17 +69,16 @@ const Login = () => {
     if (!videoRef.current) return;
 
     try {
-      // First perform liveness detection
       const livenessScore = await detectLiveness(videoRef.current);
       if (livenessScore < 0.8) {
-        // Threshold for liveness detection
+        setIsFaceLogin(false);
+        stopVideoStream();
         toast.error(
-          "Liveness check failed. Please ensure you are a real person , not your photo and try again."
+          "Make sure you're not showing a photo or maybe you're too far or too close to the camera"
         );
         return;
       }
 
-      // Perform multiple face detections to ensure consistency
       const detectionPromises = Array(3)
         .fill()
         .map(() =>
@@ -91,22 +93,29 @@ const Login = () => {
 
       const detections = await Promise.all(detectionPromises);
 
-      // Verify all detections are valid and consistent
       if (detections.some((d) => !d)) {
+        setIsFaceLogin(false);
+        stopVideoStream();
         toast.error(
           "Face detection failed. Please ensure your face is clearly visible and centered."
         );
         return;
       }
 
-      // Average the descriptors for better accuracy
       const averageDescriptor = averageDescriptors(
         detections.map((d) => d.descriptor)
       );
       const userId = credentials.email;
 
+      // Stop video stream before attempting login
+      stopVideoStream();
+      setIsFaceLogin(false);
+
+      // Attempt login with face data
       await loginWithFaceID(userId, Array.from(averageDescriptor), navigate);
     } catch (error) {
+      setIsFaceLogin(false);
+      stopVideoStream();
       toast.error("Error capturing face data");
       console.error(error);
     }
@@ -198,6 +207,22 @@ const Login = () => {
     return average;
   };
 
+  // Add helper function to stop video stream
+  const stopVideoStream = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const tracks = videoRef.current.srcObject.getTracks();
+      tracks.forEach((track) => track.stop());
+      videoRef.current.srcObject = null;
+    }
+  };
+
+  // Clean up video stream when component unmounts
+  useEffect(() => {
+    return () => {
+      stopVideoStream();
+    };
+  }, []);
+
   return (
     <div className="bg-black text-white rounded-lg shadow-lg p-10 w-96">
       <div className="flex justify-center mb-6">
@@ -238,30 +263,47 @@ const Login = () => {
           </Link>
         </div>
 
-        <button
-          className="w-full mb-4 text-lg font-semibold rounded bg-yellow-500 text-black hover:bg-yellow-600 py-3 transition-colors duration-300"
-          type="submit"
-        >
-          Login
-        </button>
+        <div className="flex gap-4 mb-4">
+          <button
+            className="w-1/2 text-lg font-semibold rounded bg-yellow-500 text-black hover:bg-yellow-600 py-3 transition-colors duration-300"
+            type="submit"
+          >
+            Password Login
+          </button>
 
-        <button
-          className="w-full mb-4 text-lg font-semibold rounded bg-yellow-500 text-black hover:bg-yellow-600 py-3 transition-colors duration-300"
-          type="button"
-          onClick={startFaceLogin}
-        >
-          Login with Face ID
-        </button>
+          <button
+            className="w-1/2 text-lg font-semibold rounded bg-yellow-500 text-black hover:bg-yellow-600 py-3 transition-colors duration-300"
+            type="button"
+            onClick={startFaceLogin}
+          >
+            Face ID Login
+          </button>
+        </div>
 
         {isFaceLogin && (
-          <div>
-            <video ref={videoRef} autoPlay className="w-full h-auto" />
-            <button
-              onClick={captureFaceData}
-              className="mt-4 bg-yellow-500 text-black rounded px-4 py-2"
-            >
-              Capture Face Data
-            </button>
+          <div className="text-center my-4">
+            <div className="mb-4">
+              <svg
+                className="animate-pulse mx-auto"
+                width="64"
+                height="64"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M9 10C9 9.44772 9.44772 9 10 9H14C14.5523 9 15 9.44772 15 10V14C15 14.5523 14.5523 15 14 15H10C9.44772 15 9 14.5523 9 14V10Z"
+                  fill="#EAB308"
+                />
+                <path
+                  d="M7 8C7 6.89543 7.89543 6 9 6H15C16.1046 6 17 6.89543 17 8V16C17 17.1046 16.1046 18 15 18H9C7.89543 18 7 17.1046 7 16V8Z"
+                  stroke="#EAB308"
+                  strokeWidth="2"
+                />
+              </svg>
+            </div>
+            <p className="text-yellow-500 text-lg">Looking for your face...</p>
+            <video ref={videoRef} autoPlay />
           </div>
         )}
 
