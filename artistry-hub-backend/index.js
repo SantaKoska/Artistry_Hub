@@ -30,6 +30,7 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "https://artistry-hub-1.onrender.com",
+  "https://artistry-hub-a979.onrender.com",
   "http://192.168.32.220:5173",
 ];
 
@@ -37,14 +38,19 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin, like mobile apps or curl requests
+      // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        console.log("Blocked origin:", origin); // For debugging
         callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Explicitly allow methods
+    allowedHeaders: ["Content-Type", "Authorization"], // Explicitly allow headers
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   })
 );
 
