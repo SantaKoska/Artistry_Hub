@@ -66,29 +66,136 @@ const Login = () => {
     if (!videoRef.current) return;
 
     try {
-      const detections = await faceapi
-        .detectSingleFace(
-          videoRef.current,
-          new faceapi.TinyFaceDetectorOptions()
-        )
-        .withFaceLandmarks()
-        .withFaceDescriptor();
-
-      if (!detections) {
+      // First perform liveness detection
+      const livenessScore = await detectLiveness(videoRef.current);
+      if (livenessScore < 0.8) {
+        // Threshold for liveness detection
         toast.error(
-          "No face detected. Please ensure your face is clearly visible."
+          "Liveness check failed. Please ensure you are a real person , not your photo and try again."
         );
         return;
       }
 
-      const faceDescriptor = Array.from(detections.descriptor);
+      // Perform multiple face detections to ensure consistency
+      const detectionPromises = Array(3)
+        .fill()
+        .map(() =>
+          faceapi
+            .detectSingleFace(
+              videoRef.current,
+              new faceapi.TinyFaceDetectorOptions()
+            )
+            .withFaceLandmarks()
+            .withFaceDescriptor()
+        );
+
+      const detections = await Promise.all(detectionPromises);
+
+      // Verify all detections are valid and consistent
+      if (detections.some((d) => !d)) {
+        toast.error(
+          "Face detection failed. Please ensure your face is clearly visible and centered."
+        );
+        return;
+      }
+
+      // Average the descriptors for better accuracy
+      const averageDescriptor = averageDescriptors(
+        detections.map((d) => d.descriptor)
+      );
       const userId = credentials.email;
 
-      await loginWithFaceID(userId, faceDescriptor, navigate);
+      await loginWithFaceID(userId, Array.from(averageDescriptor), navigate);
     } catch (error) {
       toast.error("Error capturing face data");
       console.error(error);
     }
+  };
+
+  // Helper function to detect liveness using facial landmarks movement
+  const detectLiveness = async (videoElement) => {
+    const startTime = Date.now();
+    const landmarks = [];
+
+    // Collect facial landmarks for 2 seconds
+    while (Date.now() - startTime < 2000) {
+      const detection = await faceapi
+        .detectSingleFace(videoElement, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks();
+
+      if (detection) {
+        landmarks.push(detection.landmarks.positions);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+
+    // Analyze landmark movement for liveness
+    return analyzeLandmarkMovement(landmarks);
+  };
+
+  // Add this function after the detectLiveness function
+  const analyzeLandmarkMovement = (landmarks) => {
+    if (landmarks.length < 2) return 0; // Not enough samples
+
+    let totalMovement = 0;
+    let naturalMovement = 0;
+
+    // Analyze movement between consecutive frames
+    for (let i = 1; i < landmarks.length; i++) {
+      const prevLandmarks = landmarks[i - 1];
+      const currentLandmarks = landmarks[i];
+
+      // Calculate movement for each landmark point
+      for (let j = 0; j < prevLandmarks.length; j++) {
+        const movement = Math.sqrt(
+          Math.pow(currentLandmarks[j].x - prevLandmarks[j].x, 2) +
+            Math.pow(currentLandmarks[j].y - prevLandmarks[j].y, 2)
+        );
+
+        totalMovement += movement;
+
+        // Check if movement is natural (not too sudden or rigid)
+        if (movement > 0.1 && movement < 5) {
+          naturalMovement++;
+        }
+      }
+    }
+
+    // Calculate liveness score based on:
+    // 1. Presence of movement (not completely still)
+    // 2. Natural movement patterns (not too rigid or sudden)
+    // 3. Consistency of landmarks detection
+    const movementScore = Math.min(totalMovement / (landmarks.length * 68), 1);
+    const naturalScore = naturalMovement / (landmarks.length * 68);
+    const consistencyScore = landmarks.length / 20; // Assuming 20 samples is ideal
+
+    // Weighted average of scores
+    const livenessScore =
+      movementScore * 0.3 + naturalScore * 0.4 + consistencyScore * 0.3;
+
+    // Add some console logs for debugging
+    console.log("Liveness Analysis:", {
+      movementScore,
+      naturalScore,
+      consistencyScore,
+      finalScore: livenessScore,
+    });
+
+    return livenessScore;
+  };
+
+  // Helper function to average multiple face descriptors
+  const averageDescriptors = (descriptors) => {
+    const numDescriptors = descriptors.length;
+    const numDimensions = descriptors[0].length;
+    const average = new Float32Array(numDimensions);
+
+    for (let i = 0; i < numDimensions; i++) {
+      average[i] =
+        descriptors.reduce((sum, desc) => sum + desc[i], 0) / numDescriptors;
+    }
+
+    return average;
   };
 
   return (

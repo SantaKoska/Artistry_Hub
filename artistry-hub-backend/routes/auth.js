@@ -160,7 +160,7 @@ router.post("/login", async (req, res) => {
 
 // Add this route for face ID login
 router.post("/login/faceid", async (req, res) => {
-  const { email, faceDescriptor } = req.body; // Get email and faceDescriptor from request body
+  const { email, faceDescriptor } = req.body;
 
   if (!email || !faceDescriptor) {
     return res
@@ -168,7 +168,6 @@ router.post("/login/faceid", async (req, res) => {
       .json({ err: "Email and face descriptor are required" });
   }
 
-  // Find the user by email
   const user = await User.findOne({ email: email });
   if (!user || !user.isFaceAuthEnabled) {
     return res
@@ -177,24 +176,27 @@ router.post("/login/faceid", async (req, res) => {
   }
 
   try {
-    // Compare the captured face descriptor with the original face data (OG)
-    const distance = calculateEuclideanDistance(user.OG, faceDescriptor);
+    // Compare with multiple similarity metrics
+    const euclideanDistance = calculateEuclideanDistance(
+      user.OG,
+      faceDescriptor
+    );
+    const cosineSimilarity = calculateCosineSimilarity(user.OG, faceDescriptor);
 
-    // Define a threshold for similarity (you can adjust this value)
-    const threshold = 0.5; // 50% similarity
+    // Use stricter thresholds for both metrics
+    const euclideanThreshold = 0.4; // Lower threshold for stricter matching
+    const cosineThreshold = 0.85; // Higher threshold for stricter matching
 
-    // Check if the distance is below the threshold
-    if (distance < threshold) {
-      // If they match, generate a token and return user details
+    if (
+      euclideanDistance < euclideanThreshold &&
+      cosineSimilarity > cosineThreshold
+    ) {
       const token = await getToken(user);
       const role = user.role;
-
       const userToReturn = { token, role };
-      delete userToReturn.password;
-
       return res.status(200).json(userToReturn);
     } else {
-      return res.status(400).json({ err: "Face data does not match" });
+      return res.status(400).json({ err: "Face verification failed" });
     }
   } catch (error) {
     console.error("Error during face ID login:", error);
@@ -209,6 +211,21 @@ function calculateEuclideanDistance(data1, data2) {
     sum += Math.pow(data1[i] - data2[i], 2);
   }
   return Math.sqrt(sum);
+}
+
+// Add cosine similarity calculation
+function calculateCosineSimilarity(data1, data2) {
+  let dotProduct = 0;
+  let norm1 = 0;
+  let norm2 = 0;
+
+  for (let i = 0; i < data1.length; i++) {
+    dotProduct += data1[i] * data2[i];
+    norm1 += data1[i] * data1[i];
+    norm2 += data2[i] * data2[i];
+  }
+
+  return dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
 }
 
 //
