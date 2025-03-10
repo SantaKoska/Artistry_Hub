@@ -103,15 +103,13 @@ const InstitutionHome = () => {
 
   return (
     <div className="container mx-auto w-full max-w-screen-2xl pb-20 flex">
-      {/* User Suggestions Section */}
       {isDesktopOrLaptop && (
-        <div className="w-1/4 top-20 h-screen overflow-y-auto mt-10">
+        <div className="w-1/4">
           <UserSuggestions />
         </div>
       )}
 
-      {/* Posts Section */}
-      <div className="w-3/4">
+      <div className="w-3/4 pl-4">
         {/* Add filter controls */}
         <div className="max-w-3xl mx-auto mb-6 p-4 bg-zinc-900 rounded-xl border border-yellow-500/20">
           <div className="flex flex-wrap gap-4 justify-between items-center">
