@@ -113,13 +113,12 @@ router.post("/register", async (req, res) => {
 
 //login logic
 router.post("/login", async (req, res) => {
-  //Get the details from the body
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ err: "Invalid username or password" });
   }
 
-  //verify if the user exists
+  // verify if the user exists
   const user = await User.findOne({ email: email });
   if (!user) {
     return res.status(400).json({ err: "Invalid username or password" });
@@ -145,17 +144,74 @@ router.post("/login", async (req, res) => {
     await user.save(); // Save the updated user
   }
 
-  //generate token for this user
-  const token = await getToken(user);
+  // Generate and send OTP
+  const otp = generateOTP();
+  await OTPModel.deleteMany({ email }); // Clear any existing OTPs
 
-  // GET ROLE
-  const role = user.role;
+  const otpEntry = new OTPModel({
+    email,
+    otp,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + 10 * 60 * 1000, // 10 minutes
+  });
 
-  //sending JSON as response
-  const userToReturn = { token, role };
-  delete userToReturn.password;
+  await otpEntry.save();
 
-  return res.status(200).json(userToReturn);
+  // Send OTP email
+  const mailOptions = {
+    from: process.env.Email_address,
+    to: email,
+    subject: "Login Verification OTP",
+    html: `
+      <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
+        <h2 style="color: #333;">Login Verification Code</h2>
+        <p style="font-size: 16px; color: #555;">Your OTP code is: <strong style="font-size: 24px;">${otp}</strong></p>
+        <p style="font-size: 16px; color: #555;">This code will expire in 10 minutes.</p>
+      </div>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    return res.status(200).json({
+      message: "OTP sent successfully",
+      email: email,
+      requireOTP: true,
+    });
+  } catch (error) {
+    return res.status(500).json({ err: "Failed to send OTP" });
+  }
+});
+
+// Add new endpoint for OTP verification and final login
+router.post("/verify-login-otp", async (req, res) => {
+  const { email, otp } = req.body;
+
+  try {
+    const otpEntry = await OTPModel.findOne({
+      email,
+      otp,
+      expiresAt: { $gt: Date.now() },
+    });
+
+    if (!otpEntry) {
+      return res.status(400).json({ err: "Invalid or expired OTP" });
+    }
+
+    // Get user details
+    const user = await User.findOne({ email });
+
+    // Generate token
+    const token = await getToken(user);
+    const role = user.role;
+
+    // Delete used OTP
+    await OTPModel.deleteOne({ email, otp });
+
+    return res.status(200).json({ token, role });
+  } catch (error) {
+    return res.status(500).json({ err: "Error verifying OTP" });
+  }
 });
 
 // Add this route for face ID login

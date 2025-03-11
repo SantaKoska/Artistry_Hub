@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import Logo from "./assets/LOGO.png";
 import { useState, useEffect, useRef } from "react";
-import { loginUser, loginWithFaceID } from "./api/loginapi";
+import { loginUser, loginWithFaceID, verifyLoginOTP } from "./api/loginapi";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import * as faceapi from "face-api.js";
@@ -11,6 +11,9 @@ const Login = () => {
   const [credentials, setCredentials] = useState({ email: "", password: "" });
   const videoRef = useRef();
   const [isFaceLogin, setIsFaceLogin] = useState(false);
+  const [showOTPModal, setShowOTPModal] = useState(false);
+  const [otp, setOTP] = useState("");
+  const [tempEmail, setTempEmail] = useState("");
 
   const changeHandle = async (e) => {
     const { name, value } = e.target;
@@ -23,7 +26,22 @@ const Login = () => {
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     try {
-      await loginUser(credentials, navigate);
+      const response = await loginUser(credentials);
+      if (response.requireOTP) {
+        setTempEmail(response.email);
+        setShowOTPModal(true);
+        toast.info("Please enter the OTP sent to your email");
+      }
+    } catch (err) {
+      console.error(err.message);
+    }
+  };
+
+  const handleOTPSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await verifyLoginOTP(tempEmail, otp, navigate);
+      setShowOTPModal(false);
     } catch (err) {
       console.error(err.message);
     }
@@ -223,6 +241,47 @@ const Login = () => {
     };
   }, []);
 
+  // Add OTP Modal component
+  const OTPModal = () => (
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="bg-white text-black p-8 rounded-lg shadow-xl w-96">
+        <h2 className="text-2xl font-bold mb-4 text-center">Enter OTP</h2>
+        <form onSubmit={handleOTPSubmit}>
+          <input
+            type="text"
+            className="w-full p-3 border border-yellow-500 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            placeholder="Enter OTP"
+            value={otp}
+            onChange={(e) => setOTP(e.target.value)}
+            autoFocus
+            maxLength={6}
+            pattern="\d*"
+            inputMode="numeric"
+            required
+          />
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              className="w-1/2 bg-yellow-500 text-black py-2 rounded hover:bg-yellow-600"
+            >
+              Verify
+            </button>
+            <button
+              type="button"
+              className="w-1/2 bg-gray-300 text-black py-2 rounded hover:bg-gray-400"
+              onClick={() => setShowOTPModal(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+
   return (
     <div className="bg-black text-white rounded-lg shadow-lg p-10 w-96">
       <div className="flex justify-center mb-6">
@@ -316,6 +375,7 @@ const Login = () => {
           </span>
         </div>
       </form>
+      {showOTPModal && <OTPModal />}
     </div>
   );
 };
