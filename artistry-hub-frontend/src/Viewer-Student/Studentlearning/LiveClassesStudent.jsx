@@ -130,7 +130,16 @@ const LiveClasses = () => {
     <div className="mt-4 space-y-2">
       <h3 className="text-yellow-400 font-semibold">Upcoming Classes:</h3>
       {liveClass.classDates
-        .filter((cd) => cd.status === "scheduled")
+        .filter((cd) => {
+          // Filter out completed classes and classes with past dates
+          if (cd.status === "completed") return false;
+          const classDateTime = new Date(cd.date);
+          if (classDateTime < new Date()) {
+            cd.status = "completed";
+            return false;
+          }
+          return cd.status === "scheduled";
+        })
         .map((classDate) => (
           <div
             key={classDate._id}

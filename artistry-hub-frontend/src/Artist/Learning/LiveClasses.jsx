@@ -266,62 +266,109 @@ const LiveClasses = () => {
     setIsRescheduleModalOpen(true);
   };
 
-  const renderClassDates = (liveClass) => (
-    <div className="mt-4 space-y-2">
-      <h3 className="text-yellow-400 font-semibold">Upcoming Classes:</h3>
-      {liveClass.classDates
-        .filter((cd) => cd.status === "scheduled")
-        .map((classDate) => (
-          <div
-            key={classDate._id}
-            className="flex justify-between items-center bg-gray-800 p-2 rounded"
-          >
-            <span>
-              {format(new Date(classDate.date), "MMM dd, yyyy 'at' h:mm a")}
-            </span>
-            <div className="flex gap-2">
-              {isClassJoinable(classDate.date) ? (
-                <Link
-                  to={`/live-class-room/${liveClass._id}?role=artist`}
-                  className="bg-green-500 text-white px-3 py-1 rounded"
+  const renderClassDates = (liveClass) => {
+    const scheduledClasses = liveClass.classDates.filter(
+      (cd) => cd.status === "scheduled"
+    );
+    const completedClasses = liveClass.classDates.filter(
+      (cd) => cd.status === "completed"
+    );
+
+    return (
+      <div className="mt-4 space-y-6">
+        {/* Upcoming Classes Section */}
+        <div className="space-y-2">
+          <h3 className="text-yellow-400 font-semibold">Upcoming Classes:</h3>
+          {scheduledClasses.length > 0 ? (
+            scheduledClasses.map((classDate) => {
+              const classDateTime = new Date(classDate.date);
+              // Check if class is past but status hasn't been updated
+              if (classDateTime < new Date()) {
+                classDate.status = "completed";
+                return null;
+              }
+
+              return (
+                <div
+                  key={classDate._id}
+                  className="flex justify-between items-center bg-gray-800 p-2 rounded"
                 >
-                  Join Class
-                </Link>
-              ) : (
-                <>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openRescheduleModal(classDate);
-                    }}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition-colors"
-                    disabled={isBefore(
-                      new Date(classDate.date),
-                      addHours(new Date(), 24)
+                  <span>
+                    {format(classDateTime, "MMM dd, yyyy 'at' h:mm a")}
+                  </span>
+                  <div className="flex gap-2">
+                    {isClassJoinable(classDate.date) ? (
+                      <Link
+                        to={`/live-class-room/${liveClass._id}?role=artist`}
+                        className="bg-green-500 text-white px-3 py-1 rounded"
+                      >
+                        Join Class
+                      </Link>
+                    ) : (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openRescheduleModal(classDate);
+                          }}
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition-colors"
+                          disabled={isBefore(
+                            new Date(classDate.date),
+                            addHours(new Date(), 24)
+                          )}
+                        >
+                          Reschedule
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCancelClass(liveClass._id, classDate._id);
+                          }}
+                          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition-colors"
+                          disabled={isBefore(
+                            new Date(classDate.date),
+                            addHours(new Date(), 24)
+                          )}
+                        >
+                          Cancel
+                        </button>
+                      </>
                     )}
-                  >
-                    Reschedule
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCancelClass(liveClass._id, classDate._id);
-                    }}
-                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition-colors"
-                    disabled={isBefore(
-                      new Date(classDate.date),
-                      addHours(new Date(), 24)
-                    )}
-                  >
-                    Cancel
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        ))}
-    </div>
-  );
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <p className="text-gray-400 italic">
+              No upcoming classes scheduled
+            </p>
+          )}
+        </div>
+
+        {/* Completed Classes Section */}
+        <div className="space-y-2">
+          <h3 className="text-green-400 font-semibold">Completed Classes:</h3>
+          {completedClasses.length > 0 ? (
+            completedClasses.map((classDate) => (
+              <div
+                key={classDate._id}
+                className="flex justify-between items-center bg-gray-800/50 p-2 rounded"
+              >
+                <span className="text-gray-400">
+                  {format(new Date(classDate.date), "MMM dd, yyyy 'at' h:mm a")}
+                </span>
+                <span className="text-green-400 text-sm px-2 py-1 bg-green-400/10 rounded">
+                  Completed
+                </span>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-400 italic">No completed classes yet</p>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="bg-gradient-to-br from-gray-900 to-black text-white rounded-xl p-8 shadow-2xl">
