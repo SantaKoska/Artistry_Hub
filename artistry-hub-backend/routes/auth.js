@@ -257,7 +257,7 @@ router.post("/login/faceid", async (req, res) => {
 
     // Use stricter thresholds for both metrics
     const euclideanThreshold = 0.4; // Lower threshold for stricter matching
-    const cosineThreshold = 0.85; // Higher threshold for stricter matching
+    const cosineThreshold = 0.6; // Higher threshold for stricter matching
 
     if (
       euclideanDistance < euclideanThreshold &&

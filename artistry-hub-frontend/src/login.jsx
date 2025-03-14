@@ -88,7 +88,7 @@ const Login = () => {
 
     try {
       const livenessScore = await detectLiveness(videoRef.current);
-      if (livenessScore < 0.8) {
+      if (livenessScore < 0.6) {
         setIsFaceLogin(false);
         stopVideoStream();
         toast.error(
