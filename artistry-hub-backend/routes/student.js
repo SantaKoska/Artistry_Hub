@@ -278,8 +278,8 @@ router.get("/my-service-requests", verifyToken, async (req, res) => {
       userId: req.user.identifier,
     });
     return res.status(200).json({
-      artForm: student.artForm,
-      serviceRequests,
+      artForm: student ? student.artForm : null,
+      serviceRequests: serviceRequests || [], // Ensure we always return an array
     });
   } catch (error) {
     console.error("Error fetching service requests:", error);

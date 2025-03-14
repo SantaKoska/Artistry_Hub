@@ -248,21 +248,15 @@ router.post("/login/faceid", async (req, res) => {
   }
 
   try {
-    // Compare with multiple similarity metrics
+    // Compare using Euclidean distance only
     const euclideanDistance = calculateEuclideanDistance(
       user.OG,
       faceDescriptor
     );
-    const cosineSimilarity = calculateCosineSimilarity(user.OG, faceDescriptor);
 
-    // Use stricter thresholds for both metrics
     const euclideanThreshold = 0.4; // Lower threshold for stricter matching
-    const cosineThreshold = 0.6; // Higher threshold for stricter matching
 
-    if (
-      euclideanDistance < euclideanThreshold &&
-      cosineSimilarity > cosineThreshold
-    ) {
+    if (euclideanDistance < euclideanThreshold) {
       const token = await getToken(user);
       const role = user.role;
       const userToReturn = { token, role };
@@ -283,21 +277,6 @@ function calculateEuclideanDistance(data1, data2) {
     sum += Math.pow(data1[i] - data2[i], 2);
   }
   return Math.sqrt(sum);
-}
-
-// Add cosine similarity calculation
-function calculateCosineSimilarity(data1, data2) {
-  let dotProduct = 0;
-  let norm1 = 0;
-  let norm2 = 0;
-
-  for (let i = 0; i < data1.length; i++) {
-    dotProduct += data1[i] * data2[i];
-    norm1 += data1[i] * data1[i];
-    norm2 += data2[i] * data2[i];
-  }
-
-  return dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
 }
 
 //

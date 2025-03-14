@@ -25,7 +25,8 @@ const StudentCreateServiceRequest = () => {
             },
           }
         );
-        setServiceRequests(response.data || []);
+        setServiceRequests(response.data.serviceRequests || []);
+        setUserArtForm(response.data.artForm);
       } catch (error) {
         console.error("Error fetching service requests:", error);
         setServiceRequests([]);
