@@ -504,8 +504,8 @@ const ArtistCreateServiceRequest = () => {
       )}
 
       {showChat && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50">
-          <div className="bg-[#1a1a1a] w-[95%] max-w-3xl h-[80vh] rounded-2xl shadow-2xl flex flex-col">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-start pt-4 z-50">
+          <div className="bg-[#1a1a1a] w-[95%] max-w-4xl h-[95vh] rounded-2xl shadow-2xl flex flex-col">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
               <div className="flex items-center gap-3">
                 <BiBot className="text-2xl text-yellow-500" />

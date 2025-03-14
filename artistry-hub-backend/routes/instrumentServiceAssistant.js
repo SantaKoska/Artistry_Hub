@@ -197,4 +197,18 @@ router.get("/chat-history", verifyToken, async (req, res) => {
   }
 });
 
+router.delete("/chat-history", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.identifier;
+    await ChatHistory.findOneAndDelete({ userId });
+    res.json({ message: "Chat history deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting chat history:", error);
+    res.status(500).json({
+      message: "Error deleting chat history",
+      error: error.message,
+    });
+  }
+});
+
 module.exports = router;
