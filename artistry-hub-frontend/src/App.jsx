@@ -49,6 +49,10 @@ function App() {
         <ToastContainer />
         {/* Routes */}
         <Routes>
+          <Route
+            path="verify-certificate/:serialNumber"
+            element={<CertificateVerification />}
+          />
           <Route path="/" element={<LoginRegisterBase />}>
             <Route path="/" element={<Login />} />
             <Route path="register" element={<Register />} />
@@ -151,10 +155,6 @@ function App() {
 
           <Route path="reset-password/:token" element={<ResetPassword />} />
           <Route path="/login" element={<Navigate replace to="/" />} />
-          <Route
-            path="/verify-certificate/:serialNumber"
-            element={<CertificateVerification />}
-          />
           <Route
             path="/live-class-room/:classId"
             element={
