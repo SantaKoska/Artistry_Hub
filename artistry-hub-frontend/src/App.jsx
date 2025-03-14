@@ -50,7 +50,7 @@ function App() {
         {/* Routes */}
         <Routes>
           <Route
-            path="verify-certificate/:serialNumber"
+            path="/verify-certificate/:serialNumber"
             element={<CertificateVerification />}
           />
           <Route path="/" element={<LoginRegisterBase />}>

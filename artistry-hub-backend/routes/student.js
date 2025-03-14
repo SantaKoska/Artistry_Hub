@@ -821,7 +821,7 @@ router.post(
         .text(`Serial Number: ${serialNumber}`, { align: "center" });
 
       // Verification Link
-      const verificationLink = `${process.env.VITE_BACKEND_URL}/verify-certificate/${serialNumber}`;
+      const verificationLink = `${process.env.VITE_FRONTEND_URL}/verify-certificate/${serialNumber}`;
       const qrCodeImage = await QRCode.toDataURL(verificationLink);
 
       // Insert QR Code
