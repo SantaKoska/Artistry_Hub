@@ -534,7 +534,7 @@ const ArtistCreateServiceRequest = () => {
             </div>
 
             <div className="flex-1 overflow-hidden">
-              <InstrumentServiceAssistant />
+              <InstrumentServiceAssistant artForm={userArtForm} />
             </div>
           </div>
         </div>

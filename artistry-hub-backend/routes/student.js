@@ -242,18 +242,19 @@ router.post(
     try {
       const userId = req.user.identifier;
 
-      // Get the student's art form or any other relevant field
+      // Get the student's art form
       const student = await ViewerStudent.findOne({ userId });
       if (!student) {
         return res.status(400).json({ msg: "Student not found" });
       }
 
-      const { description } = req.body; // Get description from the body
-      const images = req.files.map((file) => `/Service/${file.filename}`); // Get image paths from uploaded files
+      const { description, specialization } = req.body;
+      const images = req.files.map((file) => `/Service/${file.filename}`);
 
       const newServiceRequest = new ServiceRequest({
         userId,
-        artForm: student.artForm, // Automatically set from the student model (if applicable)
+        artForm: student.artForm,
+        specialization,
         description,
         images,
       });
@@ -270,10 +271,16 @@ router.post(
 // Route to retrieve the service requests created by the student
 router.get("/my-service-requests", verifyToken, async (req, res) => {
   try {
+    const student = await ViewerStudent.findOne({
+      userId: req.user.identifier,
+    });
     const serviceRequests = await ServiceRequest.find({
       userId: req.user.identifier,
     });
-    return res.status(200).json(serviceRequests);
+    return res.status(200).json({
+      artForm: student.artForm,
+      serviceRequests,
+    });
   } catch (error) {
     console.error("Error fetching service requests:", error);
     return res.status(500).json({ message: "Server error" });
@@ -282,7 +289,7 @@ router.get("/my-service-requests", verifyToken, async (req, res) => {
 
 // Edit a service request
 router.put("/service-requests/:id", serviceUpload, async (req, res) => {
-  const { description } = req.body;
+  const { description, specialization } = req.body;
   const files = req.files;
 
   try {
@@ -292,6 +299,7 @@ router.put("/service-requests/:id", serviceUpload, async (req, res) => {
     }
 
     request.description = description;
+    request.specialization = specialization;
     if (files && files.length > 0) {
       request.images = files.map((file) => `/Service/${file.filename}`);
     }

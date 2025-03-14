@@ -11,6 +11,7 @@ const StudentCreateServiceRequest = () => {
   const [showCreateRequest, setShowCreateRequest] = useState(false);
   const [editingRequest, setEditingRequest] = useState(null); // State for editing request
   const [showChat, setShowChat] = useState(false); // Add this state
+  const [userArtForm, setUserArtForm] = useState(""); // Added for the InstrumentServiceAssistant component
 
   // Fetch existing service requests
   useEffect(() => {
@@ -326,7 +327,7 @@ const StudentCreateServiceRequest = () => {
             </div>
 
             <div className="flex-1 overflow-hidden">
-              <InstrumentServiceAssistant />
+              <InstrumentServiceAssistant artForm={userArtForm} />
             </div>
           </div>
         </div>
