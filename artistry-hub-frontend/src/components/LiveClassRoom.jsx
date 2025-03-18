@@ -37,6 +37,7 @@ function LiveClassVideo({ classId, isArtist }) {
   const [cameraOn, setCameraOn] = useState(true);
   const { localMicrophoneTrack } = useLocalMicrophoneTrack(micOn);
   const { localCameraTrack } = useLocalCameraTrack(cameraOn);
+  const remoteUsers = useRemoteUsers();
 
   // For test class, generate a random user ID instead of using artist/student roles
   const isTestClass = classId === "test-123";
@@ -57,22 +58,15 @@ function LiveClassVideo({ classId, isArtist }) {
   );
   usePublish([localMicrophoneTrack, localCameraTrack]);
 
-  //   useEffect(() => {
-  //     client.on("user-joined", (user) => {
-  //       alert(`${user.uid} has joined`);
-  //     });
-  //   }, []);
-
-  const remoteUsers = useRemoteUsers();
-
-  // Updated useEffect for remote user audio
+  // Updated useEffect for remote user tracks
   useEffect(() => {
     remoteUsers.forEach((user) => {
       if (user.hasAudio && user.audioTrack) {
-        // Play audio with specific configurations
-        user.audioTrack.play({ volume: 100 }).catch((error) => {
-          console.error("Error playing remote audio:", error);
-        });
+        user.audioTrack.play();
+      }
+      if (user.hasVideo && user.videoTrack) {
+        // Ensure video track is properly initialized
+        user.videoTrack.play(`video-${user.uid}`, { fit: "cover" });
       }
     });
 
@@ -80,6 +74,9 @@ function LiveClassVideo({ classId, isArtist }) {
       remoteUsers.forEach((user) => {
         if (user.hasAudio && user.audioTrack) {
           user.audioTrack.stop();
+        }
+        if (user.hasVideo && user.videoTrack) {
+          user.videoTrack.stop();
         }
       });
     };
@@ -109,12 +106,14 @@ function LiveClassVideo({ classId, isArtist }) {
           </div>
 
           <div className="flex flex-1 gap-4">
+            {/* Local user video container */}
             <div className="w-3/4 bg-gray-900 rounded-xl overflow-hidden relative h-[600px]">
               <LocalUser
                 cameraOn={cameraOn}
                 micOn={micOn}
                 videoTrack={localCameraTrack}
                 audioTrack={localMicrophoneTrack}
+                className="w-full h-full"
               >
                 <div className="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-lg">
                   {isTestClass ? "You" : isArtist ? "Artist (You)" : "You"}
@@ -122,13 +121,19 @@ function LiveClassVideo({ classId, isArtist }) {
               </LocalUser>
             </div>
 
-            <div className="w-1/4 space-y-4 p-4 bg-white">
+            {/* Remote users video container */}
+            <div className="w-1/4 space-y-4 p-4 bg-white rounded-xl">
               {remoteUsers.map((user) => (
                 <div
                   key={user.uid}
                   className="bg-gray-900 rounded-xl overflow-hidden relative h-[200px]"
+                  id={`video-${user.uid}`}
                 >
-                  <RemoteUser user={user} playVideo={true}>
+                  <RemoteUser
+                    user={user}
+                    playVideo={true}
+                    className="w-full h-full object-cover"
+                  >
                     <div className="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-lg">
                       {isTestClass
                         ? "User"
