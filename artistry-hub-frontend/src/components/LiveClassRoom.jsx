@@ -39,6 +39,17 @@ function LiveClassVideo({ classId, isArtist }) {
   const { localCameraTrack } = useLocalCameraTrack(cameraOn);
   const remoteUsers = useRemoteUsers();
 
+  const handleEndCall = async () => {
+    if (localMicrophoneTrack) {
+      await localMicrophoneTrack.close();
+    }
+    if (localCameraTrack) {
+      await localCameraTrack.close();
+    }
+    await client.leave();
+    window.history.back();
+  };
+
   // For test class, generate a random user ID instead of using artist/student roles
   const isTestClass = classId === "test-123";
   const userId = isTestClass
@@ -86,64 +97,84 @@ function LiveClassVideo({ classId, isArtist }) {
     <div className="w-full h-full flex flex-col gap-4">
       {isConnected && (
         <>
-          <div className="flex justify-center gap-4 mb-4">
-            <button
-              onClick={() => setMicOn(!micOn)}
-              className={`px-4 py-2 rounded-lg ${
-                micOn ? "bg-green-500" : "bg-red-500"
-              } text-white`}
-            >
-              {micOn ? "Mute" : "Unmute"}
-            </button>
-            <button
-              onClick={() => setCameraOn(!cameraOn)}
-              className={`px-4 py-2 rounded-lg ${
-                cameraOn ? "bg-green-500" : "bg-red-500"
-              } text-white`}
-            >
-              {cameraOn ? "Turn Off Camera" : "Turn On Camera"}
-            </button>
-          </div>
-
-          <div className="flex flex-1 gap-4">
-            {/* Local user video container */}
-            <div className="w-3/4 bg-gray-900 rounded-xl overflow-hidden relative h-[600px]">
-              <LocalUser
-                cameraOn={cameraOn}
-                micOn={micOn}
-                videoTrack={localCameraTrack}
-                audioTrack={localMicrophoneTrack}
-                className="w-full h-full"
-              >
-                <div className="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-lg">
-                  {isTestClass ? "You" : isArtist ? "Artist (You)" : "You"}
-                </div>
-              </LocalUser>
-            </div>
-
-            {/* Remote users video container */}
-            <div className="w-1/4 space-y-4 p-4 bg-white rounded-xl">
-              {remoteUsers.map((user) => (
-                <div
-                  key={user.uid}
-                  className="bg-gray-900 rounded-xl overflow-hidden relative h-[200px]"
-                  id={`video-${user.uid}`}
-                >
-                  <RemoteUser
-                    user={user}
-                    playVideo={true}
-                    className="w-full h-full object-cover"
+          <div className="flex-1 relative">
+            <div className="w-full h-[80vh] relative">
+              <div className="w-full h-full bg-gray-900 rounded-xl overflow-hidden">
+                {isArtist ? (
+                  <LocalUser
+                    cameraOn={cameraOn}
+                    micOn={micOn}
+                    videoTrack={localCameraTrack}
+                    audioTrack={localMicrophoneTrack}
+                    className="w-full h-full"
                   >
-                    <div className="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-lg">
-                      {isTestClass
-                        ? "User"
-                        : user.uid.toString().includes("artist")
-                        ? "Artist"
-                        : "Student"}
+                    <div className="absolute top-4 left-4 bg-black/50 px-4 py-2 rounded-lg text-white font-semibold">
+                      Artist (You)
                     </div>
-                  </RemoteUser>
+                  </LocalUser>
+                ) : (
+                  remoteUsers.map(
+                    (user) =>
+                      user.uid.toString() === "artist" && (
+                        <RemoteUser
+                          key={user.uid}
+                          user={user}
+                          playVideo={true}
+                          className="w-full h-full object-cover"
+                        >
+                          <div className="absolute top-4 left-4 bg-black/50 px-4 py-2 rounded-lg text-white font-semibold">
+                            Artist
+                          </div>
+                        </RemoteUser>
+                      )
+                  )
+                )}
+              </div>
+
+              {!isArtist && (
+                <div className="absolute bottom-4 right-4 w-[280px] h-[210px] bg-gray-900 rounded-xl overflow-hidden shadow-lg border-2 border-white/20">
+                  <LocalUser
+                    cameraOn={cameraOn}
+                    micOn={micOn}
+                    videoTrack={localCameraTrack}
+                    audioTrack={localMicrophoneTrack}
+                    className="w-full h-full"
+                  >
+                    <div className="absolute bottom-2 left-2 bg-black/50 px-3 py-1 rounded-lg text-white">
+                      You
+                    </div>
+                  </LocalUser>
                 </div>
-              ))}
+              )}
+
+              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-4 bg-black/60 px-6 py-3 rounded-full">
+                <button
+                  onClick={() => setMicOn(!micOn)}
+                  className={`px-4 py-2 rounded-full transition-all ${
+                    micOn
+                      ? "bg-green-500 hover:bg-green-600"
+                      : "bg-red-500 hover:bg-red-600"
+                  } text-white font-medium`}
+                >
+                  {micOn ? "Mute" : "Unmute"}
+                </button>
+                <button
+                  onClick={() => setCameraOn(!cameraOn)}
+                  className={`px-4 py-2 rounded-full transition-all ${
+                    cameraOn
+                      ? "bg-green-500 hover:bg-green-600"
+                      : "bg-red-500 hover:bg-red-600"
+                  } text-white font-medium`}
+                >
+                  {cameraOn ? "Turn Off Camera" : "Turn On Camera"}
+                </button>
+                <button
+                  onClick={handleEndCall}
+                  className="px-4 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white font-medium transition-all"
+                >
+                  End Call
+                </button>
+              </div>
             </div>
           </div>
         </>
