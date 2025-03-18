@@ -11,7 +11,12 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
     artForm: "",
     specialization: "",
     salary: "",
-    location: "",
+    location: {
+      postalCode: "",
+      district: "",
+      state: "",
+      country: "",
+    },
     jobType: "full-time",
     registrationType: "internal",
     externalLink: "",
@@ -46,6 +51,35 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
       setSpecializations(response.data);
     } catch (error) {
       toast.error("Error fetching specializations");
+    }
+  };
+
+  const fetchLocationData = async (postalCode) => {
+    try {
+      const response = await axios.get(
+        `https://api.postalpincode.in/pincode/${postalCode}`
+      );
+      if (
+        response.data &&
+        response.data[0] &&
+        response.data[0].Status === "Success"
+      ) {
+        const place = response.data[0].PostOffice[0];
+        setFormData((prevData) => ({
+          ...prevData,
+          location: {
+            ...prevData.location,
+            district: place.District,
+            state: place.State,
+            country: "India",
+            postalCode: postalCode,
+          },
+        }));
+      } else {
+        toast.error("Invalid postal code");
+      }
+    } catch (error) {
+      toast.error("Error fetching location data");
     }
   };
 
@@ -242,16 +276,59 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
 
           <div>
             <label className="block text-sm font-medium mb-1 text-white">
-              Location
+              Postal Code
             </label>
             <input
               type="text"
-              value={formData.location}
-              onChange={(e) =>
-                setFormData({ ...formData, location: e.target.value })
-              }
+              value={formData.location.postalCode}
+              onChange={(e) => {
+                const postalCode = e.target.value;
+                if (postalCode.length === 6) {
+                  fetchLocationData(postalCode);
+                }
+                setFormData({
+                  ...formData,
+                  location: { ...formData.location, postalCode },
+                });
+              }}
               className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600"
               required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1 text-white">
+              District
+            </label>
+            <input
+              type="text"
+              value={formData.location.district}
+              className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600"
+              readOnly
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1 text-white">
+              State
+            </label>
+            <input
+              type="text"
+              value={formData.location.state}
+              className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600"
+              readOnly
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1 text-white">
+              Country
+            </label>
+            <input
+              type="text"
+              value={formData.location.country}
+              className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600"
+              readOnly
             />
           </div>
 

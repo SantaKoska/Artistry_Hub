@@ -40,6 +40,11 @@ const validateJob = (req, res, next) => {
     return res.status(400).json({ message: "Last date must be in the future" });
   }
 
+  // Validate location
+  if (!location?.postalCode || location.postalCode.length !== 6) {
+    return res.status(400).json({ message: "Valid postal code is required" });
+  }
+
   // Validate salary format (optional if salary can be negotiable)
   if (salary && !salary.match(/^[\$\d,\s\-]+$/)) {
     return res.status(400).json({ message: "Invalid salary format" });
