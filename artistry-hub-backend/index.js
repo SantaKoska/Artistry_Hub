@@ -126,6 +126,7 @@ app.get("/hello", (req, res) => {
 app.use("/auth", authRoutes);
 
 app.use("/common-things", commonthings);
+app.use("/service", service);
 
 app.use("/artist", artistRoutes);
 
@@ -134,8 +135,6 @@ app.use("/posts", post);
 app.use("/message", message);
 
 app.use("/student", studentRoutes);
-
-app.use("/service", service);
 
 app.use("/institution", institution);
 

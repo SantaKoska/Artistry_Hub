@@ -175,7 +175,7 @@ router.post("/profile/:username/follow", verifyToken, async (req, res) => {
 
 router.get("/usericon", verifyToken, async (req, res) => {
   try {
-    const userId = req.user.identifier; // Assuming the token contains user ID
+    const userId = req.user.identifier;
     const user = await User.findById(userId).select(
       "userName role profilePicture"
     );
@@ -184,12 +184,11 @@ router.get("/usericon", verifyToken, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Send back the user's username, role, and profile picture
     res.json({
       profile: {
         userName: user.userName,
         role: user.role,
-        profilePicture: user.profilePicture, // Include the profile picture
+        profilePicture: user.profilePicture,
       },
     });
   } catch (error) {

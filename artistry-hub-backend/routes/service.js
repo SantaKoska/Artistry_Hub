@@ -12,39 +12,42 @@ const { verifyToken } = require("../utils/tokendec");
 
 // Get all service requests based on the service provider's expertise and filtering by specialization
 router.get("/requests", verifyToken, async (req, res) => {
-  const { specialization } = req.query;
-  const user = req.user; // Extracted from the token
-
   try {
-    // Find the service provider's expertise based on the user ID from the token
+    const { specialization } = req.query;
+    const user = req.user;
+
+    // Find the service provider to get their expertise
     const serviceProvider = await ServiceProvider.findOne({
       userId: user.identifier,
     });
-
     if (!serviceProvider) {
       return res.status(404).json({ message: "Service provider not found" });
     }
 
-    const artform = serviceProvider.expertise;
+    // Find requests that haven't been ignored by this provider
+    const requests =
+      specialization === "All"
+        ? await ServiceRequest.find({
+            _id: { $nin: serviceProvider.ignoredServiceRequests },
+            artForm: serviceProvider.expertise,
+            serviceProviderId: null,
+            status: "Pending",
+          }).populate("userId")
+        : await ServiceRequest.find({
+            _id: { $nin: serviceProvider.ignoredServiceRequests },
+            artForm: serviceProvider.expertise,
+            specialization: specialization,
+            serviceProviderId: null,
+            status: "Pending",
+          }).populate("userId");
 
-    // Build the query based on the expertise and specialization
-    const query = {
-      artForm: artform, // Filter by the expertise of the service provider
-      status: "Pending", // Only show pending requests
-      serviceProviderId: { $ne: user.identifier }, // Exclude requests accepted by this service provider
-      _id: { $nin: serviceProvider.ignoredServiceRequests }, // Exclude requests in the ignoredServiceRequests array
-    };
-
-    if (specialization && specialization !== "All") {
-      query.specialization = specialization; // Add specialization filter if provided
-    }
-
-    const requests = await ServiceRequest.find(query).populate("userId");
-
-    res.status(200).json({ requests, artform });
+    res.json({
+      requests,
+      artform: serviceProvider.expertise,
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Error fetching service requests", error });
+    console.error("Error fetching service requests:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 

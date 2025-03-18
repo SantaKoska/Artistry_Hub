@@ -26,15 +26,17 @@ const ServiceProviderHome = () => {
         }
       );
 
-      setRequests(response.data.requests);
-      setFilteredRequests(response.data.requests);
+      const requests = response.data.requests || [];
+      setRequests(requests);
+      setFilteredRequests(requests);
 
-      if (response.data.requests.length > 0) {
-        const artForm = response.data.artform;
-        setUserArtForm(artForm);
+      if (response.data.artform) {
+        setUserArtForm(response.data.artform);
       }
     } catch (error) {
       console.error("Error fetching service requests:", error);
+      setRequests([]);
+      setFilteredRequests([]);
     }
   };
 
@@ -144,7 +146,7 @@ const ServiceProviderHome = () => {
       </div>
 
       {/* Service Requests List */}
-      {filteredRequests.length > 0 ? (
+      {Array.isArray(filteredRequests) && filteredRequests.length > 0 ? (
         <div className="space-y-2">
           {filteredRequests.map((request) => (
             <div
