@@ -42,31 +42,42 @@ const CertificateVerification = () => {
   return (
     <div
       style={{
-        padding: "40px",
+        padding: "20px",
+        width: "90%",
         maxWidth: "800px",
-        margin: "40px auto",
+        margin: "20px auto",
         boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
         borderRadius: "15px",
         backgroundColor: "#ffffff",
       }}
     >
-      <div style={{ textAlign: "center", marginBottom: "30px" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          marginBottom: "30px",
+          width: "100%",
+        }}
+      >
         <img
           src={LOGO}
           alt="Artistry Hub Logo"
           style={{
             height: "80px",
             marginBottom: "20px",
+            maxWidth: "100%",
+            objectFit: "contain",
           }}
         />
         <h1
           style={{
-            fontSize: "32px",
+            fontSize: "clamp(24px, 5vw, 32px)",
             fontWeight: "600",
             color: "#1a1a1a",
             borderBottom: "2px solid #007bff",
             paddingBottom: "15px",
-            display: "inline-block",
+            textAlign: "center",
           }}
         >
           Certificate Verification
@@ -76,7 +87,7 @@ const CertificateVerification = () => {
         style={{
           border: "1px solid #e6e6e6",
           borderRadius: "12px",
-          padding: "30px",
+          padding: "20px",
           backgroundColor: "#fff",
           boxShadow: "0 2px 12px rgba(0, 0, 0, 0.04)",
         }}
@@ -90,32 +101,54 @@ const CertificateVerification = () => {
             alignItems: "center",
             padding: "10px",
             borderBottom: "1px solid #f0f0f0",
+            flexWrap: "wrap",
           }}
         >
           <FontAwesomeIcon
-            icon={faCertificate}
+            icon={faIdCard}
             style={{ marginRight: "15px", color: "#007bff", fontSize: "20px" }}
           />
-          <span style={{ width: "150px" }}>Course Name:</span>
-          <strong>{certificateDetails.courseName}</strong>
+          <span style={{ width: "150px" }}>Issued To:</span>
+          <strong>{certificateDetails.recipientName}</strong>
         </p>
 
         <p
           style={{
-            fontSize: "18px",
+            fontSize: "clamp(16px, 4vw, 18px)",
             margin: "15px 0",
             color: "#333",
             display: "flex",
             alignItems: "center",
             padding: "10px",
             borderBottom: "1px solid #f0f0f0",
+            flexWrap: "wrap",
+          }}
+        >
+          <FontAwesomeIcon
+            icon={faCertificate}
+            style={{ marginRight: "15px", color: "#007bff", fontSize: "20px" }}
+          />
+          <span style={{ minWidth: "150px" }}>Course Name:</span>
+          <strong>{certificateDetails.courseName}</strong>
+        </p>
+
+        <p
+          style={{
+            fontSize: "clamp(16px, 4vw, 18px)",
+            margin: "15px 0",
+            color: "#333",
+            display: "flex",
+            alignItems: "center",
+            padding: "10px",
+            borderBottom: "1px solid #f0f0f0",
+            flexWrap: "wrap",
           }}
         >
           <FontAwesomeIcon
             icon={faCalendarAlt}
             style={{ marginRight: "15px", color: "#007bff", fontSize: "20px" }}
           />
-          <span style={{ width: "150px" }}>Issued Date:</span>
+          <span style={{ minWidth: "150px" }}>Issued Date:</span>
           <strong>
             {new Date(certificateDetails.issueDate).toLocaleDateString()}
           </strong>
@@ -123,39 +156,41 @@ const CertificateVerification = () => {
 
         <p
           style={{
-            fontSize: "18px",
+            fontSize: "clamp(16px, 4vw, 18px)",
             margin: "15px 0",
             color: "#333",
             display: "flex",
             alignItems: "center",
             padding: "10px",
             borderBottom: "1px solid #f0f0f0",
-          }}
-        >
-          <FontAwesomeIcon
-            icon={faIdCard}
-            style={{ marginRight: "15px", color: "#007bff", fontSize: "20px" }}
-          />
-          <span style={{ width: "150px" }}>Serial Number:</span>
-          <strong>{certificateDetails.serialNumber}</strong>
-        </p>
-
-        <p
-          style={{
-            fontSize: "18px",
-            margin: "15px 0",
-            color: "#333",
-            display: "flex",
-            alignItems: "center",
-            padding: "10px",
-            borderBottom: "1px solid #f0f0f0",
+            flexWrap: "wrap",
           }}
         >
           <FontAwesomeIcon
             icon={faCertificate}
             style={{ marginRight: "15px", color: "#007bff", fontSize: "20px" }}
           />
-          <span style={{ width: "150px" }}>Certificate Name:</span>
+          <span style={{ minWidth: "150px" }}>Serial Number:</span>
+          <strong>{certificateDetails.serialNumber}</strong>
+        </p>
+
+        <p
+          style={{
+            fontSize: "clamp(16px, 4vw, 18px)",
+            margin: "15px 0",
+            color: "#333",
+            display: "flex",
+            alignItems: "center",
+            padding: "10px",
+            borderBottom: "1px solid #f0f0f0",
+            flexWrap: "wrap",
+          }}
+        >
+          <FontAwesomeIcon
+            icon={faCertificate}
+            style={{ marginRight: "15px", color: "#007bff", fontSize: "20px" }}
+          />
+          <span style={{ minWidth: "150px" }}>Certificate Issued to:</span>
           <strong>{certificateDetails.certificateName}</strong>
         </p>
       </div>
