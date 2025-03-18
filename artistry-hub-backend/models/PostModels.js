@@ -42,6 +42,12 @@ const PostSchema = new mongoose.Schema({
         type: String,
         required: true,
       },
+      gifUrl: {
+        type: String,
+      },
+      gifId: {
+        type: String,
+      },
       createdAt: {
         type: Date,
         default: Date.now,

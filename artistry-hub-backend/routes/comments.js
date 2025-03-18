@@ -5,7 +5,7 @@ const { verifyToken } = require("../utils/tokendec");
 
 // Add a comment to a post
 router.post("/:postId/comment", verifyToken, async (req, res) => {
-  const { content } = req.body;
+  const { content, gifUrl, gifId } = req.body;
   const userId = req.user.identifier;
 
   try {
@@ -17,6 +17,8 @@ router.post("/:postId/comment", verifyToken, async (req, res) => {
     const comment = {
       user: userId,
       content,
+      gifUrl,
+      gifId,
     };
 
     post.comments.push(comment);

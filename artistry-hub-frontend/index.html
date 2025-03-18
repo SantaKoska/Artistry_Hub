@@ -22,9 +22,44 @@
   </head>
   <body>
     <div id="root" class="container">
-      <h1>Welcome to Artistry Hub</h1>
-      <p>Your platform for artistic expression.</p>
-      <a href="/src/main.jsx">Get Started</a>
+      <div class="loading-container">
+        <svg
+          class="logo-animation"
+          width="100"
+          height="100"
+          viewBox="0 0 100 100"
+        >
+          <circle
+            class="outer-circle"
+            cx="50"
+            cy="50"
+            r="45"
+            fill="none"
+            stroke="#FFD700"
+            stroke-width="2"
+          />
+          <path
+            class="artist-brush"
+            d="M30,50 Q50,20 70,50"
+            stroke="#FFD700"
+            stroke-width="2"
+            fill="none"
+          >
+            <animate
+              attributeName="d"
+              dur="1.5s"
+              repeatCount="indefinite"
+              values="M30,50 Q50,20 70,50;
+                     M30,50 Q50,80 70,50;
+                     M30,50 Q50,20 70,50"
+            />
+          </path>
+        </svg>
+        <h1>Artistry Hub</h1>
+        <div class="loading-dots">
+          <span>.</span><span>.</span><span>.</span>
+        </div>
+      </div>
     </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
