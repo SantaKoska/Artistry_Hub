@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Modal from "react-modal";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { FaTrash } from "react-icons/fa";
 import * as faceapi from "face-api.js";
 
@@ -27,6 +27,8 @@ const ArtistProfile = () => {
   const [password, setPassword] = useState("");
   const videoRef = useRef();
   const canvasRef = useRef();
+  const [followersModalIsOpen, setFollowersModalIsOpen] = useState(false);
+  const [followers, setFollowers] = useState([]);
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
@@ -327,6 +329,29 @@ const ArtistProfile = () => {
     setPassword("");
   };
 
+  const fetchFollowers = async () => {
+    try {
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/common-things/followers`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setFollowers(data);
+    } catch (error) {
+      toast.error(`Error fetching followers: ${error.response?.data?.err}`);
+    }
+  };
+
+  const handleOpenFollowersModal = async () => {
+    await fetchFollowers();
+    setFollowersModalIsOpen(true);
+  };
+
+  const handleCloseFollowersModal = () => {
+    setFollowersModalIsOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black p-4 md:p-8">
       {profile && (
@@ -371,7 +396,10 @@ const ArtistProfile = () => {
 
                 {/* Stats Cards */}
                 <div className="flex gap-6 mt-6">
-                  <div className="text-center bg-gray-700 rounded-lg p-4 w-32">
+                  <div
+                    className="text-center bg-gray-700 rounded-lg p-4 w-32 cursor-pointer hover:bg-gray-600 transition-colors"
+                    onClick={handleOpenFollowersModal}
+                  >
                     <p className="text-2xl font-bold text-yellow-400">
                       {profile.followerCount}
                     </p>
@@ -686,6 +714,53 @@ const ArtistProfile = () => {
                 {profile.isFaceAuthEnabled ? "Disable" : "Enable"}
               </button>
             </div>
+          </Modal>
+
+          <Modal
+            isOpen={followersModalIsOpen}
+            onRequestClose={handleCloseFollowersModal}
+            className="modal bg-slate-800 rounded-md p-8 shadow-lg backdrop-blur-md w-full md:w-1/3 mx-auto"
+            overlayClassName="overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
+          >
+            <h2 className="text-white text-2xl mb-4">Followers</h2>
+            <div className="max-h-96 overflow-y-auto">
+              {followers.length > 0 ? (
+                followers.map((follower) => (
+                  <div
+                    key={follower._id}
+                    className="flex items-center gap-4 p-4 border-b border-gray-700"
+                  >
+                    <Link to={`/profile/${follower.userName}`}>
+                      <img
+                        src={`${import.meta.env.VITE_BACKEND_URL}${
+                          follower.profilePicture
+                        }`}
+                        alt={follower.userName}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                    </Link>
+                    <div>
+                      <Link to={`/profile/${follower.userName}`}>
+                        <p className="text-white font-semibold hover:text-yellow-400 transition-colors">
+                          {follower.userName}
+                        </p>
+                      </Link>
+                      <p className="text-gray-400 text-sm">
+                        {follower.artForm}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-400 text-center">No followers yet</p>
+              )}
+            </div>
+            <button
+              onClick={handleCloseFollowersModal}
+              className="mt-4 w-full bg-gray-700 text-white rounded px-4 py-2 hover:bg-gray-600 transition-colors"
+            >
+              Close
+            </button>
           </Modal>
         </div>
       )}

@@ -14,25 +14,20 @@ const { verifyToken } = require("../utils/tokendec");
 router.get("/profile/:username", verifyToken, async (req, res) => {
   try {
     const user = await User.findOne({ userName: req.params.username })
-      .populate("posts.postId") // Fetch associated posts
+      .populate("posts.postId")
       .exec();
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Get follower count using the schema method
     const followerCount = await user.getNumberOfFollowers();
-
-    // Get the current user and their following list
     const currentUser = await User.findById(req.user.identifier).populate(
       "following"
     );
     const followingIds = currentUser.following.map((following) =>
       following._id.toString()
     );
-
-    // Check if the current user is following the profile user
     const isFollowing = followingIds.includes(user._id.toString());
 
     // Fetch additional data based on the user's role
@@ -42,8 +37,8 @@ router.get("/profile/:username", verifyToken, async (req, res) => {
       case "Artist":
         const artistData = await Artist.findOne({ userId: user._id });
         additionalData = {
-          artForm: artistData.artForm,
-          specialisation: artistData.specialisation,
+          artForm: artistData?.artForm || "",
+          specialisation: artistData?.specialisation || "",
         };
         break;
 
@@ -52,17 +47,20 @@ router.get("/profile/:username", verifyToken, async (req, res) => {
           userId: user._id,
         });
         additionalData = {
-          coursesEnrolled: viewerStudentData.coursesEnrolled,
-          favoriteArtists: viewerStudentData.artForm,
+          artForm: viewerStudentData?.artForm || "",
+          coursesEnrolled: viewerStudentData?.coursesEnrolled || [],
         };
         break;
 
       case "Institution":
         const institutionData = await Institution.findOne({ userId: user._id });
         additionalData = {
-          institutionName: institutionData.institutionName,
-          location: institutionData.location,
-          // Add other institution-specific fields here
+          registeredUnder: institutionData?.registeredUnder || "",
+          registrationID: institutionData?.registrationID || "",
+          district: institutionData?.location?.district || "",
+          state: institutionData?.location?.state || "",
+          country: institutionData?.location?.country || "",
+          postalCode: institutionData?.location?.postalCode || "",
         };
         break;
 
@@ -71,19 +69,35 @@ router.get("/profile/:username", verifyToken, async (req, res) => {
           userId: user._id,
         });
         additionalData = {
-          ownerName: serviceProviderData.ownerName,
-          expertise: serviceProviderData.expertise,
-          location: serviceProviderData.location.address,
-          district: serviceProviderData.location.district,
-          state: serviceProviderData.location.state,
-          country: serviceProviderData.location.country,
-          postalCode: serviceProviderData.location.postalCode,
+          ownerName: serviceProviderData?.ownerName || "",
+          expertise: serviceProviderData?.expertise || "",
+          district: serviceProviderData?.location?.district || "",
+          state: serviceProviderData?.location?.state || "",
+          country: serviceProviderData?.location?.country || "",
+          postalCode: serviceProviderData?.location?.postalCode || "",
         };
         break;
 
       default:
-        additionalData = {}; // Default case for roles not specified
+        additionalData = {};
     }
+
+    // Format posts data
+    const formattedPosts = user.posts.map((postObj) => {
+      const post = postObj.postId;
+      // Convert likes to array if it exists, otherwise use empty array
+      const likesArray = Array.isArray(post.likes) ? post.likes : [];
+
+      return {
+        _id: post._id,
+        content: post.content,
+        mediaUrl: post.mediaUrl,
+        mediaType: post.mediaType,
+        timestamp: post.timestamp,
+        likes: likesArray.length || 0,
+        liked: likesArray.includes(req.user.identifier) || false,
+      };
+    });
 
     res.json({
       profile: {
@@ -93,10 +107,10 @@ router.get("/profile/:username", verifyToken, async (req, res) => {
         role: user.role,
         followerCount,
         numberOfPosts: user.numberOfPosts,
-        following: isFollowing, // Updated to check if following
+        following: isFollowing,
         ...additionalData,
       },
-      posts: user.posts.map((postObj) => postObj.postId), // Send the post details
+      posts: formattedPosts,
     });
   } catch (error) {
     console.error("Error fetching profile:", error);
@@ -220,6 +234,53 @@ router.get("/art-forms/:artForm", async (req, res) => {
     res.json(artForm);
   } catch (error) {
     res.status(500).json({ message: "Error fetching specializations", error });
+  }
+});
+
+// Update the followers endpoint
+router.get("/followers", verifyToken, async (req, res) => {
+  try {
+    // First find all follower records and populate follower data
+    const followers = await Follower.find({
+      followingId: req.user.identifier,
+    }).populate({
+      path: "followerId",
+      select: "userName profilePicture",
+    });
+
+    // Filter out any null records and map the data
+    const formattedFollowers = await Promise.all(
+      followers
+        .filter((follower) => follower.followerId) // Filter out null followerId
+        .map(async (follower) => {
+          try {
+            const artistData = await Artist.findOne({
+              userId: follower.followerId._id,
+            });
+
+            return {
+              _id: follower.followerId._id,
+              userName: follower.followerId.userName,
+              profilePicture: follower.followerId.profilePicture,
+              artForm: artistData?.artForm || "",
+              specialisation: artistData?.specialisation || "",
+            };
+          } catch (error) {
+            console.error("Error processing follower:", error);
+            return null;
+          }
+        })
+    );
+
+    // Filter out any null results from the mapping
+    const validFollowers = formattedFollowers.filter(
+      (follower) => follower !== null
+    );
+
+    res.json(validFollowers);
+  } catch (error) {
+    console.error("Error fetching followers:", error);
+    res.status(500).json({ err: "Error fetching followers" });
   }
 });
 

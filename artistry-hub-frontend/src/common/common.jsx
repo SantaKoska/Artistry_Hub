@@ -18,6 +18,13 @@ const CommonProfile = () => {
   // Add this state for tracking expanded content
   const [expandedContent, setExpandedContent] = useState(false);
 
+  // Add this function near the top of your component
+  const truncateText = (text, limit) => {
+    if (!text) return "";
+    if (text.length <= limit) return text;
+    return text.substring(0, limit) + "...";
+  };
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -193,13 +200,88 @@ const CommonProfile = () => {
                         </span>
                       </p>
                     )}
-                    {profile.artForm && (
+
+                    {/* Role-specific information */}
+                    {profile.role === "Artist" && (
+                      <>
+                        <p className="font-semibold text-gray-300">
+                          Art Form:{" "}
+                          <span className="text-yellow-400">
+                            {profile.artForm}
+                          </span>
+                        </p>
+                        <p className="font-semibold text-gray-300">
+                          Specialisation:{" "}
+                          <span className="text-yellow-400">
+                            {profile.specialisation}
+                          </span>
+                        </p>
+                      </>
+                    )}
+
+                    {profile.role === "Viewer/Student" && (
                       <p className="font-semibold text-gray-300">
                         Art Form:{" "}
                         <span className="text-yellow-400">
                           {profile.artForm}
                         </span>
                       </p>
+                    )}
+
+                    {profile.role === "Service Provider" && (
+                      <>
+                        <p className="font-semibold text-gray-300">
+                          Owner Name:{" "}
+                          <span className="text-yellow-400">
+                            {profile.ownerName}
+                          </span>
+                        </p>
+                        <p className="font-semibold text-gray-300">
+                          Expertise:{" "}
+                          <span className="text-yellow-400">
+                            {profile.expertise}
+                          </span>
+                        </p>
+                        <div className="mt-2 space-y-1">
+                          <p className="font-semibold text-gray-300">
+                            Location:
+                          </p>
+                          <p className="text-yellow-400 ml-4">
+                            {profile.district}, {profile.state}
+                          </p>
+                          <p className="text-yellow-400 ml-4">
+                            {profile.country} - {profile.postalCode}
+                          </p>
+                        </div>
+                      </>
+                    )}
+
+                    {profile.role === "Institution" && (
+                      <>
+                        <p className="font-semibold text-gray-300">
+                          Registered Under:{" "}
+                          <span className="text-yellow-400">
+                            {profile.registeredUnder}
+                          </span>
+                        </p>
+                        <p className="font-semibold text-gray-300">
+                          Registration ID:{" "}
+                          <span className="text-yellow-400">
+                            {profile.registrationID}
+                          </span>
+                        </p>
+                        <div className="mt-2 space-y-1">
+                          <p className="font-semibold text-gray-300">
+                            Location:
+                          </p>
+                          <p className="text-yellow-400 ml-4">
+                            {profile.district}, {profile.state}
+                          </p>
+                          <p className="text-yellow-400 ml-4">
+                            {profile.country} - {profile.postalCode}
+                          </p>
+                        </div>
+                      </>
                     )}
                   </div>
 
@@ -219,30 +301,83 @@ const CommonProfile = () => {
                     posts.map((post) => (
                       <div
                         key={post._id}
-                        className="bg-gray-800 rounded-lg p-4 text-gray-200 hover:border-yellow-500 transition-all duration-300 overflow-hidden shadow-md"
+                        className="bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow"
                         onClick={() => openModal(post)}
                       >
                         {post.mediaUrl && (
-                          <div className="h-40 mb-2">
+                          <>
                             {post.mediaType === "image" && (
                               <img
                                 src={`${import.meta.env.VITE_BACKEND_URL}${
                                   post.mediaUrl
                                 }`}
-                                alt="Post media"
-                                className="w-full h-full object-cover rounded"
+                                alt="Post"
+                                className="w-full h-48 object-cover"
                               />
                             )}
-                          </div>
+                            {post.mediaType === "video" && (
+                              <video
+                                controls
+                                src={`${import.meta.env.VITE_BACKEND_URL}${
+                                  post.mediaUrl
+                                }`}
+                                className="w-full h-48 object-cover"
+                              />
+                            )}
+                            {post.mediaType === "audio" && (
+                              <audio
+                                controls
+                                src={`${import.meta.env.VITE_BACKEND_URL}${
+                                  post.mediaUrl
+                                }`}
+                                className="w-full object-cover"
+                              />
+                            )}
+                          </>
                         )}
-                        <p className="text-sm line-clamp-3">{post.content}</p>
-                        <p className="text-xs text-yellow-400 mt-2">
-                          {new Date(post.timestamp).toLocaleString()}
-                        </p>
+
+                        <div className="p-4">
+                          <p className="text-gray-300">
+                            {expandedPosts.has(post._id)
+                              ? post.content
+                              : truncateText(post.content, 100)}
+                            {post.content.length > 100 && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleReadMore(post._id);
+                                }}
+                                className="text-yellow-400 hover:text-yellow-500 ml-2 font-medium"
+                              >
+                                {expandedPosts.has(post._id)
+                                  ? "Read Less"
+                                  : "Read More"}
+                              </button>
+                            )}
+                          </p>
+
+                          <div className="flex justify-between items-center mt-4">
+                            <span className="text-sm text-gray-400">
+                              {new Date(post.timestamp).toLocaleDateString()}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <FaHeart
+                                className={
+                                  post.liked ? "text-red-500" : "text-gray-400"
+                                }
+                              />
+                              <span className="text-gray-400">
+                                {post.likes}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     ))
                   ) : (
-                    <p className="text-gray-400">No posts available.</p>
+                    <p className="text-gray-400 col-span-full text-center">
+                      No posts available.
+                    </p>
                   )}
                 </div>
               </div>
@@ -272,7 +407,7 @@ const CommonProfile = () => {
                           alt="Post"
                           className="max-h-full max-w-full object-contain"
                         />
-                      ) : (
+                      ) : selectedPost.mediaType === "video" ? (
                         <video
                           controls
                           src={`${import.meta.env.VITE_BACKEND_URL}${
@@ -280,6 +415,16 @@ const CommonProfile = () => {
                           }`}
                           className="max-h-full max-w-full object-contain"
                         />
+                      ) : (
+                        selectedPost.mediaType === "audio" && (
+                          <audio
+                            controls
+                            src={`${import.meta.env.VITE_BACKEND_URL}${
+                              selectedPost.mediaUrl
+                            }`}
+                            className="w-full mt-4"
+                          />
+                        )
                       )}
                     </div>
                   ) : (

@@ -29,6 +29,11 @@ const InstitutionProfile = () => {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
+  const truncateText = (text, limit) => {
+    if (text.length <= limit) return text;
+    return text.substring(0, limit) + "...";
+  };
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -130,36 +135,68 @@ const InstitutionProfile = () => {
   };
 
   const Post = ({ post }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const contentLimit = 100; // Define character limit for truncation
+
+    const toggleReadMore = () => {
+      setIsExpanded((prev) => !prev);
+    };
+
     return (
-      <div key={post._id} className="bg-blue-100 rounded-lg p-4 text-black">
+      <div
+        key={post._id}
+        className="bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow"
+      >
         {post.mediaUrl && post.mediaType === "image" && (
           <img
             src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
-            alt="Post media"
-            className="w-full h-48 object-cover rounded-lg mb-2"
+            alt="Post"
+            className="w-full h-48 object-cover"
           />
         )}
         {post.mediaUrl && post.mediaType === "video" && (
           <video
             controls
             src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
-            className="w-full h-48 object-cover rounded-lg mb-2"
+            className="w-full h-48 object-cover"
           />
         )}
         {post.mediaUrl && post.mediaType === "audio" && (
           <audio
             controls
             src={`${import.meta.env.VITE_BACKEND_URL}${post.mediaUrl}`}
-            className="w-full mb-2"
+            className="w-full object-cover"
           />
         )}
-        <p>{post.content}</p>
-        <button
-          onClick={() => handleOpenConfirmationModal(post._id)}
-          className="mt-2 text-red-500 font-semibold rounded-full bg-white hover:bg-red-500 hover:text-white py-2 px-4 transition-colors duration-400"
-        >
-          <FaTrash className="text-red-500" />
-        </button>
+
+        <div className="p-4">
+          <p className="text-gray-300">
+            {isExpanded
+              ? post.content
+              : truncateText(post.content, contentLimit)}
+            {post.content.length > contentLimit && (
+              <button
+                onClick={toggleReadMore}
+                className="text-yellow-400 hover:text-yellow-500 ml-2 font-medium"
+              >
+                {isExpanded ? "Read Less" : "Read More"}
+              </button>
+            )}
+          </p>
+
+          <div className="flex justify-between items-center mt-4">
+            <span className="text-sm text-gray-400">
+              {new Date(post.timestamp).toLocaleDateString()}
+            </span>
+            <button
+              onClick={() => handleOpenConfirmationModal(post._id)}
+              className="text-red-400 hover:text-red-500 transition-colors"
+              title="Delete Post"
+            >
+              <FaTrash />
+            </button>
+          </div>
+        </div>
       </div>
     );
   };
