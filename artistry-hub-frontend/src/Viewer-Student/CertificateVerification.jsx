@@ -94,26 +94,6 @@ const CertificateVerification = () => {
       >
         <p
           style={{
-            fontSize: "18px",
-            margin: "15px 0",
-            color: "#333",
-            display: "flex",
-            alignItems: "center",
-            padding: "10px",
-            borderBottom: "1px solid #f0f0f0",
-            flexWrap: "wrap",
-          }}
-        >
-          <FontAwesomeIcon
-            icon={faIdCard}
-            style={{ marginRight: "15px", color: "#007bff", fontSize: "20px" }}
-          />
-          <span style={{ width: "150px" }}>Issued To:</span>
-          <strong>{certificateDetails.recipientName}</strong>
-        </p>
-
-        <p
-          style={{
             fontSize: "clamp(16px, 4vw, 18px)",
             margin: "15px 0",
             color: "#333",
