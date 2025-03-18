@@ -7,6 +7,7 @@ import {
   faCalendarAlt,
   faIdCard,
 } from "@fortawesome/free-solid-svg-icons";
+import LOGO from "../assets/LOGO.png";
 
 const CertificateVerification = () => {
   const { serialNumber } = useParams();
@@ -41,63 +42,120 @@ const CertificateVerification = () => {
   return (
     <div
       style={{
-        padding: "20px",
-        maxWidth: "600px",
-        margin: "auto",
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-        borderRadius: "10px",
-        backgroundColor: "#f9f9f9",
+        padding: "40px",
+        maxWidth: "800px",
+        margin: "40px auto",
+        boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
+        borderRadius: "15px",
+        backgroundColor: "#ffffff",
       }}
     >
-      <h1
-        style={{
-          fontSize: "28px",
-          fontWeight: "bold",
-          marginBottom: "20px",
-          textAlign: "center",
-          color: "black",
-        }}
-      >
-        Certificate Verification
-      </h1>
+      <div style={{ textAlign: "center", marginBottom: "30px" }}>
+        <img
+          src={LOGO}
+          alt="Artistry Hub Logo"
+          style={{
+            height: "80px",
+            marginBottom: "20px",
+          }}
+        />
+        <h1
+          style={{
+            fontSize: "32px",
+            fontWeight: "600",
+            color: "#1a1a1a",
+            borderBottom: "2px solid #007bff",
+            paddingBottom: "15px",
+            display: "inline-block",
+          }}
+        >
+          Certificate Verification
+        </h1>
+      </div>
       <div
         style={{
-          border: "1px solid #e0e0e0",
-          borderRadius: "8px",
-          padding: "20px",
+          border: "1px solid #e6e6e6",
+          borderRadius: "12px",
+          padding: "30px",
           backgroundColor: "#fff",
+          boxShadow: "0 2px 12px rgba(0, 0, 0, 0.04)",
         }}
       >
-        <p style={{ fontSize: "18px", margin: "10px 0", color: "black" }}>
+        <p
+          style={{
+            fontSize: "18px",
+            margin: "15px 0",
+            color: "#333",
+            display: "flex",
+            alignItems: "center",
+            padding: "10px",
+            borderBottom: "1px solid #f0f0f0",
+          }}
+        >
           <FontAwesomeIcon
             icon={faCertificate}
-            style={{ marginRight: "10px", color: "#007bff" }}
+            style={{ marginRight: "15px", color: "#007bff", fontSize: "20px" }}
           />
-          Course Name: <strong>{certificateDetails.courseName}</strong>
+          <span style={{ width: "150px" }}>Course Name:</span>
+          <strong>{certificateDetails.courseName}</strong>
         </p>
-        <p style={{ fontSize: "18px", margin: "10px 0", color: "black" }}>
+
+        <p
+          style={{
+            fontSize: "18px",
+            margin: "15px 0",
+            color: "#333",
+            display: "flex",
+            alignItems: "center",
+            padding: "10px",
+            borderBottom: "1px solid #f0f0f0",
+          }}
+        >
           <FontAwesomeIcon
             icon={faCalendarAlt}
-            style={{ marginRight: "10px", color: "#007bff" }}
+            style={{ marginRight: "15px", color: "#007bff", fontSize: "20px" }}
           />
-          Issued Date:{" "}
+          <span style={{ width: "150px" }}>Issued Date:</span>
           <strong>
             {new Date(certificateDetails.issueDate).toLocaleDateString()}
           </strong>
         </p>
-        <p style={{ fontSize: "18px", margin: "10px 0", color: "black" }}>
+
+        <p
+          style={{
+            fontSize: "18px",
+            margin: "15px 0",
+            color: "#333",
+            display: "flex",
+            alignItems: "center",
+            padding: "10px",
+            borderBottom: "1px solid #f0f0f0",
+          }}
+        >
           <FontAwesomeIcon
             icon={faIdCard}
-            style={{ marginRight: "10px", color: "#007bff" }}
+            style={{ marginRight: "15px", color: "#007bff", fontSize: "20px" }}
           />
-          Serial Number: <strong>{certificateDetails.serialNumber}</strong>
+          <span style={{ width: "150px" }}>Serial Number:</span>
+          <strong>{certificateDetails.serialNumber}</strong>
         </p>
-        <p style={{ fontSize: "18px", margin: "10px 0", color: "black" }}>
+
+        <p
+          style={{
+            fontSize: "18px",
+            margin: "15px 0",
+            color: "#333",
+            display: "flex",
+            alignItems: "center",
+            padding: "10px",
+            borderBottom: "1px solid #f0f0f0",
+          }}
+        >
           <FontAwesomeIcon
             icon={faCertificate}
-            style={{ marginRight: "10px", color: "#007bff" }}
+            style={{ marginRight: "15px", color: "#007bff", fontSize: "20px" }}
           />
-          Certificate Name:{" "}
+          <span style={{ width: "150px" }}>Certificate Name:</span>
           <strong>{certificateDetails.certificateName}</strong>
         </p>
       </div>

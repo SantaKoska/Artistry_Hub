@@ -38,12 +38,20 @@ function LiveClassVideo({ classId, isArtist }) {
   const { localMicrophoneTrack } = useLocalMicrophoneTrack(micOn);
   const { localCameraTrack } = useLocalCameraTrack(cameraOn);
 
+  // For test class, generate a random user ID instead of using artist/student roles
+  const isTestClass = classId === "test-123";
+  const userId = isTestClass
+    ? `test-user-${Math.random().toString(36).substr(2, 9)}`
+    : isArtist
+    ? "artist"
+    : `student-${Date.now()}`;
+
   useJoin(
     {
       appid: AGORA_APP_ID,
       channel: `live-class-${classId}`,
       token: null,
-      uid: isArtist ? "artist" : `student-${Date.now()}`,
+      uid: userId,
     },
     true
   );
@@ -109,7 +117,7 @@ function LiveClassVideo({ classId, isArtist }) {
                 audioTrack={localMicrophoneTrack}
               >
                 <div className="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-lg">
-                  {isArtist ? "Artist (You)" : "You"}
+                  {isTestClass ? "You" : isArtist ? "Artist (You)" : "You"}
                 </div>
               </LocalUser>
             </div>
@@ -122,7 +130,9 @@ function LiveClassVideo({ classId, isArtist }) {
                 >
                   <RemoteUser user={user} playVideo={true}>
                     <div className="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-lg">
-                      {user.uid.toString().includes("artist")
+                      {isTestClass
+                        ? "User"
+                        : user.uid.toString().includes("artist")
                         ? "Artist"
                         : "Student"}
                     </div>
