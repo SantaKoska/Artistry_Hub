@@ -5,6 +5,20 @@ import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import InstrumentServiceAssistant from "../components/InstrumentServiceAssistant";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+// Fix for default marker icon
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+});
 
 const ArtistCreateServiceRequest = () => {
   const [description, setDescription] = useState("");
@@ -22,6 +36,10 @@ const ArtistCreateServiceRequest = () => {
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [selectedRequestId, setSelectedRequestId] = useState(null);
   const [showChat, setShowChat] = useState(false);
+  const [selectedProviderLocation, setSelectedProviderLocation] =
+    useState(null);
+  const [selectedMapProvider, setSelectedMapProvider] = useState(null);
+  const [geocodedCoordinates, setGeocodedCoordinates] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -63,6 +81,12 @@ const ArtistCreateServiceRequest = () => {
       fetchSpecializations();
     }
   }, [userArtForm]);
+
+  useEffect(() => {
+    if (selectedMapProvider) {
+      geocodeAddress(selectedMapProvider);
+    }
+  }, [selectedMapProvider]);
 
   const handleImageChange = (e) => {
     const selectedImages = Array.from(e.target.files);
@@ -238,11 +262,76 @@ const ArtistCreateServiceRequest = () => {
         }
       );
 
+      console.log("Providers data:", response.data);
       setAcceptedProviders(response.data);
       setViewProviders(true);
+
+      // If there are providers with locations, set the first one's location
+      if (response.data.length > 0 && response.data[0].location) {
+        console.log("First provider location:", response.data[0].location);
+        setSelectedProviderLocation(response.data[0].location);
+      }
     } catch (error) {
       console.error("Error fetching providers:", error);
     }
+  };
+
+  const geocodeAddress = async (location) => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/common-things/geocode`,
+        { location },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      setGeocodedCoordinates(response.data);
+    } catch (error) {
+      console.error("Error geocoding address:", error);
+    }
+  };
+
+  const renderMap = (location) => {
+    console.log("Location data:", location);
+
+    if (!geocodedCoordinates) {
+      return <div>Loading map...</div>;
+    }
+
+    return (
+      <div className="h-64 w-full mt-4 rounded-lg overflow-hidden">
+        <MapContainer
+          center={[geocodedCoordinates.latitude, geocodedCoordinates.longitude]}
+          zoom={13}
+          style={{ height: "100%", width: "100%" }}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          <Marker
+            position={[
+              geocodedCoordinates.latitude,
+              geocodedCoordinates.longitude,
+            ]}
+          >
+            <Popup>
+              <div>
+                <p className="font-semibold">{location.address}</p>
+                <p>
+                  {location.district}, {location.state}
+                </p>
+                <p>
+                  {location.country} - {location.postalCode}
+                </p>
+              </div>
+            </Popup>
+          </Marker>
+        </MapContainer>
+      </div>
+    );
   };
 
   return (
@@ -339,39 +428,52 @@ const ArtistCreateServiceRequest = () => {
                       </h3>
                       <ul className="list-disc pl-5">
                         {acceptedProviders.map((provider) => (
-                          <li
-                            key={provider._id}
-                            className="mt-1 flex justify-between"
-                          >
-                            <div className="flex items-center mb-4">
-                              <img
-                                src={`${import.meta.env.VITE_BACKEND_URL}${
-                                  provider.profilePicture
-                                }`}
-                                alt={provider.userName}
-                                className="w-12 h-12 rounded-full object-cover border-2 border-yellow-500"
-                              />
-                              <div className="ml-4">
-                                <Link to={`/profile/${provider.userName}`}>
-                                  <p className="font-bold text-lg text-yellow-500 hover:underline">
-                                    {provider.userName}
-                                  </p>
-                                </Link>
+                          <li key={provider._id} className="mt-1 flex flex-col">
+                            <div className="flex justify-between items-start">
+                              <div className="flex items-center mb-4">
+                                <img
+                                  src={`${import.meta.env.VITE_BACKEND_URL}${
+                                    provider.profilePicture
+                                  }`}
+                                  alt={provider.userName}
+                                  className="w-12 h-12 rounded-full object-cover border-2 border-yellow-500"
+                                />
+                                <div className="ml-4">
+                                  <Link to={`/profile/${provider.userName}`}>
+                                    <p className="font-bold text-lg text-yellow-500 hover:underline">
+                                      {provider.userName}
+                                    </p>
+                                  </Link>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                {provider.location && (
+                                  <button
+                                    onClick={() =>
+                                      setSelectedMapProvider(provider.location)
+                                    }
+                                    className="text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-300"
+                                  >
+                                    View Location
+                                  </button>
+                                )}
+                                {request.status !== "Accepted" && (
+                                  <button
+                                    onClick={() =>
+                                      handleConfirmSelection(
+                                        request._id,
+                                        provider._id
+                                      )
+                                    }
+                                    className="text-white bg-emerald-600 px-4 py-2 rounded-lg hover:bg-emerald-700 transition-all duration-300"
+                                  >
+                                    Select
+                                  </button>
+                                )}
                               </div>
                             </div>
-                            {request.status !== "Accepted" && (
-                              <button
-                                onClick={() =>
-                                  handleConfirmSelection(
-                                    request._id,
-                                    provider._id
-                                  )
-                                }
-                                className="text-white bg-emerald-600 px-4 py-2 rounded-lg font-medium shadow-md hover:bg-emerald-700 hover:shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-1"
-                              >
-                                Select
-                              </button>
-                            )}
+                            {selectedMapProvider === provider.location &&
+                              renderMap(provider.location)}
                           </li>
                         ))}
                       </ul>

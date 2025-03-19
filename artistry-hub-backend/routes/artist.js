@@ -9,6 +9,7 @@ const ServiceRequest = require("../models/ServiceRequestModels");
 const path = require("path");
 const multer = require("multer");
 const ArtFormSpecialization = require("../models/ArtFormSpecializationModels"); // Import the model
+const ServiceProvider = require("../models/ServiceProviderModels"); // Import the ServiceProvider model
 
 //authentication
 const { verifyToken } = require("../utils/tokendec");
@@ -672,19 +673,34 @@ router.get(
   verifyToken,
   async (req, res) => {
     try {
-      const request = await ServiceRequest.findById(req.params.id).populate(
-        "serviceProviderId"
-      );
+      // First find the service request
+      const request = await ServiceRequest.findById(req.params.id);
+
       if (!request) {
         return res.status(404).json({ message: "Service request not found" });
       }
 
-      // Assuming serviceProviderId contains the IDs of accepted service providers
-      const acceptedProviders = await User.find({
-        _id: { $in: request.serviceProviderId },
+      // Find all service providers who have not ignored this request
+      const serviceProviders = await ServiceProvider.find({
+        ignoredServiceRequests: { $ne: request._id },
       });
 
-      res.status(200).json(acceptedProviders);
+      // Fetch user details for each service provider
+      const providersWithDetails = await Promise.all(
+        serviceProviders.map(async (provider) => {
+          const user = await User.findById(provider.userId);
+          return {
+            _id: user._id,
+            userName: user.userName,
+            profilePicture: user.profilePicture,
+            location: provider.location,
+            expertise: provider.expertise,
+            ownerName: provider.ownerName,
+          };
+        })
+      );
+
+      res.status(200).json(providersWithDetails);
     } catch (error) {
       console.error("Error fetching service providers:", error);
       res.status(500).json({ message: "Server error" });

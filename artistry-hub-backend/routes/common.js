@@ -9,6 +9,7 @@ const ServiceProvider = require("../models/ServiceProviderModels");
 const Follower = require("../models/FollowerModels");
 const ArtFormSpecialization = require("../models/ArtFormSpecializationModels");
 const { verifyToken } = require("../utils/tokendec");
+const axios = require("axios");
 
 // Fetch user profile by username
 router.get("/profile/:username", verifyToken, async (req, res) => {
@@ -71,6 +72,7 @@ router.get("/profile/:username", verifyToken, async (req, res) => {
         additionalData = {
           ownerName: serviceProviderData?.ownerName || "",
           expertise: serviceProviderData?.expertise || "",
+          address: serviceProviderData?.location?.address || "",
           district: serviceProviderData?.location?.district || "",
           state: serviceProviderData?.location?.state || "",
           country: serviceProviderData?.location?.country || "",
@@ -281,6 +283,118 @@ router.get("/followers", verifyToken, async (req, res) => {
   } catch (error) {
     console.error("Error fetching followers:", error);
     res.status(500).json({ err: "Error fetching followers" });
+  }
+});
+
+// Add geocoding endpoint
+router.post("/geocode", verifyToken, async (req, res) => {
+  try {
+    const { location } = req.body;
+
+    // For India, use a more structured query format
+    if (location.country === "India") {
+      const response = await axios.get(
+        `https://nominatim.openstreetmap.org/search`,
+        {
+          params: {
+            street: location.address,
+            city: location.district,
+            state: location.state,
+            country: location.country,
+            postalcode: location.postalCode,
+            format: "json",
+            addressdetails: 1,
+            limit: 1,
+            countrycodes: "in", // Limit to India
+          },
+          headers: {
+            "User-Agent": "ArtistryHub/1.0",
+          },
+        }
+      );
+
+      console.log("Nominatim structured response:", response.data);
+
+      if (response.data && response.data[0]) {
+        res.json({
+          latitude: parseFloat(response.data[0].lat),
+          longitude: parseFloat(response.data[0].lon),
+        });
+        return;
+      }
+    }
+
+    // If structured search fails or it's not India, try with combined address
+    const addressParts = [
+      location.address,
+      location.district,
+      location.state,
+      location.country,
+      location.postalCode,
+    ].filter((part) => part && part.trim());
+
+    const address = addressParts.join(", ");
+    console.log("Geocoding address:", address);
+
+    // Try with postal code focused search first
+    const postalCodeResponse = await axios.get(
+      `https://nominatim.openstreetmap.org/search`,
+      {
+        params: {
+          q: `${location.postalCode}, ${location.district}, ${location.state}, India`,
+          format: "json",
+          addressdetails: 1,
+          limit: 1,
+          countrycodes: "in",
+        },
+        headers: {
+          "User-Agent": "ArtistryHub/1.0",
+        },
+      }
+    );
+
+    if (postalCodeResponse.data && postalCodeResponse.data[0]) {
+      res.json({
+        latitude: parseFloat(postalCodeResponse.data[0].lat),
+        longitude: parseFloat(postalCodeResponse.data[0].lon),
+      });
+      return;
+    }
+
+    // If all attempts fail, try with district level search
+    const districtResponse = await axios.get(
+      `https://nominatim.openstreetmap.org/search`,
+      {
+        params: {
+          q: `${location.district}, ${location.state}, India`,
+          format: "json",
+          addressdetails: 1,
+          limit: 1,
+          countrycodes: "in",
+        },
+        headers: {
+          "User-Agent": "ArtistryHub/1.0",
+        },
+      }
+    );
+
+    if (districtResponse.data && districtResponse.data[0]) {
+      res.json({
+        latitude: parseFloat(districtResponse.data[0].lat),
+        longitude: parseFloat(districtResponse.data[0].lon),
+      });
+    } else {
+      res.status(404).json({
+        message: "Location not found",
+        searchedAddress: address,
+      });
+    }
+  } catch (error) {
+    console.error("Geocoding error:", error);
+    res.status(500).json({
+      message: "Error geocoding address",
+      error: error.message,
+    });
   }
 });
 

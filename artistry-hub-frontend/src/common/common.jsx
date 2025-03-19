@@ -256,6 +256,11 @@ const CommonProfile = () => {
                           <p className="font-semibold text-gray-300">
                             Location:
                           </p>
+                          {profile.address && (
+                            <p className="text-yellow-400 ml-4">
+                              {profile.address}
+                            </p>
+                          )}
                           <p className="text-yellow-400 ml-4">
                             {profile.district}, {profile.state}
                           </p>
