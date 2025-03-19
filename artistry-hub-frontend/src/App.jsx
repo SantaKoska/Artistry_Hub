@@ -36,9 +36,9 @@ import CertificateVerification from "./Viewer-Student/CertificateVerification";
 import InstitutionOpportunities from "./institution/InstitutionOpportunities";
 import Opportunities from "./common/Opportunities";
 import LiveClassRoom from "./components/LiveClassRoom";
-import AdminBase from "./Admin/AdminBase";
-import AdminDashboard from "./Admin/AdminDashboard";
-import AdminLogin from "./Admin/AdminLogin";
+import AdminBase from "./admin/AdminBase";
+import AdminDashboard from "./admin/AdminDashboard";
+import AdminLogin from "./admin/AdminLogin";
 
 function App() {
   return (
