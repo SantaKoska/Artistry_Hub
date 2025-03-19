@@ -36,6 +36,9 @@ import CertificateVerification from "./Viewer-Student/CertificateVerification";
 import InstitutionOpportunities from "./institution/InstitutionOpportunities";
 import Opportunities from "./common/Opportunities";
 import LiveClassRoom from "./components/LiveClassRoom";
+import AdminBase from "./Admin/AdminBase";
+import AdminDashboard from "./Admin/AdminDashboard";
+import AdminLogin from "./Admin/AdminLogin";
 
 function App() {
   return (
@@ -163,6 +166,20 @@ function App() {
               />
             }
           />
+
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminLogin />} />
+          <Route
+            path="/admin-dashboard"
+            element={
+              <PrivateRoute>
+                <AdminBase />
+              </PrivateRoute>
+            }
+          >
+            <Route index element={<AdminDashboard />} />
+            {/* Add more admin routes here as needed */}
+          </Route>
         </Routes>
       </div>
     </>
