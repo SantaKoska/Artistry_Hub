@@ -64,6 +64,19 @@ const PostSchema = new mongoose.Schema({
       ],
     },
   ],
+  isAgeRestricted: {
+    type: Boolean,
+    default: false,
+  },
+  moderationScore: {
+    type: Number,
+    default: 0,
+  },
+  moderationWarnings: [
+    {
+      type: String,
+    },
+  ],
 });
 
 const Post = mongoose.model("Post", PostSchema);

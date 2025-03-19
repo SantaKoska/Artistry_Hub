@@ -12,7 +12,7 @@
   "dependencies": {
     "@zoomus/websdk": "^2.18.3",
     "argon2": "^0.41.1",
-    "axios": "^1.7.9",
+    "axios": "^1.8.3",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
@@ -22,6 +22,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "form-data": "^4.0.2",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.8.0",
     "mongoose": "^8.7.1",

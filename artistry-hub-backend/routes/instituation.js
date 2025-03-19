@@ -236,4 +236,118 @@ router.get("/institution-homeposts", verifyToken, async (req, res) => {
   }
 });
 
+// Add post analytics route
+router.get("/post-analytics", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.identifier;
+
+    // Get all posts by the institution with populated comments
+    const userPosts = await Post.find({ user: userId })
+      .populate("comments.user")
+      .populate("likedBy")
+      .sort({ timestamp: -1 });
+
+    // Get institution data with followers count
+    const userData = await User.findById(userId);
+    const followersCount = await userData.getNumberOfFollowers();
+
+    // Calculate total engagement metrics
+    const totalLikes = userPosts.reduce((sum, post) => sum + post.likes, 0);
+    const totalComments = userPosts.reduce(
+      (sum, post) => sum + post.comments.length,
+      0
+    );
+
+    // Find most engaged post
+    const mostEngagedPost = userPosts.reduce(
+      (prev, current) => {
+        const prevEngagement = prev.likes + prev.comments.length;
+        const currentEngagement = current.likes + current.comments.length;
+        return prevEngagement > currentEngagement ? prev : current;
+      },
+      { likes: 0, comments: [] }
+    );
+
+    // Calculate recent engagement (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const recentPosts = userPosts.filter(
+      (post) => post.timestamp >= sevenDaysAgo
+    );
+    const olderPosts = userPosts.filter(
+      (post) => post.timestamp < sevenDaysAgo
+    );
+
+    // Calculate engagement rates
+    const recentEngagementRate =
+      recentPosts.length > 0
+        ? (recentPosts.reduce((sum, post) => {
+            const postEngagement = post.likes + post.comments.length;
+            return sum + postEngagement;
+          }, 0) /
+            recentPosts.length /
+            followersCount) *
+          100
+        : 0;
+
+    const olderEngagementRate =
+      olderPosts.length > 0
+        ? (olderPosts.reduce((sum, post) => {
+            const postEngagement = post.likes + post.comments.length;
+            return sum + postEngagement;
+          }, 0) /
+            olderPosts.length /
+            followersCount) *
+          100
+        : 0;
+
+    // Calculate unique engagers
+    const uniqueEngagers = new Set();
+    userPosts.forEach((post) => {
+      post.likedBy.forEach((user) => uniqueEngagers.add(user._id.toString()));
+      post.comments.forEach((comment) =>
+        uniqueEngagers.add(comment.user._id.toString())
+      );
+    });
+
+    const interactionTrend =
+      recentEngagementRate > olderEngagementRate
+        ? "up"
+        : recentEngagementRate < olderEngagementRate
+        ? "down"
+        : "stable";
+
+    res.json({
+      totalPosts: userPosts.length,
+      totalLikes,
+      totalComments,
+      uniqueEngagers: uniqueEngagers.size,
+      mostEngagedPost:
+        mostEngagedPost.likes > 0
+          ? {
+              content: mostEngagedPost.content,
+              likes: mostEngagedPost.likes,
+              comments: mostEngagedPost.comments.length,
+              totalEngagement:
+                mostEngagedPost.likes + mostEngagedPost.comments.length,
+              mediaUrl: mostEngagedPost.mediaUrl,
+              mediaType: mostEngagedPost.mediaType,
+            }
+          : null,
+      recentEngagement: Math.round(recentEngagementRate * 100) / 100,
+      interactionTrend,
+      engagementMetrics: {
+        averageLikesPerPost: totalLikes / userPosts.length || 0,
+        averageCommentsPerPost: totalComments / userPosts.length || 0,
+        followerEngagementRate:
+          (uniqueEngagers.size / followersCount) * 100 || 0,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching post analytics:", error);
+    res.status(500).json({ message: "Error fetching analytics" });
+  }
+});
+
 module.exports = router;

@@ -96,6 +96,7 @@ router.get("/profile/:username", verifyToken, async (req, res) => {
         timestamp: post.timestamp,
         likes: likesArray.length || 0,
         liked: likesArray.includes(req.user.identifier) || false,
+        isAgeRestricted: post.isAgeRestricted || false,
       };
     });
 

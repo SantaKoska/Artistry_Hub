@@ -1,2 +1,4 @@
 node_modules/
 .env
+artistry-hub-backend/content-moderation-api/content_moderation_api.py
+artistry-hub-backend/content-moderation-api

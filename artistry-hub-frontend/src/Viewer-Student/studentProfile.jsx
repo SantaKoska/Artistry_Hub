@@ -28,6 +28,22 @@ const StudentProfile = () => {
   const canvasRef = useRef();
   const [followersModalIsOpen, setFollowersModalIsOpen] = useState(false);
   const [followers, setFollowers] = useState([]);
+  const [analytics, setAnalytics] = useState({
+    totalPosts: 0,
+    totalLikes: 0,
+    totalComments: 0,
+    uniqueEngagers: 0,
+    mostEngagedPost: null,
+    recentEngagement: 0,
+    interactionTrend: "stable",
+    engagementMetrics: {
+      averageLikesPerPost: 0,
+      averageCommentsPerPost: 0,
+      followerEngagementRate: 0,
+    },
+  });
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showPosts, setShowPosts] = useState(true);
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
@@ -35,7 +51,7 @@ const StudentProfile = () => {
   const fetchProfile = async () => {
     try {
       const { data } = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/student/student-profile`, // Adjusted to student profile route
+        `${import.meta.env.VITE_BACKEND_URL}/student/student-profile`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -52,8 +68,23 @@ const StudentProfile = () => {
     }
   };
 
+  const fetchAnalytics = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/student/post-analytics`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setAnalytics(response.data);
+    } catch (error) {
+      console.error("Error fetching analytics:", error);
+    }
+  };
+
   useEffect(() => {
     fetchProfile();
+    fetchAnalytics();
   }, [token]);
 
   useEffect(() => {
@@ -100,7 +131,7 @@ const StudentProfile = () => {
 
     try {
       await axios.put(
-        `${import.meta.env.VITE_BACKEND_URL}/student/student-editprofile`, // Adjusted to student edit profile route
+        `${import.meta.env.VITE_BACKEND_URL}/student/student-editprofile`,
         formDataToSend,
         {
           headers: {
@@ -422,18 +453,365 @@ const StudentProfile = () => {
 
           {/* Posts Section */}
           <div className="mt-8">
-            <h2 className="text-2xl font-bold text-yellow-400 mb-6">
-              My Posts
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {posts.length > 0 ? (
-                posts.map((post) => <Post key={post._id} post={post} />)
-              ) : (
-                <p className="text-gray-400 col-span-full text-center">
-                  No posts available.
-                </p>
-              )}
+            <div className="flex gap-4 mb-6">
+              <button
+                onClick={() => {
+                  setShowPosts(true);
+                  setShowAnalytics(false);
+                }}
+                className={`px-6 py-3 rounded-lg font-bold transition-colors ${
+                  showPosts
+                    ? "bg-yellow-400 text-black"
+                    : "bg-gray-700 text-yellow-400 hover:bg-gray-600"
+                }`}
+              >
+                My Posts
+              </button>
+              <button
+                onClick={() => {
+                  setShowAnalytics(true);
+                  setShowPosts(false);
+                }}
+                className={`px-6 py-3 rounded-lg font-bold transition-colors ${
+                  showAnalytics
+                    ? "bg-yellow-400 text-black"
+                    : "bg-gray-700 text-yellow-400 hover:bg-gray-600"
+                }`}
+              >
+                Engagement Analytics
+              </button>
             </div>
+
+            {/* Posts Content */}
+            {showPosts && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {posts.length > 0 ? (
+                  posts.map((post) => <Post key={post._id} post={post} />)
+                ) : (
+                  <p className="text-gray-400 col-span-full text-center">
+                    No posts available.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Analytics Content */}
+            {showAnalytics && (
+              <div className="space-y-6">
+                {/* Overview Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-gray-800 p-4 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-gray-400 text-sm">Total Posts</p>
+                        <p className="text-yellow-400 font-semibold text-lg mt-1">
+                          {analytics.totalPosts}
+                        </p>
+                      </div>
+                      <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-6 w-6 text-yellow-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-800 p-4 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-gray-400 text-sm">Total Likes</p>
+                        <p className="text-yellow-400 font-semibold text-lg mt-1">
+                          {analytics.totalLikes}
+                        </p>
+                      </div>
+                      <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-6 w-6 text-yellow-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-800 p-4 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-gray-400 text-sm">Total Comments</p>
+                        <p className="text-yellow-400 font-semibold text-lg mt-1">
+                          {analytics.totalComments}
+                        </p>
+                      </div>
+                      <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-6 w-6 text-yellow-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-800 p-4 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-gray-400 text-sm">Unique Engagers</p>
+                        <p className="text-yellow-400 font-semibold text-lg mt-1">
+                          {analytics.uniqueEngagers}
+                        </p>
+                      </div>
+                      <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-6 w-6 text-yellow-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Most Engaged Post */}
+                {analytics.mostEngagedPost && (
+                  <div className="bg-gray-800 p-4 rounded-lg">
+                    <div className="flex justify-between items-center mb-2">
+                      <p className="text-gray-400 text-sm">Most Engaged Post</p>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-yellow-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                        />
+                      </svg>
+                    </div>
+
+                    {/* Media Content */}
+                    {analytics.mostEngagedPost.mediaUrl && (
+                      <div className="mb-4 flex justify-center">
+                        {analytics.mostEngagedPost.mediaType === "image" && (
+                          <img
+                            src={`${import.meta.env.VITE_BACKEND_URL}${
+                              analytics.mostEngagedPost.mediaUrl
+                            }`}
+                            alt="Most engaged post"
+                            className="max-h-48 rounded-lg object-contain"
+                          />
+                        )}
+                        {analytics.mostEngagedPost.mediaType === "video" && (
+                          <video
+                            src={`${import.meta.env.VITE_BACKEND_URL}${
+                              analytics.mostEngagedPost.mediaUrl
+                            }`}
+                            className="max-h-48 rounded-lg"
+                            controls
+                          />
+                        )}
+                        {analytics.mostEngagedPost.mediaType === "audio" && (
+                          <audio
+                            src={`${import.meta.env.VITE_BACKEND_URL}${
+                              analytics.mostEngagedPost.mediaUrl
+                            }`}
+                            className="w-full"
+                            controls
+                          />
+                        )}
+                      </div>
+                    )}
+
+                    <p className="text-gray-300 text-sm line-clamp-2">
+                      {analytics.mostEngagedPost.content}
+                    </p>
+                    <div className="flex gap-4 mt-2">
+                      <p className="text-yellow-400 text-sm flex items-center gap-1">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                          />
+                        </svg>
+                        {analytics.mostEngagedPost.likes}
+                      </p>
+                      <p className="text-yellow-400 text-sm flex items-center gap-1">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                          />
+                        </svg>
+                        {analytics.mostEngagedPost.comments}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Recent Engagement Trend */}
+                <div className="bg-gray-800 p-4 rounded-lg">
+                  <div className="flex justify-between items-center mb-4">
+                    <div>
+                      <p className="text-gray-400 text-sm">Recent Engagement</p>
+                      <p className="text-yellow-400 font-semibold text-lg">
+                        {analytics.recentEngagement}%
+                      </p>
+                    </div>
+                    <div
+                      className={`flex items-center gap-1 ${
+                        analytics.interactionTrend === "up"
+                          ? "text-green-400"
+                          : analytics.interactionTrend === "down"
+                          ? "text-red-400"
+                          : "text-gray-400"
+                      }`}
+                    >
+                      {analytics.interactionTrend === "up" ? (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      ) : analytics.interactionTrend === "down" ? (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      ) : (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                      <span className="text-sm">
+                        {analytics.interactionTrend.charAt(0).toUpperCase() +
+                          analytics.interactionTrend.slice(1)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Engagement Metrics */}
+                <div className="bg-gray-800 p-4 rounded-lg">
+                  <h3 className="text-yellow-400 font-semibold mb-4">
+                    Engagement Metrics
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-gray-400 text-sm">
+                        Average Likes per Post
+                      </p>
+                      <p className="text-yellow-400 font-semibold">
+                        {analytics.engagementMetrics.averageLikesPerPost.toFixed(
+                          1
+                        )}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm">
+                        Average Comments per Post
+                      </p>
+                      <p className="text-yellow-400 font-semibold">
+                        {analytics.engagementMetrics.averageCommentsPerPost.toFixed(
+                          1
+                        )}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm">
+                        Follower Engagement Rate
+                      </p>
+                      <p className="text-yellow-400 font-semibold">
+                        {analytics.engagementMetrics.followerEngagementRate.toFixed(
+                          1
+                        )}
+                        %
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Delete Post Confirmation Modal */}

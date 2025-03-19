@@ -1,9 +1,16 @@
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
+const axios = require("axios");
+const FormData = require("form-data");
+const fs = require("fs");
 const Post = require("../models/PostModels");
 const User = require("../models/UserModel"); // Updated to use the combined User model
 const router = express.Router();
+
+// Add these constants at the top after the imports
+const MODERATION_API_URL = "http://localhost:5000/api/moderate";
+const MODERATION_TIMEOUT = 30000; // 30 seconds timeout
 
 // set up multer storage for different media types
 const storage = multer.diskStorage({
@@ -32,10 +39,63 @@ const { verifyToken } = require("../utils/tokendec");
 
 const upload = multer({ storage: storage });
 
+// Update the moderateContent middleware
+const moderateContent = async (req, res, next) => {
+  if (
+    !req.file ||
+    (!req.file.mimetype.startsWith("image/") &&
+      !req.file.mimetype.startsWith("video/"))
+  ) {
+    return next();
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append("file", fs.createReadStream(req.file.path), {
+      filename: req.file.filename,
+      contentType: req.file.mimetype,
+    });
+
+    const response = await axios.post(MODERATION_API_URL, formData, {
+      headers: {
+        ...formData.getHeaders(),
+      },
+      timeout: MODERATION_TIMEOUT,
+    });
+
+    // Add moderation results to request object
+    req.contentModeration = response.data;
+
+    // Instead of rejecting unsafe content, we'll just pass the moderation results
+    // to the next middleware where we'll handle age restriction
+    next();
+  } catch (error) {
+    console.error("Content moderation error:", error);
+    // Clean up the uploaded file in case of error
+    if (req.file && req.file.path) {
+      fs.unlinkSync(req.file.path);
+    }
+
+    if (error.response) {
+      return res.status(error.response.status).json({
+        error: "Content moderation failed",
+        details: error.response.data,
+      });
+    }
+
+    res.status(500).json({
+      error: "Content moderation service unavailable",
+      details: error.message,
+    });
+  }
+};
+
+// Update the create-post route to handle moderation results
 router.post(
   "/create-post",
   verifyToken,
   upload.single("media"),
+  moderateContent,
   async (req, res) => {
     try {
       const { content, mediaType } = req.body;
@@ -45,11 +105,29 @@ router.post(
         ? `/storage/post/${mediaType}/${req.file.filename}`
         : null;
 
+      // Get moderation results if available
+      const moderationResults = req.contentModeration || {
+        is_safe: true,
+        inappropriate_score: 0,
+        warnings: [],
+      };
+
+      // Updated age restriction logic:
+      // - If content is not safe (high inappropriate score), mark as age restricted
+      // - If content has medium score (0.3 to threshold), also mark as age restricted
+      const isAgeRestricted =
+        !moderationResults.is_safe ||
+        moderationResults.inappropriate_score > 0.3;
+
+      // Create post with moderation data
       const newPost = new Post({
         content,
         mediaUrl,
         mediaType,
         user: user.identifier,
+        isAgeRestricted: isAgeRestricted,
+        moderationScore: moderationResults.inappropriate_score || 0,
+        moderationWarnings: moderationResults.warnings || [],
       });
 
       // save the post
@@ -57,12 +135,21 @@ router.post(
 
       // finding the user and adding post id to their posts
       await User.findByIdAndUpdate(
-        user.identifier, // find the user by identifier
-        { $push: { posts: { postId: newPost._id } } }, // push the new postId to the posts array
-        { new: true, useFindAndModify: false } // return the updated document
+        user.identifier,
+        { $push: { posts: { postId: newPost._id } } },
+        { new: true, useFindAndModify: false }
       );
 
-      res.status(201).json(newPost);
+      // Return the post with detailed moderation info
+      res.status(201).json({
+        ...newPost.toJSON(),
+        moderation: {
+          isAgeRestricted,
+          score: moderationResults.inappropriate_score,
+          warnings: moderationResults.warnings,
+          isSafe: moderationResults.is_safe,
+        },
+      });
     } catch (error) {
       console.error("Error creating post: ", error.message);
       res.status(500).json({ error: "Failed to create post" });
@@ -83,7 +170,7 @@ router.delete("/delete-post/:postId", verifyToken, async (req, res) => {
 
     // check  post belongs to user
     if (!post.user.equals(user.identifier)) {
-      return res.status(403).json({ error: "you can’t delete this post" }); // if not, show error
+      return res.status(403).json({ error: "you can't delete this post" }); // if not, show error
     }
 
     // delete the post

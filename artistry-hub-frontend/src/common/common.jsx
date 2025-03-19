@@ -18,6 +18,9 @@ const CommonProfile = () => {
   // Add this state for tracking expanded content
   const [expandedContent, setExpandedContent] = useState(false);
 
+  // Add this new state
+  const [showRestrictedContent, setShowRestrictedContent] = useState({});
+
   // Add this function near the top of your component
   const truncateText = (text, limit) => {
     if (!text) return "";
@@ -144,6 +147,13 @@ const CommonProfile = () => {
         )}
       </div>
     );
+  };
+
+  const handleShowRestrictedContent = (postId) => {
+    setShowRestrictedContent((prev) => ({
+      ...prev,
+      [postId]: true,
+    }));
   };
 
   if (!profile) {
@@ -307,31 +317,79 @@ const CommonProfile = () => {
                         {post.mediaUrl && (
                           <>
                             {post.mediaType === "image" && (
-                              <img
-                                src={`${import.meta.env.VITE_BACKEND_URL}${
-                                  post.mediaUrl
-                                }`}
-                                alt="Post"
-                                className="w-full h-48 object-cover"
-                              />
+                              <div className="relative">
+                                {post.isAgeRestricted &&
+                                !showRestrictedContent[post._id] ? (
+                                  <div className="relative">
+                                    <img
+                                      src={`${
+                                        import.meta.env.VITE_BACKEND_URL
+                                      }${post.mediaUrl}`}
+                                      alt="Post"
+                                      className="w-full h-48 object-cover blur-xl"
+                                    />
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50">
+                                      <div className="bg-red-900/80 px-4 py-2 rounded-lg text-white mb-2">
+                                        18+ Age Restricted Content
+                                      </div>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleShowRestrictedContent(post._id);
+                                        }}
+                                        className="bg-yellow-500 text-black px-4 py-2 rounded-lg hover:bg-yellow-400 transition-colors"
+                                      >
+                                        Show Content
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <img
+                                    src={`${import.meta.env.VITE_BACKEND_URL}${
+                                      post.mediaUrl
+                                    }`}
+                                    alt="Post"
+                                    className="w-full h-48 object-cover"
+                                  />
+                                )}
+                              </div>
                             )}
                             {post.mediaType === "video" && (
-                              <video
-                                controls
-                                src={`${import.meta.env.VITE_BACKEND_URL}${
-                                  post.mediaUrl
-                                }`}
-                                className="w-full h-48 object-cover"
-                              />
-                            )}
-                            {post.mediaType === "audio" && (
-                              <audio
-                                controls
-                                src={`${import.meta.env.VITE_BACKEND_URL}${
-                                  post.mediaUrl
-                                }`}
-                                className="w-full object-cover"
-                              />
+                              <div className="relative">
+                                {post.isAgeRestricted &&
+                                !showRestrictedContent[post._id] ? (
+                                  <div className="relative">
+                                    <video
+                                      src={`${
+                                        import.meta.env.VITE_BACKEND_URL
+                                      }${post.mediaUrl}`}
+                                      className="w-full h-48 object-cover blur-xl"
+                                    />
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50">
+                                      <div className="bg-red-900/80 px-4 py-2 rounded-lg text-white mb-2">
+                                        18+ Age Restricted Content
+                                      </div>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleShowRestrictedContent(post._id);
+                                        }}
+                                        className="bg-yellow-500 text-black px-4 py-2 rounded-lg hover:bg-yellow-400 transition-colors"
+                                      >
+                                        Show Content
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <video
+                                    controls
+                                    src={`${import.meta.env.VITE_BACKEND_URL}${
+                                      post.mediaUrl
+                                    }`}
+                                    className="w-full h-48 object-cover"
+                                  />
+                                )}
+                              </div>
                             )}
                           </>
                         )}
@@ -400,21 +458,80 @@ const CommonProfile = () => {
                   {selectedPost.mediaUrl ? (
                     <div className="relative h-full flex items-center justify-center bg-black/40">
                       {selectedPost.mediaType === "image" ? (
-                        <img
-                          src={`${import.meta.env.VITE_BACKEND_URL}${
-                            selectedPost.mediaUrl
-                          }`}
-                          alt="Post"
-                          className="max-h-full max-w-full object-contain"
-                        />
+                        <div className="relative w-full h-full">
+                          {selectedPost.isAgeRestricted &&
+                          !showRestrictedContent[selectedPost._id] ? (
+                            <div className="relative h-full">
+                              <img
+                                src={`${import.meta.env.VITE_BACKEND_URL}${
+                                  selectedPost.mediaUrl
+                                }`}
+                                alt="Post"
+                                className="max-h-full max-w-full object-contain blur-xl"
+                              />
+                              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50">
+                                <div className="bg-red-900/80 px-4 py-2 rounded-lg text-white mb-2">
+                                  18+ Age Restricted Content
+                                </div>
+                                <button
+                                  onClick={() =>
+                                    handleShowRestrictedContent(
+                                      selectedPost._id
+                                    )
+                                  }
+                                  className="bg-yellow-500 text-black px-4 py-2 rounded-lg hover:bg-yellow-400 transition-colors"
+                                >
+                                  Show Content
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <img
+                              src={`${import.meta.env.VITE_BACKEND_URL}${
+                                selectedPost.mediaUrl
+                              }`}
+                              alt="Post"
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          )}
+                        </div>
                       ) : selectedPost.mediaType === "video" ? (
-                        <video
-                          controls
-                          src={`${import.meta.env.VITE_BACKEND_URL}${
-                            selectedPost.mediaUrl
-                          }`}
-                          className="max-h-full max-w-full object-contain"
-                        />
+                        <div className="relative w-full h-full">
+                          {selectedPost.isAgeRestricted &&
+                          !showRestrictedContent[selectedPost._id] ? (
+                            <div className="relative h-full">
+                              <video
+                                src={`${import.meta.env.VITE_BACKEND_URL}${
+                                  selectedPost.mediaUrl
+                                }`}
+                                className="max-h-full max-w-full object-contain blur-xl"
+                              />
+                              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50">
+                                <div className="bg-red-900/80 px-4 py-2 rounded-lg text-white mb-2">
+                                  18+ Age Restricted Content
+                                </div>
+                                <button
+                                  onClick={() =>
+                                    handleShowRestrictedContent(
+                                      selectedPost._id
+                                    )
+                                  }
+                                  className="bg-yellow-500 text-black px-4 py-2 rounded-lg hover:bg-yellow-400 transition-colors"
+                                >
+                                  Show Content
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <video
+                              controls
+                              src={`${import.meta.env.VITE_BACKEND_URL}${
+                                selectedPost.mediaUrl
+                              }`}
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          )}
+                        </div>
                       ) : (
                         selectedPost.mediaType === "audio" && (
                           <audio
@@ -422,7 +539,7 @@ const CommonProfile = () => {
                             src={`${import.meta.env.VITE_BACKEND_URL}${
                               selectedPost.mediaUrl
                             }`}
-                            className="w-full mt-4"
+                            className="w-full object-cover"
                           />
                         )
                       )}
