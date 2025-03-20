@@ -61,7 +61,12 @@ const UserSchema = new mongoose.Schema(
       default: "bcrypt",
     },
     faceData: {
-      type: Object,
+      type: {
+        encryptedData: String,
+        iv: String,
+        authTag: String,
+        encapsulatedKey: String,
+      },
       default: null,
     },
     isFaceAuthEnabled: {
@@ -71,9 +76,11 @@ const UserSchema = new mongoose.Schema(
     privateKey: {
       type: String,
       required: false,
+      select: false, // Hide private key from query results by default
     },
     OG: {
-      type: Object,
+      type: Array, // Store face descriptor as array for Euclidean distance calculation
+      select: false, // Hide original descriptor from query results by default
       default: null,
     },
     suspended: {

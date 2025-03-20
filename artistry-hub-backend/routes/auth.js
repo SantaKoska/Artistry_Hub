@@ -230,7 +230,7 @@ router.post("/verify-login-otp", async (req, res) => {
   }
 });
 
-// Add this route for face ID login
+// Modified face ID login route
 router.post("/login/faceid", async (req, res) => {
   const { email, faceDescriptor } = req.body;
 
@@ -240,27 +240,46 @@ router.post("/login/faceid", async (req, res) => {
       .json({ err: "Email and face descriptor are required" });
   }
 
-  const user = await User.findOne({ email: email });
+  // Include OG field explicitly in the query
+  const user = await User.findOne({ email: email }).select("+OG");
   if (!user || !user.isFaceAuthEnabled) {
-    return res
-      .status(400)
-      .json({ err: "User not found or face authentication not enabled" });
+    return res.status(400).json({
+      err: "User not found or face authentication not enabled",
+    });
   }
 
   try {
-    // Compare using Euclidean distance only
+    // Check if OG exists and is valid
+    if (!user.OG || !Array.isArray(user.OG)) {
+      return res.status(400).json({
+        err: "Face authentication data is not properly set up",
+      });
+    }
+
+    // Ensure faceDescriptor is an array
+    const descriptorArray = Array.isArray(faceDescriptor)
+      ? faceDescriptor
+      : JSON.parse(faceDescriptor);
+
+    // Validate array lengths match
+    if (user.OG.length !== descriptorArray.length) {
+      return res.status(400).json({
+        err: "Invalid face descriptor format",
+      });
+    }
+
+    // Compare using Euclidean distance with stored original descriptor
     const euclideanDistance = calculateEuclideanDistance(
       user.OG,
-      faceDescriptor
+      descriptorArray
     );
 
-    const euclideanThreshold = 0.4; // Lower threshold for stricter matching
+    const euclideanThreshold = 0.4; // Keep existing threshold
 
     if (euclideanDistance < euclideanThreshold) {
       const token = await getToken(user);
       const role = user.role;
-      const userToReturn = { token, role };
-      return res.status(200).json(userToReturn);
+      return res.status(200).json({ token, role });
     } else {
       return res.status(400).json({ err: "Face verification failed" });
     }
@@ -270,10 +289,21 @@ router.post("/login/faceid", async (req, res) => {
   }
 });
 
-// Function to calculate Euclidean distance
+// Updated Function to calculate Euclidean distance with validation
 function calculateEuclideanDistance(data1, data2) {
+  if (
+    !Array.isArray(data1) ||
+    !Array.isArray(data2) ||
+    data1.length !== data2.length
+  ) {
+    throw new Error("Invalid input arrays for Euclidean distance calculation");
+  }
+
   let sum = 0;
   for (let i = 0; i < data1.length; i++) {
+    if (typeof data1[i] !== "number" || typeof data2[i] !== "number") {
+      throw new Error("Array elements must be numbers");
+    }
     sum += Math.pow(data1[i] - data2[i], 2);
   }
   return Math.sqrt(sum);
@@ -447,39 +477,37 @@ router.post("/reset-password/:token", async (req, res) => {
   res.status(200).json({ message: "Password has been reset" });
 });
 
-// Add this route for disabling face authentication
+// Modified disable-face-auth route
 router.put("/disable-face-auth", verifyToken, async (req, res) => {
-  const userId = req.user.identifier;
-  const { password } = req.body; // Get password from request body
-
-  // Check if password is provided
-  if (!password) {
-    return res.status(400).json({ err: "Password is required" });
-  }
-
-  // Verify the user's password
-  const user = await User.findById(userId);
-  if (!user) {
-    return res.status(400).json({ err: "User not found" });
-  }
-
-  // Check the hashing algorithm
-  let isPasswordValid;
-  if (user.hashAlgorithm === "bcrypt") {
-    isPasswordValid = await bcrypt.compare(password, user.password);
-  } else if (user.hashAlgorithm === "argon2") {
-    isPasswordValid = await argon2.verify(user.password, password);
-  }
-
-  if (!isPasswordValid) {
-    return res.status(400).json({ err: "Invalid password" }); // Return error if password is incorrect
-  }
-
-  // Confirm password before disabling face authentication
   try {
-    // Update user to disable face authentication
+    const userId = req.user.identifier;
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ err: "Password is required" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({ err: "User not found" });
+    }
+
+    // Verify password using existing logic
+    let isPasswordValid;
+    if (user.hashAlgorithm === "bcrypt") {
+      isPasswordValid = await bcrypt.compare(password, user.password);
+    } else if (user.hashAlgorithm === "argon2") {
+      isPasswordValid = await argon2.verify(user.password, password);
+    }
+
+    if (!isPasswordValid) {
+      return res.status(400).json({ err: "Invalid password" });
+    }
+
+    // Clear all face authentication data
     await User.findByIdAndUpdate(userId, {
-      faceData: undefined, // Clear face data
+      faceData: undefined,
+      privateKey: undefined,
       isFaceAuthEnabled: false,
     });
 
@@ -492,27 +520,32 @@ router.put("/disable-face-auth", verifyToken, async (req, res) => {
   }
 });
 
-// Add this route for setting up or changing face authentication
+// Modified setup-face-auth route
 router.post("/setup-face-auth", verifyToken, async (req, res) => {
-  const { faceDescriptor } = req.body;
-  const userId = req.user.identifier;
-
-  // Generate a new key pair
-  const { publicKey, privateKey } = await createKeyPair();
-
-  // Encrypt the face descriptor before saving
-  const encryptedFaceDescriptor = await encrypt(
-    JSON.stringify(faceDescriptor),
-    publicKey
-  ); // Encrypt using public key
-
-  // Update user with encrypted face data, private key, and original face data
   try {
+    const { faceDescriptor } = req.body;
+    const userId = req.user.identifier;
+
+    // Generate a new PQ-safe key pair
+    const keyPair = await createKeyPair();
+
+    // Encrypt the face descriptor using the public key
+    const encryptedData = await encrypt(
+      JSON.stringify(faceDescriptor),
+      keyPair.publicKey
+    );
+
+    // Update user with encrypted face data and keys
     await User.findByIdAndUpdate(userId, {
-      faceData: encryptedFaceDescriptor, // Store encrypted data
-      privateKey: privateKey, // Store the private key
+      faceData: {
+        encryptedData: encryptedData.encryptedData,
+        iv: encryptedData.iv,
+        authTag: encryptedData.authTag,
+        encapsulatedKey: encryptedData.encapsulatedKey,
+      },
+      privateKey: keyPair.privateKey,
       isFaceAuthEnabled: true,
-      OG: faceDescriptor, // Store original face data
+      OG: faceDescriptor, // Keep original descriptor for comparison
     });
 
     res.status(200).json({ message: "Face authentication setup successful" });

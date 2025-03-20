@@ -18,20 +18,29 @@ async function createKeyPair() {
   }
 }
 
-// Encrypt data using Kyber
+// Encrypt data using Kyber + AES
 async function encrypt(data, publicKey) {
   try {
-    const plaintext = Buffer.from(data, "utf8"); // Convert data to Buffer
-    let c_ss = kyber.Encrypt768(Buffer.from(publicKey, "base64"), plaintext); // Encrypt using public key
+    // First, use Kyber to generate a shared secret
+    let c_ss = kyber.Encrypt768(Buffer.from(publicKey, "base64"));
     let ciphertext = c_ss[0];
     let sharedSecret = c_ss[1];
 
-    // Log the encrypted data and other parameters
-    // console.log("Encrypted Data:", ciphertext.toString("base64"));
+    // Derive an AES key from the shared secret using HKDF
+    const aesKey = crypto.createHash("sha256").update(sharedSecret).digest();
+    const iv = crypto.randomBytes(16);
 
-    // Store the encrypted data in the package
+    // Create AES cipher and encrypt the actual data
+    const cipher = crypto.createCipheriv("aes-256-gcm", aesKey, iv);
+    let encryptedData = cipher.update(data, "utf8", "base64");
+    encryptedData += cipher.final("base64");
+    const authTag = cipher.getAuthTag();
+
     return {
-      encryptedData: ciphertext.toString("base64"),
+      encryptedData: encryptedData,
+      iv: iv.toString("base64"),
+      authTag: authTag.toString("base64"),
+      encapsulatedKey: ciphertext.toString("base64"),
     };
   } catch (error) {
     console.error("Error encrypting data:", error);
@@ -39,27 +48,34 @@ async function encrypt(data, publicKey) {
   }
 }
 
-// Decrypt data using Kyber
+// Decrypt data using Kyber + AES
 async function decrypt(encryptedPackage, privateKey) {
   try {
-    // Ensure encryptedData is a string
-    if (typeof encryptedPackage.encryptedData !== "string") {
-      throw new TypeError("encryptedData must be a string");
-    }
+    const { encryptedData, iv, authTag, encapsulatedKey } = encryptedPackage;
 
-    const encryptedData = Buffer.from(encryptedPackage.encryptedData, "base64");
-
-    // Decapsulate data using Kyber
+    // First, recover the shared secret using Kyber
     const sharedSecret = kyber.Decrypt768(
-      encryptedData,
+      Buffer.from(encapsulatedKey, "base64"),
       Buffer.from(privateKey, "base64")
-    ); // Obtain the symmetric key
+    );
 
-    // Convert the decrypted data to a string if it's a Buffer
-    return sharedSecret.toString("utf8"); // Ensure the decrypted data is returned as a string
+    // Derive the same AES key from the shared secret
+    const aesKey = crypto.createHash("sha256").update(sharedSecret).digest();
+
+    // Create decipher and decrypt the data
+    const decipher = crypto.createDecipheriv(
+      "aes-256-gcm",
+      aesKey,
+      Buffer.from(iv, "base64")
+    );
+    decipher.setAuthTag(Buffer.from(authTag, "base64"));
+
+    let decryptedData = decipher.update(encryptedData, "base64", "utf8");
+    decryptedData += decipher.final("utf8");
+
+    return decryptedData;
   } catch (error) {
     console.error("Error decrypting data:", error);
-    console.error(error.stack);
     throw error;
   }
 }
