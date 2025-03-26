@@ -116,6 +116,77 @@ const scheduleClassNotifications = async (
   });
 };
 
+// Helper function to update class statuses and generate new dates
+const updateClassStatuses = async (liveClass) => {
+  let needsSave = false;
+  const now = new Date();
+
+  // Sort class dates by date
+  const sortedDates = liveClass.classDates.sort(
+    (a, b) => new Date(a.date) - new Date(b.date)
+  );
+
+  // Update completed classes and find last scheduled class
+  let lastScheduledDate = null;
+  sortedDates.forEach((classDate) => {
+    if (classDate.status === "scheduled" && new Date(classDate.date) < now) {
+      classDate.status = "completed";
+      needsSave = true;
+    }
+    if (classDate.status === "scheduled") {
+      lastScheduledDate = new Date(classDate.date);
+    }
+  });
+
+  // Count upcoming scheduled classes
+  const upcomingClasses = sortedDates.filter(
+    (date) => date.status === "scheduled" && new Date(date.date) > now
+  );
+
+  // Generate new class dates if we have less than 4 upcoming classes
+  if (lastScheduledDate && upcomingClasses.length < 4) {
+    const startDate = new Date(lastScheduledDate);
+    startDate.setDate(startDate.getDate() + 1);
+
+    // Calculate how many new dates we need
+    const neededDates = 4 - upcomingClasses.length;
+
+    // Generate new dates until we have 4 upcoming classes
+    let newDates = [];
+    while (newDates.length < neededDates) {
+      const nextDates = liveClass.generateNextClassDates(startDate);
+      if (nextDates.length === 0) break;
+
+      newDates.push(nextDates[0]);
+      startDate.setDate(startDate.getDate() + 7); // Move start date forward by a week
+    }
+
+    if (newDates.length > 0) {
+      liveClass.classDates.push(...newDates);
+      needsSave = true;
+    }
+  }
+
+  // Remove extra upcoming classes if we somehow have more than 4
+  const allUpcomingClasses = liveClass.classDates
+    .filter((date) => date.status === "scheduled" && new Date(date.date) > now)
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  if (allUpcomingClasses.length > 4) {
+    const extraClasses = allUpcomingClasses.slice(4);
+    liveClass.classDates = liveClass.classDates.filter(
+      (date) => !extraClasses.find((extra) => extra._id.equals(date._id))
+    );
+    needsSave = true;
+  }
+
+  if (needsSave) {
+    await liveClass.save();
+  }
+
+  return liveClass;
+};
+
 // Create a new live class
 router.post(
   "/create",
@@ -245,9 +316,15 @@ router.get("/art-forms/:artForm", async (req, res) => {
 router.get("/artist", verifyToken, async (req, res) => {
   try {
     const artistId = req.user.identifier;
-    const liveClasses = await LiveClass.find({ artistId })
+    let liveClasses = await LiveClass.find({ artistId })
       .populate("artistId")
       .populate("enrolledStudents", "userName profilePicture");
+
+    // Update class statuses for each class
+    liveClasses = await Promise.all(
+      liveClasses.map((liveClass) => updateClassStatuses(liveClass))
+    );
+
     res.status(200).json(liveClasses);
   } catch (error) {
     console.error("Error fetching artist's live classes:", error);
@@ -261,13 +338,19 @@ router.get("/student/available", verifyToken, async (req, res) => {
     const studentId = req.user.identifier;
     const currentDate = new Date();
 
-    const liveClasses = await LiveClass.find({
+    let liveClasses = await LiveClass.find({
       enrolledStudents: { $ne: studentId },
       finalEnrollmentDate: { $gt: currentDate },
     }).populate({
       path: "artistId",
-      select: "userName profilePicture bio email", // Add any other artist fields you want
+      select: "userName profilePicture bio email",
     });
+
+    // Update class statuses for each class
+    liveClasses = await Promise.all(
+      liveClasses.map((liveClass) => updateClassStatuses(liveClass))
+    );
+
     res.status(200).json(liveClasses);
   } catch (error) {
     console.error("Error fetching available live classes:", error);
@@ -279,12 +362,18 @@ router.get("/student/available", verifyToken, async (req, res) => {
 router.get("/student/enrolled", verifyToken, async (req, res) => {
   try {
     const studentId = req.user.identifier;
-    const liveClasses = await LiveClass.find({
+    let liveClasses = await LiveClass.find({
       enrolledStudents: studentId,
     }).populate({
       path: "artistId",
-      select: "userName profilePicture bio email", // Add any other artist fields you want
+      select: "userName profilePicture bio email",
     });
+
+    // Update class statuses for each class
+    liveClasses = await Promise.all(
+      liveClasses.map((liveClass) => updateClassStatuses(liveClass))
+    );
+
     res.status(200).json(liveClasses);
   } catch (error) {
     console.error("Error fetching enrolled live classes:", error);

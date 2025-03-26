@@ -77,6 +77,7 @@ const CreatePost = ({ onClose }) => {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="What's on your mind?"
+            required
             className="w-full px-4 py-3 bg-gray-800 text-white text-lg border-2 border-yellow-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 resize-none transition-transform duration-200 hover:scale-105"
             rows="4"
           />

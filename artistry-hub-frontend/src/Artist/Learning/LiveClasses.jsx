@@ -280,64 +280,55 @@ const LiveClasses = () => {
         <div className="space-y-2">
           <h3 className="text-yellow-400 font-semibold">Upcoming Classes:</h3>
           {scheduledClasses.length > 0 ? (
-            scheduledClasses.map((classDate) => {
-              const classDateTime = new Date(classDate.date);
-              // Check if class is past but status hasn't been updated
-              if (classDateTime < new Date()) {
-                classDate.status = "completed";
-                return null;
-              }
-
-              return (
-                <div
-                  key={classDate._id}
-                  className="flex justify-between items-center bg-gray-800 p-2 rounded"
-                >
-                  <span>
-                    {format(classDateTime, "MMM dd, yyyy 'at' h:mm a")}
-                  </span>
-                  <div className="flex gap-2">
-                    {isClassJoinable(classDate.date) ? (
-                      <Link
-                        to={`/live-class-room/${liveClass._id}?role=artist`}
-                        className="bg-green-500 text-white px-3 py-1 rounded"
+            scheduledClasses.map((classDate) => (
+              <div
+                key={classDate._id}
+                className="flex justify-between items-center bg-gray-800 p-2 rounded"
+              >
+                <span>
+                  {format(new Date(classDate.date), "MMM dd, yyyy 'at' h:mm a")}
+                </span>
+                <div className="flex gap-2">
+                  {isClassJoinable(classDate.date) ? (
+                    <Link
+                      to={`/live-class-room/${liveClass._id}?role=artist`}
+                      className="bg-green-500 text-white px-3 py-1 rounded"
+                    >
+                      Join Class
+                    </Link>
+                  ) : (
+                    <>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openRescheduleModal(classDate);
+                        }}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition-colors"
+                        disabled={isBefore(
+                          new Date(classDate.date),
+                          addHours(new Date(), 24)
+                        )}
                       >
-                        Join Class
-                      </Link>
-                    ) : (
-                      <>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openRescheduleModal(classDate);
-                          }}
-                          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition-colors"
-                          disabled={isBefore(
-                            new Date(classDate.date),
-                            addHours(new Date(), 24)
-                          )}
-                        >
-                          Reschedule
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCancelClass(liveClass._id, classDate._id);
-                          }}
-                          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition-colors"
-                          disabled={isBefore(
-                            new Date(classDate.date),
-                            addHours(new Date(), 24)
-                          )}
-                        >
-                          Cancel
-                        </button>
-                      </>
-                    )}
-                  </div>
+                        Reschedule
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCancelClass(liveClass._id, classDate._id);
+                        }}
+                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition-colors"
+                        disabled={isBefore(
+                          new Date(classDate.date),
+                          addHours(new Date(), 24)
+                        )}
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  )}
                 </div>
-              );
-            })
+              </div>
+            ))
           ) : (
             <p className="text-gray-400 italic">
               No upcoming classes scheduled
